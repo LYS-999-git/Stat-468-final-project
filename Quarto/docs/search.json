@@ -1,0 +1,22 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "STAT 468 Final Project — Clustering Athlete Aging Curves",
+    "section": "",
+    "text": "Preface",
+    "crumbs": [
+      "STAT 468 Final Project — Clustering Athlete Aging Curves"
+    ]
+  },
+  {
+    "objectID": "index.html#abstract",
+    "href": "index.html#abstract",
+    "title": "STAT 468 Final Project — Clustering Athlete Aging Curves",
+    "section": "Abstract",
+    "text": "Abstract\nAthletes reach elite performance at highly variable rates. Some progress rapidly, while others develop more gradually over time. In this project, we model and cluster the rate of progression of Olympic track and field athletes using their aging curves. Unlike team sports, individual sports such as athletics allow for precise comparison through standardized scoring, as individual results are more easily measured in objective terms. To compare athletes across different event disciplines such as jumps and throws, we convert raw performances to a unified scale using the scoring system designed by World Athletics, the world governing body for athletics. \nWe apply functional data analysis to smooth each athlete’s aging curve and extract dominant patterns using Functional Principal Component Analysis (FPCA). Because competition frequency varies by athlete and event, we address irregular and sparse observations using FPCA methods suited for unevenly spaced data.\nClustering the resulting FPCA scores percent change allows us to group athletes based on how fast they improve with age, identifying profiles such as early risers, steady performers, and late bloomers. These clusters provide both descriptive insights into developmental patterns and predictive tools for forecasting when rising athletes might reach elite standards based on early-career data.\nThis focus on the rate of progression enables a more adaptable and predictive framework allowing coaches, performance analysts, and high performance directors to analyze athletic development.",
+    "crumbs": [
+      "STAT 468 Final Project — Clustering Athlete Aging Curves"
+    ]
+  }
+]
