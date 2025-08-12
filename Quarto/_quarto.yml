@@ -30,5 +30,6 @@ execute:
   warning: false
   message: false
   echo: true
+  freeze: auto
 
 bibliography: references.bib
