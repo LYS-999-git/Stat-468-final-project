@@ -188,12 +188,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Communicate</span></span></a>
   </div>
 </li>
-        <li class="sidebar-item">
-  <div class="sidebar-item-container"> 
-  <a href="./appendix.html" class="sidebar-item-text sidebar-link">
- <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Appendix</span></span></a>
-  </div>
-</li>
     </ul>
     </div>
 </nav>
@@ -264,7 +258,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="data-sources" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="data-sources"><span class="header-section-number">2.2</span> Data Sources</h2>
-<p>This project requires three datasets in total. Two datasets will be obtained from WorldAthelete.org and imported with <code>read_csv()</code>. These two datasets contains only the best performance per year for each athlete in each event. That means if an athlete participates in the same event multiple times in a year, only their top result is included. If the same athlete competes in multiple events in the same year, they will have one record for each event. And another <code>iaaf-2005.json</code> dataset is obtained from xxxx’s github and imported with <code>read_json()</code> .</p>
+<p>This project requires three datasets in total. Two datasets will be obtained from WorldAthelete.org and imported with <code>read_csv()</code>. These two datasets contains only the best performance per year for each athlete in each event. That means if an athlete participates in the same event multiple times in a year, only their top result is included. If the same athlete competes in multiple events in the same year, they will have one record for each event. And another <code>iaaf-2005.json</code> dataset is obtained from jchen1’s github and imported with <code>read_json()</code> .</p>
 <ul>
 <li>The file <code>career_progression.csv</code> contains performance data, year, date, event, and athlete-link(identifiers).</li>
 <li>The file <code>olympics_data.csv</code> provides athlete level metadata including name, birthdate, gender, event, game, game-link, athlete-link, nationality, and Olympic appearances(for example: performance mark and their rank)</li>
@@ -798,7 +792,7 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Sources</span></span>
 <span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>This project requires three datasets in total. Two datasets will be obtained from WorldAthelete.org and imported with <span class="in">`read_csv()`</span>. These two datasets contains only the best performance per year for each athlete in each event. That means if an athlete participates in the same event multiple times in a year, only their top result is included. If the same athlete competes in multiple events in the same year, they will have one record for each event. And another <span class="in">`iaaf-2005.json`</span> dataset is obtained from xxxx's github and imported with <span class="in">`read_json()`</span> .</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>This project requires three datasets in total. Two datasets will be obtained from WorldAthelete.org and imported with <span class="in">`read_csv()`</span>. These two datasets contains only the best performance per year for each athlete in each event. That means if an athlete participates in the same event multiple times in a year, only their top result is included. If the same athlete competes in multiple events in the same year, they will have one record for each event. And another <span class="in">`iaaf-2005.json`</span> dataset is obtained from jchen1's github and imported with <span class="in">`read_json()`</span> .</span>
 <span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The file <span class="in">`career_progression.csv`</span> contains performance data, year, date, event, and athlete-link(identifiers).</span>
 <span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The file <span class="in">`olympics_data.csv`</span> provides athlete level metadata including name, birthdate, gender, event, game, game-link, athlete-link, nationality, and Olympic appearances(for example: performance mark and their rank)</span>

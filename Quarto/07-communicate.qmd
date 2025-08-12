@@ -52,10 +52,10 @@ Three primary aging curve patterns are identified through clustering:
 
 When clustering is performed by event type, most disciplines show
 patterns similar to the overall population clusters. However, certain
-events, such as Middle Distance and Road Marathon(??? double check),
-display noticeably different cluster structures.
+events, such as Middle Distance and Road Races, display noticeably
+different cluster structures.
 
-(Plot of a sample cluster)
+![![](images/Screen Shot 2025-08-11 at 23.23.17-01.png)](images/Screen Shot 2025-08-11 at 23.23.29-01.png)
 
 ## Application Example:
 
@@ -64,10 +64,16 @@ method and matched to one of the existing clusters. This allows
 stakeholders to immediately identify the athlete’s most likely
 performance trajectory and monitor changes over time.
 
-(screenshot from shiny app, and interpret the plot)
+The following plot has observed data points in black, and predicted
+aging curves in blue curve, and also a red dashed line interprets world
+class standards for men(1147.174) . The athlete is called
+"abdi-abdirahman", and he attends 10000m event. We classify this event
+to event type(Long Distance), and compare his aging curves to the
+clustering plot, we can assign him to the third cluster (green).
 
-(shiny app plot for a athlete, and related cluster plot by event-type,
-and interpret the plot)
+![](images/Screen Shot 2025-08-11 at 23.17.18.png)
+
+![](images/Screen Shot 2025-08-11 at 23.25.37.png)
 
 ## Key insights for Stakeholders
 

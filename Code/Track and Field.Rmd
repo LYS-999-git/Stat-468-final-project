@@ -23,7 +23,6 @@ library(vetiver)
 library(pins)
 bucket <- Sys.getenv("S3_BUCKET")
 prefix <- Sys.getenv("S3_PREFIX")
-board  <- pins::board_s3(bucket = bucket, prefix = prefix, versioned = TRUE)
 
 
 ```

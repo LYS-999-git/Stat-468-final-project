@@ -4,7 +4,7 @@ title: "Model"
 
 ## Introduction
 
-Athletic performance evolves with age, and understanding this progression — often represented as an *aging curve* — is of considerable interest in sports analytics. Aging curves plot an athlete’s performance level as a function of age, offering valuable insight for coaches, roster management,analysts, and player development strategies.
+Athletic performance evolves with age, and understanding this progression is often represented as an *aging curve* which is of considerable interest in sports analytics. Aging curves plot an athlete’s performance level as a function of age, offering valuable insight for coaches, roster management,analysts, and player development strategies.
 
 Traditional approaches to modeling aging curves, such as multiple regression with spline interpolation, provide limited flexibility and often fail to capture the full complexity of career trajectories. **Functional Data Analysis (FDA)** provides a more powerful and flexible framework for modeling aging curves by treating each athlete’s career trajectory as a continuous function over time. This approach allows for richer statistical analyses, including hypothesis testing, dimensionality reduction, and clustering. methodology is based on Functional Data Analysis in R and inspired by the paper Functional Data Analysis of Aging Curves in Sports by Alexander Wakim and Jimmy Jin (2014).
 
@@ -194,7 +194,9 @@ legend("topright", c("PC1", "PC2", "PC3"),
        col = col_me, lty = 1, bty = "n", lwd = 3)
 ```
 
-plot of predicted aging curves:
+Plot of predicted aging curves:
+
+![](images/Screen Shot 2025-08-11 at 23.21.36.png)
 
 ## Clustering on FPCA predictive function
 
@@ -269,11 +271,15 @@ legend("topright", legend = paste("Cluster", 1:3),
        col = colset, lty = 1, lwd = 2, bty = "n")
 ```
 
-And here is the plot of clustering the whole population based on the percent change of IAAf-points of
+And here is the plot of clustering the whole population based on the percent change of IAAf-points of:
 
-Here is an example of an aging curve for a sample athlete. This athlete can be assigned to one of the existing clusters, which allows us to predict and monitor the athlete’s performance trajectory over time.(shiny app screenshot)
+![](images/Screen Shot 2025-08-11 at 23.22.30.png)
 
-I also cluster the entire population by event type to compare patterns across different disciplines. The population is divided into seven event types: Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, and Road Races. For most event types, the resulting clusters are similar to those of the overall population, while a few categories such as Middle Distance and Road Marathon(???double check) show noticeable differences.
+Here is an example of an aging curve for a sample athlete. This athlete(Aadam-ismaeel-khamis) can be assigned to one of the existing clusters, which allows us to predict and monitor the athlete’s performance trajectory over time. This athlete's predicted aging curves is very align with the third cluster above(green cluster), so we can interpret this athlete as early risers.
+
+![](images/Screen Shot 2025-08-11 at 23.13.48.png)
+
+I also cluster the entire population by event type to compare patterns across different disciplines. The population is divided into seven event types: Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, and Road Races. For most event types, the resulting clusters are similar to those of the overall population, while a few categories such as Middle Distance and Road Races show noticeable differences.
 
 ```{r,echo=TRUE}
 event_type = case_match(
@@ -287,4 +293,12 @@ event_type = case_match(
       c("10,000mW", "20,000mW", "50,000mW", "Road Marathon") ~ "Road Races")
 ```
 
-Here are a few examples of the clustering by event type(be specific): Show plot screenshot of cluster by event-type
+Here are a few examples of the clustering by event type:
+
+![](images/Screen Shot 2025-08-11 at 23.23.38.png)
+
+![](images/Screen Shot 2025-08-11 at 23.23.29.png)
+
+![](images/Screen Shot 2025-08-11 at 23.23.17.png)
+
+![](images/Screen Shot 2025-08-11 at 23.23.10.png)

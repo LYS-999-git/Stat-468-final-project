@@ -31,7 +31,7 @@ The analysis requires the following information for each athlete and event obser
 
 ## Data Sources
 
-This project requires three datasets in total. Two datasets will be obtained from WorldAthelete.org and imported with `read_csv()`. These two datasets contains only the best performance per year for each athlete in each event. That means if an athlete participates in the same event multiple times in a year, only their top result is included. If the same athlete competes in multiple events in the same year, they will have one record for each event. And another `iaaf-2005.json` dataset is obtained from xxxx's github and imported with `read_json()` .
+This project requires three datasets in total. Two datasets will be obtained from WorldAthelete.org and imported with `read_csv()`. These two datasets contains only the best performance per year for each athlete in each event. That means if an athlete participates in the same event multiple times in a year, only their top result is included. If the same athlete competes in multiple events in the same year, they will have one record for each event. And another `iaaf-2005.json` dataset is obtained from jchen1's github and imported with `read_json()` .
 
 -   The file `career_progression.csv` contains performance data, year, date, event, and athlete-link(identifiers).
 -   The file `olympics_data.csv` provides athlete level metadata including name, birthdate, gender, event, game, game-link, athlete-link, nationality, and Olympic appearances(for example: performance mark and their rank)
