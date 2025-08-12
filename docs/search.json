@@ -254,7 +254,7 @@
     "href": "05-visualize.html",
     "title": "5  Visualize",
     "section": "",
-    "text": "In this section, we visualize the observed data points for each athlete to better understand their performance trends before applying modeling techniques.\nThe plots display the raw IAAF scores against the athlete’s performance age, allowing us to see patterns such as peak performance periods, variability, and possible outliers.",
+    "text": "This section provides an overview of the dataset before modeling.\n\nWe begin with a trelliscope display of observed IAAF points versus performance age for each athlete and event. Each panel shows the raw unmodeled results, allowing us to visually identify patterns such as peak performance periods, performance variability, and potential outliers. This interactive view also makes it easy to filter by event, sort athletes by performance metrics, and inspect individual career trajectories in detail.\n\nBelow, a histogram of performance ages summarizes the distribution of observations across all athletes and events. Most results cluster between the early twenties and early thirties, which aligns with expected peak competitive ages in track and field. The right tail reflects late career performances, while the left tail captures early debuts.\n\nTogether, these visualizations establish a baseline understanding of the data’s structure, coverage, and variability, providing context for the modeling approaches that follow.",
     "crumbs": [
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
     ]
@@ -387,6 +387,46 @@
     "text": "7.7 Next steps\nEvent-type stratification: Fit separate FACE models for each event type (for example, sprints, middle distance, throws) and compare their mean aging curves to determine whether different disciplines follow distinct performance trajectories.\nUncertainty visualization: Incorporate visualizations of individual confidence intervals within the Shiny dashboard’s comparison view so that coaches can weigh the reliability of predicted trajectories.\nTrajectory monitoring: Implement year-over-year tracking of within-athlete shifts in curve shape (for example, an early peak evolving into a stable phase) and generate alerts when an athlete moves to a different cluster.\nRobust clustering: Evaluate robust clustering methods such as trimmed k-means to improve stability in the presence of outliers, and refine the number of clusters using within-cluster sum of squares (SSE) methods as described in the reference paper.\nSelection bias adjustment: Address potential right-tail selection bias, as higher-performing athletes tend to remain in competition longer, which may skew the observed distribution of aging curves.",
     "crumbs": [
       "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "appendix.html",
+    "href": "appendix.html",
+    "title": "8  appendix",
+    "section": "",
+    "text": "8.1 Navigating the Web Application\nThe accompanying web application allows users to explore athlete performance data and predicted aging curves interactively. The interface is organized into multiple tabs, each serving a distinct purpose:",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>appendix</span>"
+    ]
+  },
+  {
+    "objectID": "appendix.html#athlete-comparisons",
+    "href": "appendix.html#athlete-comparisons",
+    "title": "8  appendix",
+    "section": "8.2 Athlete Comparisons",
+    "text": "8.2 Athlete Comparisons\n\nChoose Event: Select a track or field event from the dropdown menu.\nChoose Athletes: Pick one or more athletes to compare.\nVisualization: An interactive Trelliscope display shows the selected athletes’ observed performance data. You can:\n\nScroll through athlete panels.\nZoom in/out and pan for closer inspection.\nFilter or search athletes by name.",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>appendix</span>"
+    ]
+  },
+  {
+    "objectID": "appendix.html#athlete-aging-curves-prediction",
+    "href": "appendix.html#athlete-aging-curves-prediction",
+    "title": "8  appendix",
+    "section": "8.3 Athlete Aging Curves Prediction",
+    "text": "8.3 Athlete Aging Curves Prediction\n\nChoose Athlete: Select a specific athlete from the dropdown list.\nChoose Event: Pick the event for which you want to see predicted aging curves.\nOutput: The app displays:\n\nObserved data points (in blue).\nPredicted aging curve (smooth line).\nWorld class standard (horizontal line).",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>appendix</span>"
+    ]
+  },
+  {
+    "objectID": "appendix.html#navigation-tips",
+    "href": "appendix.html#navigation-tips",
+    "title": "8  appendix",
+    "section": "8.4 Navigation Tips",
+    "text": "8.4 Navigation Tips\n\nUse the tab menu at the top to switch between sections.\nDropdown menus have a search feature: start typing to quickly find the desired athlete or event.\nPlots can be downloaded by right-clicking and selecting “Save image as…”.\nFor large datasets, loading may take a few seconds. The progress indicator will appear until the plot is ready.\n\nThis appendix ensures that first-time users can navigate the app efficiently and make full use of its interactive features.\nUse of AI tools:\nhttps://chatgpt.com/share/689acc28-1cdc-8013-9621-feee941d8d4e\nhttps://chatgpt.com/share/689acd3f-4c44-8013-a694-7a4c28023905\nhttps://chatgpt.com/share/689acd99-68e0-8013-b485-44ad9ccdfa88",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>appendix</span>"
     ]
   }
 ]

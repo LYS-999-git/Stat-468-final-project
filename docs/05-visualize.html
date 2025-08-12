@@ -188,6 +188,12 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
  <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Communicate</span></span></a>
   </div>
 </li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">appendix</span></span></a>
+  </div>
+</li>
     </ul>
     </div>
 </nav>
@@ -218,9 +224,13 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<p>In this section, we visualize the <strong>observed data points</strong> for each athlete to better understand their performance trends before applying modeling techniques.<br>
-The plots display the raw IAAF scores against the athlete’s performance age, allowing us to see patterns such as peak performance periods, variability, and possible outliers.</p>
+<p>This section provides an overview of the dataset before modeling.<br>
+</p>
+<p>We begin with a trelliscope display of observed IAAF points versus performance age for each athlete and event. Each panel shows the raw unmodeled results, allowing us to visually identify patterns such as peak performance periods, performance variability, and potential outliers. This interactive view also makes it easy to filter by event, sort athletes by performance metrics, and inspect individual career trajectories in detail.</p>
 <p><img src="images/Screen Shot 2025-08-11 at 23.56.00.png" class="img-fluid"></p>
+<p>Below, a histogram of performance ages summarizes the distribution of observations across all athletes and events. Most results cluster between the early twenties and early thirties, which aligns with expected peak competitive ages in track and field. The right tail reflects late career performances, while the left tail captures early debuts.</p>
+<p><img src="images/Screen Shot 2025-08-12 at 01.01.31.png" class="img-fluid"></p>
+<p>Together, these visualizations establish a baseline understanding of the data’s structure, coverage, and variability, providing context for the modeling approaches that follow.</p>
 
 
 <!-- -->
@@ -703,10 +713,17 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Visualize"</span></span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>In this section, we visualize the **observed data points** for each athlete to better understand their performance trends before applying modeling techniques.\</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>The plots display the raw IAAF scores against the athlete's performance age, allowing us to see patterns such as peak performance periods, variability, and possible outliers.</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/Screen%20Shot%202025-08-11%20at%2023.56.00.png)</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>This section provides an overview of the dataset before modeling.\</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>We begin with a trelliscope display of observed IAAF points versus performance age for each athlete and event. Each panel shows the raw unmodeled results, allowing us to visually identify patterns such as peak performance periods, performance variability, and potential outliers. This interactive view also makes it easy to filter by event, sort athletes by performance metrics, and inspect individual career trajectories in detail.</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/Screen%20Shot%202025-08-11%20at%2023.56.00.png)</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>Below, a histogram of performance ages summarizes the distribution of observations across all athletes and events. Most results cluster between the early twenties and early thirties, which aligns with expected peak competitive ages in track and field. The right tail reflects late career performances, while the left tail captures early debuts.</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="al">![](images/Screen%20Shot%202025-08-12%20at%2001.01.31.png)</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>Together, these visualizations establish a baseline understanding of the data’s structure, coverage, and variability, providing context for the modeling approaches that follow.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

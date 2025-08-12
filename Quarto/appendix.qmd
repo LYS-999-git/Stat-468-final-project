@@ -1,0 +1,44 @@
+---
+title: "appendix"
+format: html
+editor: visual
+---
+
+## Navigating the Web Application
+
+The accompanying web application allows users to explore athlete performance data and predicted aging curves interactively. The interface is organized into multiple tabs, each serving a distinct purpose:
+
+## Athlete Comparisons
+
+-   **Choose Event**: Select a track or field event from the dropdown menu.
+-   **Choose Athletes**: Pick one or more athletes to compare.
+-   **Visualization**: An interactive Trelliscope display shows the selected athletes’ observed performance data. You can:
+    -   Scroll through athlete panels.
+    -   Zoom in/out and pan for closer inspection.
+    -   Filter or search athletes by name.
+
+## Athlete Aging Curves Prediction
+
+-   **Choose Athlete**: Select a specific athlete from the dropdown list.
+-   **Choose Event**: Pick the event for which you want to see predicted aging curves.
+-   **Output**: The app displays:
+    -   Observed data points (in blue).
+    -   Predicted aging curve (smooth line).
+    -   World class standard (horizontal line).
+
+## Navigation Tips
+
+-   Use the **tab menu** at the top to switch between sections.
+-   Dropdown menus have a search feature: start typing to quickly find the desired athlete or event.
+-   Plots can be downloaded by right-clicking and selecting “Save image as…”.
+-   For large datasets, loading may take a few seconds. The progress indicator will appear until the plot is ready.
+
+This appendix ensures that first-time users can navigate the app efficiently and make full use of its interactive features.
+
+Use of AI tools:
+
+<https://chatgpt.com/share/689acc28-1cdc-8013-9621-feee941d8d4e>
+
+<https://chatgpt.com/share/689acd3f-4c44-8013-a694-7a4c28023905>
+
+<https://chatgpt.com/share/689acd99-68e0-8013-b485-44ad9ccdfa88>

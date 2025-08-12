@@ -2,7 +2,14 @@
 title: "Visualize"
 ---
 
-In this section, we visualize the **observed data points** for each athlete to better understand their performance trends before applying modeling techniques.\
-The plots display the raw IAAF scores against the athlete's performance age, allowing us to see patterns such as peak performance periods, variability, and possible outliers.
+This section provides an overview of the dataset before modeling.\
+
+We begin with a trelliscope display of observed IAAF points versus performance age for each athlete and event. Each panel shows the raw unmodeled results, allowing us to visually identify patterns such as peak performance periods, performance variability, and potential outliers. This interactive view also makes it easy to filter by event, sort athletes by performance metrics, and inspect individual career trajectories in detail.
 
 ![](images/Screen%20Shot%202025-08-11%20at%2023.56.00.png)
+
+Below, a histogram of performance ages summarizes the distribution of observations across all athletes and events. Most results cluster between the early twenties and early thirties, which aligns with expected peak competitive ages in track and field. The right tail reflects late career performances, while the left tail captures early debuts.
+
+![](images/Screen%20Shot%202025-08-12%20at%2001.01.31.png)
+
+Together, these visualizations establish a baseline understanding of the data’s structure, coverage, and variability, providing context for the modeling approaches that follow.
