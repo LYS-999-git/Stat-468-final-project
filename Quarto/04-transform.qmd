@@ -2,21 +2,33 @@
 title: "Transform"
 ---
 
-Once the Olympic and career progression datasets were cleaned and standardized, the next step was to generate derived analytical variables required for modeling. This section derives analysis features by enriching the tidy tables:
+After cleaning and standardizing the datasets, the next step was to derive analytical variables required for modeling. This stage enriches the tidy data by linking metadata, creating features, and mapping performances to standardized scoring systems.
 
--   Link records to Olympic metadata.
--   Engineer age features and training age.
--   Classify event type/category.
--   Convert performances to a numeric `mark` (seconds for track; numeric for field).
--   Identify season-bests and distance from peak.
--   Map marks to IAAF points (rolling/closest join).
--   Convert WAC standards to points and compute the mean reference by gender.
+**Key tasks:**
 
-Tidy section produced: `Olympics_data_tidy`, `Career_progression_tidy`, `iaaf_table_tidy`, `wac_standards_tidy`.
+-   Link each performance record to Olympic athlete/event metadata
 
-## Link Career Progression to Olympics metadata
+-   Compute athlete age metrics (age at performance in years and days) and training age
 
-Join each performance record to athlete/event metadata, compute age at performance (age_years, age_days), and strip the “h” hand-timed suffix from performance.
+-   Classify events by type and category.
+
+-   Convert performances to numeric marks (seconds for track; numeric values for field).
+
+-   Map marks to IAAF points using a rolling/closest join.
+
+-   Convert world-athlete championship (WAC) to points and compute the mean reference by gender.
+
+## Link career progression to Olympic metadata
+
+First we join the career progression dataset with Olympic athlete metadata (only keeping records with a known birth date), ensures unique athlete-event combinations, and keeps key identifying variables.
+
+It then calculates:
+
+-   age_years: athlete’s age in years at the time of performance
+
+-   age_days: exact age in days
+
+It also removes the "h" suffix from performance to standardize hand-timed results.
 
 ```{r, echo=TRUE}
 athlete_bests <-
@@ -36,7 +48,17 @@ athlete_bests <-
          performance = str_remove_all(performance, "h")
 ```
 
-## Classify events, compute performance_age, and convert performance to a numeric 'mark'
+## Classify events, compute performance_age, and convert performance to numeric marks
+
+Events are grouped into broad disciplines (e.g., Sprints, Middle Distance, Jumps) and assigned a Track or Field classification. The athlete’s age at the time of performance is calculated, and the raw performance string is converted into a numeric mark suitable for modeling.
+
+Specifically, the code:
+
+-   Assigns `event_type` (Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, Road Races, or Other) and sets `event_category` to either Track or Field.
+
+-   Computes `age_years` and `age_days`, and removes the "`h`" hand-timed suffix from performance strings.
+
+-   Generates `mark`: for Track events, parses the time string and converts it to seconds using `lubridate::parse_date_time2` and `difftime`; for Field events, extracts a numeric distance using `parse_number`.
 
 ```{r, echo=TRUE}
 # Classify events
@@ -52,11 +74,6 @@ event_type = case_match(
       .default = "Other"
     ),
          event_category = if_else(str_detect(event, "Metres|Walk|Wheelchair") |event %in% c("Marathon"), "Track", "Field")
-```
-
-The following code computes `performance_age`, and convert performance to a numeric 'mark'
-
-```{r, echo=TRUE}
 mutate(age_years = year(date) - year(birth_date), 
          age_days = as.double(
            difftime(
@@ -76,9 +93,9 @@ mutate(age_years = year(date) - year(birth_date),
       ), parse_number(performance)))
 ```
 
-## Normalize event labels to IAAF codes (for scoring join)
+## Normalize event labels for IAAF scoring
 
-Harmonize event names to the short codes used in the IAAF scoring reference and standardize gender to lowercase for matching.
+This step standardizes event names and gender labels so they match the IAAF scoring reference, ensuring reliable joins later. It converts gender to lowercase and maps verbose event strings (for example, “100 Metres,” “High Jump,” “10 Kilometres Race Walk”) to the short IAAF codes (for example, 100m, HJ, 10,000mW). Events without a defined mapping are left unchanged. This normalization guarantees consistent keys for scoring and downstream analyses.
 
 ```{r,echo=TRUE}
 athlete_bests_clean <- athlete_bests |> 
@@ -115,9 +132,9 @@ athlete_bests_clean <- athlete_bests |>
   )
 ```
 
-## Map athlete performance marks to IAAF points (rolling/closest join) and join athlete_bests_clean with iaaf-table to get full dataset
+## Map athlete performance marks to IAAF points and join `athlete_bests_clean` with `iaaf-table` to get full dataset
 
-For each record, find the IAAF row with the closest mark ≤ the observed mark within the same gender and event; set missing scores to 0.
+This step assigns IAAF point scores to each performance by joining `athlete_bests_clean` to the IAAF reference table on gender and event, using a rolling “closest mark ≤ observed mark” rule. If no matching score is found, the point value is set to zero. The result, `athlete_bests_points`, is the modeling-ready table with season-best records expressed on a common IAAF points scale.
 
 ```{r,echo=TRUE}
 # join iaaf_table with athlete_bests_clean and get full dataset with result points
@@ -131,9 +148,9 @@ athlete_bests_points <-
   replace_na(list(points = 0))
 ```
 
-## World class standard(WAC) -\> points and mean reference by gender
+## Convert WAC standards to points and compute mean references
 
-We harmonize WAC event labels, convert times to seconds, roll-join to IAAF points, set combined-events anchors, and compute a simple men/women mean reference useful as horizontal guide lines in plots.
+This step expresses the world-class standards on the same IAAF points scale used for athlete results. It standardizes WAC event labels and times, joins to the IAAF table using a “closest mark ≤ observed mark” rule, and fills missing scores with zero. For combined events, fixed anchors are applied (Heptathlon women = 1174, Decathlon men = 1212). Finally, it computes the mean WAC points by gender to provide simple reference lines for later visualizations.
 
 ```{r,echo=TRUE}
 wac_points <- wac_standards_tidy %>%
@@ -156,7 +173,7 @@ mean_points_by_gender <- wac_points %>%
 
 ## Model-preparation
 
-Prepare **face.sparse** inputs at the athlete–event level.
+This step prepares the FPCA input at the athlete–event level. It filters to records with non-missing IAAF points and age, builds a unique identifier by concatenating `athlete_link` and `event`, and selects the three fields required by face.sparse: athlete_id, performance_age (age in years at performance), and iaaf_score (IAAF points). It also creates helper vectors (id and uid) for indexing subjects during modeling.
 
 ```{r,echo=TRUE}
 # predict on full dataset(population)
@@ -172,6 +189,8 @@ id <- fd_data$athlete_id
 uid <- unique(id)
 ```
 
-Key outputs for modeling and Visualization:
+## Key outputs for modeling and Visualization:
 
-\-`athlete_bests_points`: one season-best row per athlete-event-year, with points. -`wac_points` and `mean_points_by_gender`:reference levels for plots.
+-   `athlete_bests_points`: season-best results with IAAF points
+
+-   `wac_points` and `mean_points_by_gender`: world-class reference levels for comparison in plots

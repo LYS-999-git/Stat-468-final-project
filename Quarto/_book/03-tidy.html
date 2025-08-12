@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.555">
+<meta name="generator" content="quarto-1.4.553">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -206,12 +206,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   <ul>
   <li><a href="#clean-olympics_data.csv" id="toc-clean-olympics_data.csv" class="nav-link active" data-scroll-target="#clean-olympics_data.csv"><span class="header-section-number">3.1</span> Clean <code>Olympics_data.csv</code></a></li>
   <li><a href="#clean-career_progression.csv" id="toc-clean-career_progression.csv" class="nav-link" data-scroll-target="#clean-career_progression.csv"><span class="header-section-number">3.2</span> Clean <code>Career_Progression.csv</code></a></li>
-  <li><a href="#flatten-iaaf-points-referenceiaaf-2005.json" id="toc-flatten-iaaf-points-referenceiaaf-2005.json" class="nav-link" data-scroll-target="#flatten-iaaf-points-referenceiaaf-2005.json"><span class="header-section-number">3.3</span> Flatten IAAF points reference(<code>iaaf-2005.json</code>)</a></li>
-  <li><a href="#tidy-world-class-standardswac-standards" id="toc-tidy-world-class-standardswac-standards" class="nav-link" data-scroll-target="#tidy-world-class-standardswac-standards"><span class="header-section-number">3.4</span> Tidy world-class standards(<code>wac-standards</code>)</a>
-  <ul class="collapse">
-  <li><a href="#clean-and-standardize-events" id="toc-clean-and-standardize-events" class="nav-link" data-scroll-target="#clean-and-standardize-events"><span class="header-section-number">3.4.1</span> Clean and Standardize Events:</a></li>
-  </ul></li>
-  <li><a href="#notes-on-join-behaviour" id="toc-notes-on-join-behaviour" class="nav-link" data-scroll-target="#notes-on-join-behaviour"><span class="header-section-number">3.5</span> Notes on join Behaviour</a></li>
+  <li><a href="#flatten-the-iaaf-reference-table-iaaf-2005.json" id="toc-flatten-the-iaaf-reference-table-iaaf-2005.json" class="nav-link" data-scroll-target="#flatten-the-iaaf-reference-table-iaaf-2005.json"><span class="header-section-number">3.3</span> Flatten the IAAF Reference Table (<code>iaaf-2005.json</code>)</a></li>
+  <li><a href="#tidy-world-class-standardswac-standards" id="toc-tidy-world-class-standardswac-standards" class="nav-link" data-scroll-target="#tidy-world-class-standardswac-standards"><span class="header-section-number">3.4</span> Tidy world-class standards(<code>wac-standards</code>)</a></li>
+  <li><a href="#summary-and-importance" id="toc-summary-and-importance" class="nav-link" data-scroll-target="#summary-and-importance"><span class="header-section-number">3.5</span> Summary and Importance</a></li>
   </ul>
 </nav>
     </div>
@@ -237,311 +234,227 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
-<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
-<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
-<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(refund)</span>
-<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(face)</span>
-<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fields)</span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(trelliscope)</span>
-<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>This section performs the complete data cleaning and standardization on the Olympic results, career progression and iaaf-2005.json(world class standard points). <!-- The objective is to produce a unified, well-structured dataset containing each athlete’s best annual performance, age at performance, event information, and standardized IAAF points. --></p>
-<!-- The procedure involves merging competition results with athlete metadata, parsing and standardizing dates, harmonizing event names, converting performance marks to a consistent numeric scale, calculating age at performance, and integrating the IAAF 2005 points table with the cleaned and linked datasets (career progression and Olympic data). -->
-<p>Outputs are four tidy tables that downstream steps can rely on:</p>
+<p>This section performs the complete data cleaning and standardization of the Olympic results, career progression data, IAAF 2005 scoring table (iaaf-2005.json), and the world-class standards table. The objective is to produce a unified, well-structured dataset containing each athlete’s best annual performance, age at performance, event metadata, and standardized IAAF points.</p>
+<p>Four key tidy tables are produced for use in downstream analysis:</p>
 <ul>
-<li><code>Olympics_data_tidy</code> — cleaned athlete/event/game metadata</li>
-<li><code>Career_progression_tidy</code> — de-duplicated, date-parsed season records</li>
-<li><code>iaaf_table_tidy</code> — flattened IAAF reference table</li>
-<li><code>wac_standards_tidy</code> — harmonized world-class marks in a tidy long format with times converted to seconds (where applicable)</li>
+<li><p><strong>Olympics_data:</strong> cleaned athlete, event, and Games metadata</p></li>
+<li><p><strong>Career_progression:</strong> cleaned and date-formatted yearly performance records</p></li>
+<li><p><strong>iaaf_table:</strong> flattened IAAF reference table in tidy format</p></li>
+<li><p><strong>wac_standards:</strong> standardized world-class standards in long format</p></li>
 </ul>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(readr)</span>
-<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tibble)</span>
-<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(jsonlite)</span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
-<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(dplyr)</span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(shiny)</span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(refund)</span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(face)</span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(fields)</span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(trelliscope)</span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
 <section id="clean-olympics_data.csv" class="level2" data-number="3.1">
 <h2 data-number="3.1" class="anchored" data-anchor-id="clean-olympics_data.csv"><span class="header-section-number">3.1</span> Clean <code>Olympics_data.csv</code></h2>
-<p>The Olympic dataset is imported and cleaned to provide athlete-level metadata. (We standardize names, split date ranges, split gender/event, remove wheelchair entries, fix one birth date, parse dates, normalize gender, add age at Games end, create an ordered games factor, classify events, normalize an old label, add games_year, and rename nat to nationality.) Key transformations include:</p>
-<p>-Read the CSV of Olympic track &amp; field results. -clean_names(): lowercases and snake_cases column names. -Split the date span like “01 Aug 2012 – 12 Aug 2012” into start and end. -Split the event string’s first token into gender (“Men’s/Women’s”) and the remainder into event; too_many=“merge” keeps the rest intact. -Drop wheelchair events. -Manual data fix: overwrite a specific athlete’s birth_date. -Normalize gender to “Men/Women.” -Convert birth_date and end from “%d %b %Y” (e.g., “06 DEC 1973”) to Date. -Compute age at Games end. -Recode games to an ordered factor with readable labels. -Classify events into event_type buckets (Sprints/Middle Distance/etc.). -Classify event_category as Track vs Field. -Normalize an event label and add a games_year. -Rename nat to nationality.</p>
-<p>Extracted competition year from the end date Code shows below:</p>
+<p>The Olympic results file is processed to create a clean athlete-level metadata table, ensuring consistent formats, corrected anomalies, and standardized event classifications. This cleaned dataset will later be joined with career progression records to enrich performance analysis.</p>
+<p><strong>Key transformations:</strong></p>
+<ul>
+<li><p>Read the raw CSV of Olympic track &amp; field results.</p></li>
+<li><p><code>clean_names()</code> to lowercase and snake_case all column names.</p></li>
+<li><p>Split date spans (e.g., <code>"01 Aug 2012 – 12 Aug 2012"</code>) into <code>start</code> and <code>end</code> dates.</p></li>
+<li><p>Split event strings into gender (<code>"Men"</code>/<code>"Women"</code>) and event name, keeping remaining tokens intact.</p></li>
+<li><p>Remove wheelchair events.</p></li>
+<li><p>Correct one known birthdate anomaly (<code>Aminata CAMARA</code>).</p></li>
+<li><p>Normalize gender labels to <code>"Men"</code>/<code>"Women"</code>.</p></li>
+<li><p>Convert <code>birth_date</code> and <code>end</code> to <code>Date</code> objects (<code>%Y-%m-%d</code>).</p></li>
+<li><p>Calculate <code>age</code> at Games end date.</p></li>
+<li><p>Recode <code>games</code> as an ordered factor with readable labels (e.g., <code>"Tokyo '20"</code>).</p></li>
+<li><p>Classify each event into <code>event_type</code> categories (Sprints, Middle Distance, Throws, etc.).</p></li>
+<li><p>Assign <code>event_category</code> as <code>"Track"</code> or <code>"Field"</code>.</p></li>
+<li><p>Normalize legacy event labels (e.g., <code>"Javelin Throw (old)" → "Javelin Throw"</code>).</p></li>
+<li><p>Extract <code>games_year</code> from the Games end date.</p></li>
+<li><p>Rename <code>nat</code> to <code>nationality</code>.</p></li>
+</ul>
+<p>This process produces a clean metadata table, <code>Olympics_data_tidy</code></p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>Olympics_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"/Users/yushiliu/Stat 468 final project/data/track and field data/olympics_data.csv"</span>, <span class="at">show_col_types =</span> F) <span class="sc">%&gt;%</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">%&gt;%</span> </span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(date, <span class="at">delim =</span> <span class="st">"–"</span>, <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"start"</span>, <span class="st">"end"</span>)) <span class="sc">%&gt;%</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(<span class="at">cols =</span> event, <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"gender"</span>, <span class="st">"event"</span>), <span class="at">delim =</span> <span class="st">" "</span>,</span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">too_many =</span> <span class="st">"merge"</span>) <span class="sc">%&gt;%</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(event, <span class="st">"Wheelchair"</span>, <span class="at">negate =</span> T)) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Manually fixed Aminata CAMARA's age</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">birth_date =</span> <span class="fu">if_else</span>(name <span class="sc">==</span> <span class="st">"Aminata CAMARA"</span>, <span class="st">"06 DEC 1973"</span>, birth_date),</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">gender =</span> <span class="fu">if_else</span>(gender <span class="sc">==</span> <span class="st">"Men's"</span>, <span class="st">"Men"</span>, <span class="st">"Women"</span>),</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">c</span>(birth_date, end),  <span class="sc">~</span><span class="fu">as.Date</span>(<span class="fu">format</span>(</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(., <span class="at">format =</span> <span class="st">"%d %b %Y"</span>), <span class="st">"%Y-%m-%d"</span>))),</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">age =</span> <span class="fu">year</span>(end) <span class="sc">-</span> <span class="fu">year</span>(birth_date),</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">games =</span> <span class="fu">factor</span>(games, <span class="at">ordered =</span> T,</span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>                        <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"The XXXII Olympic Games"</span>,</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXXI Olympic Games"</span>,</span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXX Olympic Games"</span>,</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXIX Olympic Games"</span>,</span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXVIII Olympic Games"</span>,</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXVII Olympic Games"</span>,</span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXVI Olympic Games"</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>                        ),</span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>                        <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Tokyo '20"</span>, <span class="st">"Rio '16"</span>, <span class="st">"London '12"</span>, </span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"Beijing '08"</span>, <span class="st">"Athens '04"</span>, <span class="st">"Sydney '00"</span>,</span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"Atlanta '96"</span>)),</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">event_type =</span> <span class="fu">case_match</span>(</span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>      event,</span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"100 Metres"</span>, <span class="st">"200 Metres"</span>, <span class="st">"400 Metres"</span>, <span class="st">"400 Metres Hurdles"</span>, <span class="st">"100 Metres Hurdles"</span>, <span class="st">"110 Metres Hurdles"</span>) <span class="sc">~</span> <span class="st">"Sprints"</span>,</span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"800 Metres"</span>, <span class="st">"1500 Metres"</span>, <span class="st">"3000 Metres Steeplechase"</span>) <span class="sc">~</span> <span class="st">"Middle Distance"</span>,</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"5000 Metres"</span>, <span class="st">"10,000 Metres"</span>) <span class="sc">~</span> <span class="st">"Long Distance"</span>,</span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"Heptathlon"</span>, <span class="st">"Decathlon"</span>) <span class="sc">~</span> <span class="st">"Combined Events"</span>,</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"High Jump"</span>, <span class="st">"Long Jump"</span>, <span class="st">"Triple Jump"</span>, <span class="st">"Pole Vault"</span>) <span class="sc">~</span> <span class="st">"Jumps"</span>,</span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"Shot Put"</span>, <span class="st">"Discus Throw"</span>, <span class="st">"Hammer Throw"</span>, <span class="st">"Javelin Throw"</span>, <span class="st">"Javelin Throw (old)"</span>) <span class="sc">~</span> <span class="st">"Throws"</span>,</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"10 Kilometres Race Walk"</span>, <span class="st">"20 Kilometres Race Walk"</span>, <span class="st">"50 Kilometres Race Walk"</span>, <span class="st">"Marathon"</span>) <span class="sc">~</span> <span class="st">"Road Races"</span>,</span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> <span class="st">"Other"</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    ),</span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>         <span class="at">event_category =</span> <span class="fu">if_else</span>(<span class="fu">str_detect</span>(event, <span class="st">"Metres|Walk|Wheelchair"</span>) <span class="sc">|</span>event <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Marathon"</span>), <span class="st">"Track"</span>, <span class="st">"Field"</span>)</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span> </span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">event =</span> <span class="fu">if_else</span>(event <span class="sc">==</span> <span class="st">"Javelin Throw (old)"</span>, <span class="st">"Javelin Throw"</span>, event),</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>         <span class="at">games_year =</span> <span class="fu">year</span>(end)) <span class="sc">%&gt;%</span> <span class="fu">rename</span>(<span class="st">"nationality"</span> <span class="ot">=</span> nat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>Olympics_data <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"/Users/yushiliu/Stat 468 final project/data/track and field data/olympics_data.csv"</span>, <span class="at">show_col_types =</span> F) <span class="sc">%&gt;%</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  janitor<span class="sc">::</span><span class="fu">clean_names</span>() <span class="sc">%&gt;%</span> </span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(date, <span class="at">delim =</span> <span class="st">"–"</span>, <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"start"</span>, <span class="st">"end"</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">separate_wider_delim</span>(<span class="at">cols =</span> event, <span class="at">names =</span> <span class="fu">c</span>(<span class="st">"gender"</span>, <span class="st">"event"</span>), <span class="at">delim =</span> <span class="st">" "</span>,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>                           <span class="at">too_many =</span> <span class="st">"merge"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="fu">str_detect</span>(event, <span class="st">"Wheelchair"</span>, <span class="at">negate =</span> T)) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>        <span class="co"># Manually fixed Aminata CAMARA's age</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">birth_date =</span> <span class="fu">if_else</span>(name <span class="sc">==</span> <span class="st">"Aminata CAMARA"</span>, <span class="st">"06 DEC 1973"</span>, birth_date),</span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">gender =</span> <span class="fu">if_else</span>(gender <span class="sc">==</span> <span class="st">"Men's"</span>, <span class="st">"Men"</span>, <span class="st">"Women"</span>),</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    <span class="fu">across</span>(<span class="fu">c</span>(birth_date, end),  <span class="sc">~</span><span class="fu">as.Date</span>(<span class="fu">format</span>(</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="fu">as.Date</span>(., <span class="at">format =</span> <span class="st">"%d %b %Y"</span>), <span class="st">"%Y-%m-%d"</span>))),</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">age =</span> <span class="fu">year</span>(end) <span class="sc">-</span> <span class="fu">year</span>(birth_date),</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>         <span class="at">games =</span> <span class="fu">factor</span>(games, <span class="at">ordered =</span> T,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>                        <span class="at">levels =</span> <span class="fu">c</span>(<span class="st">"The XXXII Olympic Games"</span>,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXXI Olympic Games"</span>,</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXX Olympic Games"</span>,</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXIX Olympic Games"</span>,</span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXVIII Olympic Games"</span>,</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXVII Olympic Games"</span>,</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"The XXVI Olympic Games"</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>                        ),</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>                        <span class="at">labels =</span> <span class="fu">c</span>(<span class="st">"Tokyo '20"</span>, <span class="st">"Rio '16"</span>, <span class="st">"London '12"</span>, </span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"Beijing '08"</span>, <span class="st">"Athens '04"</span>, <span class="st">"Sydney '00"</span>,</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>                                   <span class="st">"Atlanta '96"</span>)),</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="at">event_type =</span> <span class="fu">case_match</span>(</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>      event,</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"100 Metres"</span>, <span class="st">"200 Metres"</span>, <span class="st">"400 Metres"</span>, <span class="st">"400 Metres Hurdles"</span>, <span class="st">"100 Metres Hurdles"</span>, <span class="st">"110 Metres Hurdles"</span>) <span class="sc">~</span> <span class="st">"Sprints"</span>,</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"800 Metres"</span>, <span class="st">"1500 Metres"</span>, <span class="st">"3000 Metres Steeplechase"</span>) <span class="sc">~</span> <span class="st">"Middle Distance"</span>,</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"5000 Metres"</span>, <span class="st">"10,000 Metres"</span>) <span class="sc">~</span> <span class="st">"Long Distance"</span>,</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"Heptathlon"</span>, <span class="st">"Decathlon"</span>) <span class="sc">~</span> <span class="st">"Combined Events"</span>,</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"High Jump"</span>, <span class="st">"Long Jump"</span>, <span class="st">"Triple Jump"</span>, <span class="st">"Pole Vault"</span>) <span class="sc">~</span> <span class="st">"Jumps"</span>,</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"Shot Put"</span>, <span class="st">"Discus Throw"</span>, <span class="st">"Hammer Throw"</span>, <span class="st">"Javelin Throw"</span>, <span class="st">"Javelin Throw (old)"</span>) <span class="sc">~</span> <span class="st">"Throws"</span>,</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"10 Kilometres Race Walk"</span>, <span class="st">"20 Kilometres Race Walk"</span>, <span class="st">"50 Kilometres Race Walk"</span>, <span class="st">"Marathon"</span>) <span class="sc">~</span> <span class="st">"Road Races"</span>,</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> <span class="st">"Other"</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>         <span class="at">event_category =</span> <span class="fu">if_else</span>(<span class="fu">str_detect</span>(event, <span class="st">"Metres|Walk|Wheelchair"</span>) <span class="sc">|</span>event <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Marathon"</span>), <span class="st">"Track"</span>, <span class="st">"Field"</span>)</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span> </span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">event =</span> <span class="fu">if_else</span>(event <span class="sc">==</span> <span class="st">"Javelin Throw (old)"</span>, <span class="st">"Javelin Throw"</span>, event),</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>         <span class="at">games_year =</span> <span class="fu">year</span>(end)) <span class="sc">%&gt;%</span> <span class="fu">rename</span>(<span class="st">"nationality"</span> <span class="ot">=</span> nat)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>The result is a clean metadata table named Olympics_data.</p>
 </section>
 <section id="clean-career_progression.csv" class="level2" data-number="3.2">
 <h2 data-number="3.2" class="anchored" data-anchor-id="clean-career_progression.csv"><span class="header-section-number">3.2</span> Clean <code>Career_Progression.csv</code></h2>
-<p>The career progression dataset is imported and cleaned to provide yearly performance records.</p>
-<p>Key steps include: -Removed duplicate rows -Parsed dates: Converts data string to <code>Data</code> objects. -Compute retired and training_age by athlete/event.</p>
-<p>(Flag retirement: <code>retired</code> flag true if their last recorded <code>year</code> ≤ 2022, many athletes as retired if last competition was before or in 2022.)</p>
+<p>The career progression dataset is cleaned to provide yearly performance records.<br>
+</p>
+<p>Key steps:</p>
+<ul>
+<li><p>Removing duplicate rows.</p></li>
+<li><p>Parsing competition dates.</p></li>
+<li><p>Flagging retirement status (<code>retired = TRUE</code> if last competition year ≤ 2022).</p></li>
+<li><p>Calculating <strong>training age</strong> (number of years since first recorded season) for each athlete-event.</p></li>
+</ul>
+<p>The result is stored as <code>Career_progression</code>.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load career progression data and identify athletes who are still active</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>Career_progression <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/track and field data/career_progression (2).csv"</span>, <span class="at">show_col_types =</span> F) <span class="sc">%&gt;%</span> </span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">parse_date_time</span>(date, <span class="at">orders =</span> <span class="fu">c</span>(<span class="st">"%d %b %Y"</span>, <span class="st">"%d-%b-%y"</span>))) <span class="sc">%&gt;%</span></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">retired =</span> <span class="fu">if_else</span>(<span class="fu">max</span>(year) <span class="sc">&lt;=</span> <span class="dv">2022</span>, T, F),</span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">training_age =</span> year <span class="sc">-</span> <span class="fu">min</span>(year) <span class="sc">+</span> <span class="dv">1</span>,</span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"athlete_link"</span>, <span class="st">"event"</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># load career progression data and identify athletes who are still active</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>Career_progression <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/track and field data/career_progression (2).csv"</span>, <span class="at">show_col_types =</span> F) <span class="sc">%&gt;%</span> </span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">parse_date_time</span>(date, <span class="at">orders =</span> <span class="fu">c</span>(<span class="st">"%d %b %Y"</span>, <span class="st">"%d-%b-%y"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">retired =</span> <span class="fu">if_else</span>(<span class="fu">max</span>(year) <span class="sc">&lt;=</span> <span class="dv">2022</span>, T, F),</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>         <span class="at">training_age =</span> year <span class="sc">-</span> <span class="fu">min</span>(year) <span class="sc">+</span> <span class="dv">1</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"athlete_link"</span>, <span class="st">"event"</span>)) </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
-<section id="flatten-iaaf-points-referenceiaaf-2005.json" class="level2" data-number="3.3">
-<h2 data-number="3.3" class="anchored" data-anchor-id="flatten-iaaf-points-referenceiaaf-2005.json"><span class="header-section-number">3.3</span> Flatten IAAF points reference(<code>iaaf-2005.json</code>)</h2>
-<p>We then:</p>
-<p>-Read JSON: Loads IAAF scoring data. -Flatten JSON: Converts nested list into a tidy table with <code>gender</code>, <code>event</code>, <code>mark</code>, and <code>points</code>.</p>
+<section id="flatten-the-iaaf-reference-table-iaaf-2005.json" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="flatten-the-iaaf-reference-table-iaaf-2005.json"><span class="header-section-number">3.3</span> Flatten the IAAF Reference Table (<code>iaaf-2005.json</code>)</h2>
+<ol type="1">
+<li><p>Reading the JSON file containing IAAF scoring data.</p></li>
+<li><p>Flattening the nested structure into a tidy table with columns: <code>gender</code>, <code>event</code>, <code>mark</code>, and <code>points</code>.</p>
+<p>This creates the reference table <code>iaaf_table</code>.</p></li>
+</ol>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>raw_json <span class="ot">&lt;-</span> <span class="fu">read_json</span>(<span class="st">"../data/track and field data/iaaf-2025.json"</span>, <span class="at">simplifyVector =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert list of lists to a flat tibble</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>iaaf_table <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">tibble</span>(</span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">gender =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"gender"</span>),</span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">event =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"event"</span>),</span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">mark =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"mark"</span>),</span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">points =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"points"</span>)</span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>raw_json <span class="ot">&lt;-</span> <span class="fu">read_json</span>(<span class="st">"../data/track and field data/iaaf-2025.json"</span>, <span class="at">simplifyVector =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert list of lists to a flat tibble</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>iaaf_table <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">tibble</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>  <span class="at">gender =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"gender"</span>),</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>  <span class="at">event =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"event"</span>),</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>  <span class="at">mark =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"mark"</span>),</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>  <span class="at">points =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"points"</span>)</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
 <section id="tidy-world-class-standardswac-standards" class="level2" data-number="3.4">
 <h2 data-number="3.4" class="anchored" data-anchor-id="tidy-world-class-standardswac-standards"><span class="header-section-number">3.4</span> Tidy world-class standards(<code>wac-standards</code>)</h2>
-<p>What we do: -Put into long/“tidy” format (gender as a variable). -Harmonize event names to match IAAF vocabulary. -Convert time-like marks to seconds (HH:MM:SS / MM:SS / SS). -Adjust women’s hurdles label to 100mH.</p>
+<ul>
+<li><p>Reshaping the data into long format with <code>gender</code> as a variable.</p></li>
+<li><p>Standardizing event names to match IAAF vocabulary.</p></li>
+<li><p>Converting all time-based marks to seconds (HH:MM:SS → seconds).</p></li>
+<li><p>Adjusting women’s hurdles labels to <code>100mH</code>.</p></li>
+</ul>
+<p>The result is stored as <code>wac_standards</code>.</p>
 <div class="cell">
 <details class="code-fold">
 <summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">#compute world class standard and take mean of men and women</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>wac_standards <span class="ot">&lt;-</span> <span class="fu">tribble</span>(</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>Men, <span class="sc">~</span>Event, <span class="sc">~</span>Women,</span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"10.00"</span>, <span class="st">"100m"</span>, <span class="st">"11.07"</span>,</span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"20.16"</span>, <span class="st">"200m"</span>, <span class="st">"22.57"</span>,</span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"44.85"</span>, <span class="st">"400m"</span>, <span class="st">"50.75"</span>,</span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"1:44.50"</span>, <span class="st">"800m"</span>, <span class="st">"1:59.00"</span>,</span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"3:33.00"</span>, <span class="st">"1500m"</span>, <span class="st">"4:01.50"</span>,</span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"13:01.00"</span>, <span class="st">"5000m / 5km road"</span>, <span class="st">"14:50.00"</span>,</span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"27:00.00"</span>, <span class="st">"10,000m / 10km road"</span>, <span class="st">"30:20.00"</span>,</span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2:06:30"</span>, <span class="st">"Marathon"</span>, <span class="st">"2:23:30"</span>,</span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8:15.00"</span>, <span class="st">"3000m SC"</span>, <span class="st">"9:18.00"</span>,</span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"13.27"</span>, <span class="st">"110mH / 100mH"</span>, <span class="st">"12.73"</span>,</span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"48.50"</span>, <span class="st">"400m H"</span>, <span class="st">"54.65"</span>,</span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2.33"</span>, <span class="st">"High Jump"</span>, <span class="st">"1.97"</span>,</span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"5.82"</span>, <span class="st">"Pole Vault"</span>, <span class="st">"4.73"</span>,</span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8.27"</span>, <span class="st">"Long Jump"</span>, <span class="st">"6.86"</span>,</span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">"17.22"</span>, <span class="st">"Triple Jump"</span>, <span class="st">"14.55"</span>,</span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"21.50"</span>, <span class="st">"Shot Put"</span>, <span class="st">"18.80"</span>,</span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"67.50"</span>, <span class="st">"Discus Throw"</span>, <span class="st">"64.50"</span>,</span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"78.20"</span>, <span class="st">"Hammer Throw"</span>, <span class="st">"74.00"</span>,</span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"85.50"</span>, <span class="st">"Javelin Throw"</span>, <span class="st">"64.00"</span>,</span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NA</span>, <span class="st">"Heptathlon"</span>, <span class="st">"6500"</span>, <span class="co">#points 1174</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8550"</span>, <span class="st">"Decathlon"</span>, <span class="cn">NA</span>, <span class="co">#1212</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">"1:19:20"</span>, <span class="st">"20km Race Walk"</span>, <span class="st">"1:29:00"</span>,</span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2:28:00"</span>, <span class="st">"35km Race Walk"</span>, <span class="st">"2:48:00"</span>)</span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>wac_standards <span class="ot">&lt;-</span> wac_standards <span class="sc">|&gt;</span> </span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Event =</span> <span class="fu">case_match</span>(</span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    Event,</span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">"5000m / 5km road"</span>       <span class="sc">~</span> <span class="st">"5000m"</span>,</span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">"10,000m / 10km road"</span>    <span class="sc">~</span> <span class="st">"10000m"</span>,</span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"110mH / 100mH"</span>          <span class="sc">~</span> <span class="st">"110mH"</span>,  </span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"400m H"</span>                 <span class="sc">~</span> <span class="st">"400mH"</span>,</span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">"High Jump"</span>              <span class="sc">~</span> <span class="st">"HJ"</span>,</span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Pole Vault"</span>             <span class="sc">~</span> <span class="st">"PV"</span>,</span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Long Jump"</span>              <span class="sc">~</span> <span class="st">"LJ"</span>,</span>
-<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Triple Jump"</span>            <span class="sc">~</span> <span class="st">"TJ"</span>,</span>
-<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Shot Put"</span>               <span class="sc">~</span> <span class="st">"SP"</span>,</span>
-<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Discus Throw"</span>           <span class="sc">~</span> <span class="st">"DT"</span>,</span>
-<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Hammer Throw"</span>           <span class="sc">~</span> <span class="st">"HT"</span>,</span>
-<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Javelin Throw"</span>          <span class="sc">~</span> <span class="st">"JT"</span>,</span>
-<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>    <span class="st">"20km Race Walk"</span>         <span class="sc">~</span> <span class="st">"20,000mW"</span>,</span>
-<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>    <span class="st">"35km Race Walk"</span>         <span class="sc">~</span> <span class="st">"35,000mW"</span>,</span>
-<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Marathon"</span>               <span class="sc">~</span> <span class="st">"Road Marathon"</span>,</span>
-<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Heptathlon"</span>             <span class="sc">~</span> <span class="st">"Hept."</span>,</span>
-<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Decathlon"</span>              <span class="sc">~</span> <span class="st">"Dec."</span>,</span>
-<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Event</span>
-<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>  ))</span>
-<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a><span class="co">#convert time to seconds</span></span>
-<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>parse_mark_to_seconds <span class="ot">&lt;-</span> <span class="cf">function</span>(mark_vec) {</span>
-<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(mark_vec, <span class="cf">function</span>(mark) {</span>
-<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.na</span>(mark)) <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
-<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>    parts <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">strsplit</span>(mark, <span class="st">":"</span>))</span>
-<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>    parts <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(parts)</span>
-<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(parts) <span class="sc">==</span> <span class="dv">3</span>) {</span>
-<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>      <span class="co"># HH:MM:SS</span></span>
-<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(parts[<span class="dv">1</span>]<span class="sc">*</span><span class="dv">3600</span> <span class="sc">+</span> parts[<span class="dv">2</span>]<span class="sc">*</span><span class="dv">60</span> <span class="sc">+</span> parts[<span class="dv">3</span>])</span>
-<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">length</span>(parts) <span class="sc">==</span> <span class="dv">2</span>) {</span>
-<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>      <span class="co"># MM:SS</span></span>
-<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(parts[<span class="dv">1</span>]<span class="sc">*</span><span class="dv">60</span> <span class="sc">+</span> parts[<span class="dv">2</span>])</span>
-<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Assume plain seconds</span></span>
-<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="fu">as.numeric</span>(mark))</span>
-<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>wac_long <span class="ot">&lt;-</span> wac_standards <span class="sc">|&gt;</span> </span>
-<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(Men, Women),</span>
-<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"gender"</span>,</span>
-<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"mark"</span></span>
-<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mark =</span> <span class="fu">parse_mark_to_seconds</span>(mark), </span>
-<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>         <span class="at">gender =</span> <span class="fu">tolower</span>(gender), </span>
-<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>         <span class="at">Event =</span> <span class="fu">case_when</span>(</span>
-<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a>           Event <span class="sc">==</span> <span class="st">"110mH"</span> <span class="sc">&amp;</span> gender <span class="sc">==</span> <span class="st">"women"</span> <span class="sc">~</span> <span class="st">"100mH"</span>,</span>
-<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>          <span class="cn">TRUE</span> <span class="sc">~</span> Event))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>After load the Career Progression data, we compute:</p>
-<p>-Join with Olymics data: Merge career progress data with olympic metadata using athlete_link and event.</p>
-<p>-Calculate age at performance(In years and days):</p>
-<ul>
-<li><p>age_years: Year of performance minus year of birth</p></li>
-<li><p>age_days: Exact age in days using difftime(date, birth_date)</p></li>
-</ul>
-<p>-Clean performance times: Removed “h” (hand-timed) from results.</p>
-<p>-Convert marks:</p>
-<ul>
-<li><p>For Track events: Convert time strings to seconds</p></li>
-<li><p>For Field events: Parses numeric distances</p></li>
-<li><p>handles edge cases where parsing fails.</p></li>
-</ul>
-<p>-Identify best performance:</p>
-<ul>
-<li><p>Track: lowest time</p></li>
-<li><p>Field: highest mark</p></li>
-</ul>
-<p>-Calculate percent off peak: Measures deviation from best performance</p>
-<p>-Flag Olympic year: Marks years that were Olympic year.</p>
-<p>-Remove duplicates: Keeps only the best performance per athlete-event-year</p>
-<p>This produces a clean performance table containing both performance records and athlete metadata named <code>athlete_bests</code>.</p>
-<section id="clean-and-standardize-events" class="level3" data-number="3.4.1">
-<h3 data-number="3.4.1" class="anchored" data-anchor-id="clean-and-standardize-events"><span class="header-section-number">3.4.1</span> Clean and Standardize Events:</h3>
-<p>To ensure compatibility, we create a copy of athlete_bests named athlete_bests_clean with: -Lowercase gender: Standardizes gender format -Rename events: Maps verbose event names to IAAF-compatible short forms(e.g., “100 Meters” -&gt; “100m”)</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb7"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>athlete_bests_clean <span class="ot">&lt;-</span> athlete_bests <span class="sc">|&gt;</span> </span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">gender =</span> <span class="fu">tolower</span>(gender),</span>
-<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">event =</span> <span class="fu">case_when</span>(</span>
-<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"100 Metres"</span> <span class="sc">~</span> <span class="st">"100m"</span>,</span>
-<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"200 Metres"</span> <span class="sc">~</span> <span class="st">"200m"</span>,</span>
-<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"400 Metres"</span> <span class="sc">~</span> <span class="st">"400m"</span>,</span>
-<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"800 Metres"</span> <span class="sc">~</span> <span class="st">"800m"</span>,</span>
-<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"1500 Metres"</span> <span class="sc">~</span> <span class="st">"1500m"</span>,</span>
-<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"5000 Metres"</span> <span class="sc">~</span> <span class="st">"5000m"</span>,</span>
-<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"10,000 Metres"</span> <span class="sc">~</span> <span class="st">"10000m"</span>,</span>
-<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Marathon"</span> <span class="sc">~</span> <span class="st">"Road Marathon"</span>,</span>
-<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Triple Jump"</span> <span class="sc">~</span> <span class="st">"TJ"</span>,</span>
-<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Long Jump"</span> <span class="sc">~</span> <span class="st">"LJ"</span>,</span>
-<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"High Jump"</span> <span class="sc">~</span> <span class="st">"HJ"</span>,</span>
-<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Shot Put"</span> <span class="sc">~</span> <span class="st">"SP"</span>,</span>
-<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Discus Throw"</span> <span class="sc">~</span> <span class="st">"DT"</span>,</span>
-<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Hammer Throw"</span> <span class="sc">~</span> <span class="st">"HT"</span>,</span>
-<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Javelin Throw"</span> <span class="sc">~</span> <span class="st">"JT"</span>,</span>
-<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Decathlon"</span> <span class="sc">~</span> <span class="st">"Dec."</span>,</span>
-<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Heptathlon"</span> <span class="sc">~</span> <span class="st">"Hept."</span>,</span>
-<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Pole Vault"</span> <span class="sc">~</span> <span class="st">"PV"</span>,</span>
-<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"10 Kilometres Race Walk"</span> <span class="sc">~</span> <span class="st">"10,000mW"</span>,</span>
-<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"50 Kilometres Race Walk"</span> <span class="sc">~</span> <span class="st">"50,000mW"</span>,</span>
-<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"20 Kilometres Race Walk"</span> <span class="sc">~</span> <span class="st">"20,000mW"</span>,</span>
-<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"100 Metres Hurdles"</span> <span class="sc">~</span> <span class="st">"100mH"</span>,</span>
-<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"110 Metres Hurdles"</span> <span class="sc">~</span> <span class="st">"110mH"</span>,</span>
-<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"400 Metres Hurdles"</span> <span class="sc">~</span> <span class="st">"400mH"</span>,</span>
-<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"3000 Metres Steeplechase"</span> <span class="sc">~</span> <span class="st">"3000m SC"</span>,</span>
-<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> event</span>
-<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-</details>
-</div>
-<p>We then join athlete_bests_clean to iaaf_table, match athlete performances to IAAF scoring table using gender, event, and cluset mark less than or equal to athlete’s mark. And we fill missing points, replaces <code>NA</code> with 0 for unmatched entries.</p>
-<div class="cell">
-<details class="code-fold">
-<summary>Show code</summary>
-<div class="sourceCode cell-code" id="cb8"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># join iaaf_table with athlete_bests_clean and get full dataset with result points</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>round_decimals <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">digits =</span> <span class="dv">2</span>) {</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(x <span class="sc">*</span> <span class="dv">10</span><span class="sc">^</span>digits) <span class="sc">/</span> <span class="dv">10</span><span class="sc">^</span>digits}</span>
-<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a>athlete_bests_points <span class="ot">&lt;-</span> </span>
-<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a>  athlete_bests_clean <span class="sc">|&gt;</span></span>
-<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(iaaf_table, <span class="fu">join_by</span>(gender, event, <span class="fu">closest</span>(mark <span class="sc">&lt;=</span> mark))) <span class="sc">|&gt;</span> </span>
-<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="at">points =</span> <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">#compute world class standard and take mean of men and women</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>wac_standards <span class="ot">&lt;-</span> <span class="fu">tribble</span>(</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>Men, <span class="sc">~</span>Event, <span class="sc">~</span>Women,</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">"10.00"</span>, <span class="st">"100m"</span>, <span class="st">"11.07"</span>,</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">"20.16"</span>, <span class="st">"200m"</span>, <span class="st">"22.57"</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">"44.85"</span>, <span class="st">"400m"</span>, <span class="st">"50.75"</span>,</span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">"1:44.50"</span>, <span class="st">"800m"</span>, <span class="st">"1:59.00"</span>,</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">"3:33.00"</span>, <span class="st">"1500m"</span>, <span class="st">"4:01.50"</span>,</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">"13:01.00"</span>, <span class="st">"5000m / 5km road"</span>, <span class="st">"14:50.00"</span>,</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">"27:00.00"</span>, <span class="st">"10,000m / 10km road"</span>, <span class="st">"30:20.00"</span>,</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2:06:30"</span>, <span class="st">"Marathon"</span>, <span class="st">"2:23:30"</span>,</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8:15.00"</span>, <span class="st">"3000m SC"</span>, <span class="st">"9:18.00"</span>,</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>  <span class="st">"13.27"</span>, <span class="st">"110mH / 100mH"</span>, <span class="st">"12.73"</span>,</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">"48.50"</span>, <span class="st">"400m H"</span>, <span class="st">"54.65"</span>,</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2.33"</span>, <span class="st">"High Jump"</span>, <span class="st">"1.97"</span>,</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">"5.82"</span>, <span class="st">"Pole Vault"</span>, <span class="st">"4.73"</span>,</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8.27"</span>, <span class="st">"Long Jump"</span>, <span class="st">"6.86"</span>,</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>  <span class="st">"17.22"</span>, <span class="st">"Triple Jump"</span>, <span class="st">"14.55"</span>,</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>  <span class="st">"21.50"</span>, <span class="st">"Shot Put"</span>, <span class="st">"18.80"</span>,</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>  <span class="st">"67.50"</span>, <span class="st">"Discus Throw"</span>, <span class="st">"64.50"</span>,</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>  <span class="st">"78.20"</span>, <span class="st">"Hammer Throw"</span>, <span class="st">"74.00"</span>,</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>  <span class="st">"85.50"</span>, <span class="st">"Javelin Throw"</span>, <span class="st">"64.00"</span>,</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NA</span>, <span class="st">"Heptathlon"</span>, <span class="st">"6500"</span>, <span class="co">#points 1174</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8550"</span>, <span class="st">"Decathlon"</span>, <span class="cn">NA</span>, <span class="co">#1212</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">"1:19:20"</span>, <span class="st">"20km Race Walk"</span>, <span class="st">"1:29:00"</span>,</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2:28:00"</span>, <span class="st">"35km Race Walk"</span>, <span class="st">"2:48:00"</span>)</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>wac_standards <span class="ot">&lt;-</span> wac_standards <span class="sc">|&gt;</span> </span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Event =</span> <span class="fu">case_match</span>(</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>    Event,</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="st">"5000m / 5km road"</span>       <span class="sc">~</span> <span class="st">"5000m"</span>,</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    <span class="st">"10,000m / 10km road"</span>    <span class="sc">~</span> <span class="st">"10000m"</span>,</span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    <span class="st">"110mH / 100mH"</span>          <span class="sc">~</span> <span class="st">"110mH"</span>,  </span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    <span class="st">"400m H"</span>                 <span class="sc">~</span> <span class="st">"400mH"</span>,</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>    <span class="st">"High Jump"</span>              <span class="sc">~</span> <span class="st">"HJ"</span>,</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Pole Vault"</span>             <span class="sc">~</span> <span class="st">"PV"</span>,</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Long Jump"</span>              <span class="sc">~</span> <span class="st">"LJ"</span>,</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Triple Jump"</span>            <span class="sc">~</span> <span class="st">"TJ"</span>,</span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Shot Put"</span>               <span class="sc">~</span> <span class="st">"SP"</span>,</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Discus Throw"</span>           <span class="sc">~</span> <span class="st">"DT"</span>,</span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Hammer Throw"</span>           <span class="sc">~</span> <span class="st">"HT"</span>,</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Javelin Throw"</span>          <span class="sc">~</span> <span class="st">"JT"</span>,</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>    <span class="st">"20km Race Walk"</span>         <span class="sc">~</span> <span class="st">"20,000mW"</span>,</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>    <span class="st">"35km Race Walk"</span>         <span class="sc">~</span> <span class="st">"35,000mW"</span>,</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Marathon"</span>               <span class="sc">~</span> <span class="st">"Road Marathon"</span>,</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Heptathlon"</span>             <span class="sc">~</span> <span class="st">"Hept."</span>,</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Decathlon"</span>              <span class="sc">~</span> <span class="st">"Dec."</span>,</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Event</span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="co">#convert time to seconds</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>parse_mark_to_seconds <span class="ot">&lt;-</span> <span class="cf">function</span>(mark_vec) {</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(mark_vec, <span class="cf">function</span>(mark) {</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.na</span>(mark)) <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>    parts <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">strsplit</span>(mark, <span class="st">":"</span>))</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    parts <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(parts)</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(parts) <span class="sc">==</span> <span class="dv">3</span>) {</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>      <span class="co"># HH:MM:SS</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(parts[<span class="dv">1</span>]<span class="sc">*</span><span class="dv">3600</span> <span class="sc">+</span> parts[<span class="dv">2</span>]<span class="sc">*</span><span class="dv">60</span> <span class="sc">+</span> parts[<span class="dv">3</span>])</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">length</span>(parts) <span class="sc">==</span> <span class="dv">2</span>) {</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>      <span class="co"># MM:SS</span></span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(parts[<span class="dv">1</span>]<span class="sc">*</span><span class="dv">60</span> <span class="sc">+</span> parts[<span class="dv">2</span>])</span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Assume plain seconds</span></span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="fu">as.numeric</span>(mark))</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a>wac_long <span class="ot">&lt;-</span> wac_standards <span class="sc">|&gt;</span> </span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(Men, Women),</span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"gender"</span>,</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"mark"</span></span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mark =</span> <span class="fu">parse_mark_to_seconds</span>(mark), </span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>         <span class="at">gender =</span> <span class="fu">tolower</span>(gender), </span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a>         <span class="at">Event =</span> <span class="fu">case_when</span>(</span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>           Event <span class="sc">==</span> <span class="st">"110mH"</span> <span class="sc">&amp;</span> gender <span class="sc">==</span> <span class="st">"women"</span> <span class="sc">~</span> <span class="st">"100mH"</span>,</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a>          <span class="cn">TRUE</span> <span class="sc">~</span> Event))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
 </section>
-</section>
-<section id="notes-on-join-behaviour" class="level2" data-number="3.5">
-<h2 data-number="3.5" class="anchored" data-anchor-id="notes-on-join-behaviour"><span class="header-section-number">3.5</span> Notes on join Behaviour</h2>
-<p>Your join uses closest on a condition with mark on both sides. That requires a recent dplyr and depends on how the IAAF reference orders marks. If you ever observe mismatched points at event boundaries, consider switching to an explicit directional rule that treats track and field differently, where track uses the largest IAAF mark that is less than or equal to the observed time and field uses the smallest IAAF mark that is greater than or equal to the observed distance or height.</p>
-<p>The closest() join on mark requires a recent version of dplyr. If mismatches occur near event boundaries, consider refining the logic:</p>
-<p>Track events: Use the largest IAAF mark ≤ observed time</p>
-<p>Field events: Use the smallest IAAF mark ≥ observed distance</p>
-<p>This directional rule ensures accurate scoring near performance thresholds.</p>
+<section id="summary-and-importance" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="summary-and-importance"><span class="header-section-number">3.5</span> Summary and Importance</h2>
+<p>This unified tidy dataset forms the foundation for all subsequent modeling. By integrating performance records, event metadata, and standardized scoring into a consistent structure, it supports accurate estimation of aging curves through Functional Principal Component Analysis (FPCA) and enables effective clustering of performance trajectories. The standardized format also ensures reproducibility and makes predictions directly interpretable across athletes, events, and time periods.</p>
 
 
 <!-- -->
@@ -1021,323 +934,254 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
       </a>
   </div>
 </nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb9" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Tidy"</span></span>
-<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,message=FALSE, warning=FALSE}</span></span>
-<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a><span class="in">library(readr)</span></span>
-<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a><span class="in">library(tibble)</span></span>
-<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a><span class="in">library(jsonlite)</span></span>
-<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="in">library(tidyverse)</span></span>
-<span id="cb9-10"><a href="#cb9-10" aria-hidden="true" tabindex="-1"></a><span class="in">library(dplyr)</span></span>
-<span id="cb9-11"><a href="#cb9-11" aria-hidden="true" tabindex="-1"></a><span class="in">library(shiny)</span></span>
-<span id="cb9-12"><a href="#cb9-12" aria-hidden="true" tabindex="-1"></a><span class="in">library(refund)</span></span>
-<span id="cb9-13"><a href="#cb9-13" aria-hidden="true" tabindex="-1"></a><span class="in">library(face)</span></span>
-<span id="cb9-14"><a href="#cb9-14" aria-hidden="true" tabindex="-1"></a><span class="in">library(fields)</span></span>
-<span id="cb9-15"><a href="#cb9-15" aria-hidden="true" tabindex="-1"></a><span class="in">library(trelliscope)</span></span>
-<span id="cb9-16"><a href="#cb9-16" aria-hidden="true" tabindex="-1"></a><span class="in">library(ggplot2)</span></span>
-<span id="cb9-17"><a href="#cb9-17" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-18"><a href="#cb9-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-19"><a href="#cb9-19" aria-hidden="true" tabindex="-1"></a>This section performs the complete data cleaning and standardization on the Olympic results, career progression and iaaf-2005.json(world class standard points). <span class="co">&lt;!-- The objective is to produce a unified, well-structured dataset containing each athlete’s best annual performance, age at performance, event information, and standardized IAAF points. --&gt;</span></span>
-<span id="cb9-20"><a href="#cb9-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-21"><a href="#cb9-21" aria-hidden="true" tabindex="-1"></a><span class="co">&lt;!-- The procedure involves merging competition results with athlete metadata, parsing and standardizing dates, harmonizing event names, converting performance marks to a consistent numeric scale, calculating age at performance, and integrating the IAAF 2005 points table with the cleaned and linked datasets (career progression and Olympic data). --&gt;</span></span>
-<span id="cb9-22"><a href="#cb9-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-23"><a href="#cb9-23" aria-hidden="true" tabindex="-1"></a>Outputs are four tidy tables that downstream steps can rely on:</span>
-<span id="cb9-24"><a href="#cb9-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-25"><a href="#cb9-25" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`Olympics_data_tidy`</span> — cleaned athlete/event/game metadata</span>
-<span id="cb9-26"><a href="#cb9-26" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`Career_progression_tidy`</span> — de-duplicated, date-parsed season records</span>
-<span id="cb9-27"><a href="#cb9-27" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`iaaf_table_tidy`</span> — flattened IAAF reference table</span>
-<span id="cb9-28"><a href="#cb9-28" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`wac_standards_tidy`</span> — harmonized world-class marks in a tidy long format with times converted to seconds (where applicable)</span>
-<span id="cb9-29"><a href="#cb9-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-30"><a href="#cb9-30" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,message=FALSE, warning=FALSE}</span></span>
-<span id="cb9-31"><a href="#cb9-31" aria-hidden="true" tabindex="-1"></a><span class="in">library(readr)</span></span>
-<span id="cb9-32"><a href="#cb9-32" aria-hidden="true" tabindex="-1"></a><span class="in">library(tibble)</span></span>
-<span id="cb9-33"><a href="#cb9-33" aria-hidden="true" tabindex="-1"></a><span class="in">library(jsonlite)</span></span>
-<span id="cb9-34"><a href="#cb9-34" aria-hidden="true" tabindex="-1"></a><span class="in">library(tidyverse)</span></span>
-<span id="cb9-35"><a href="#cb9-35" aria-hidden="true" tabindex="-1"></a><span class="in">library(dplyr)</span></span>
-<span id="cb9-36"><a href="#cb9-36" aria-hidden="true" tabindex="-1"></a><span class="in">library(shiny)</span></span>
-<span id="cb9-37"><a href="#cb9-37" aria-hidden="true" tabindex="-1"></a><span class="in">library(refund)</span></span>
-<span id="cb9-38"><a href="#cb9-38" aria-hidden="true" tabindex="-1"></a><span class="in">library(face)</span></span>
-<span id="cb9-39"><a href="#cb9-39" aria-hidden="true" tabindex="-1"></a><span class="in">library(fields)</span></span>
-<span id="cb9-40"><a href="#cb9-40" aria-hidden="true" tabindex="-1"></a><span class="in">library(trelliscope)</span></span>
-<span id="cb9-41"><a href="#cb9-41" aria-hidden="true" tabindex="-1"></a><span class="in">library(ggplot2)</span></span>
-<span id="cb9-42"><a href="#cb9-42" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-43"><a href="#cb9-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-44"><a href="#cb9-44" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clean `Olympics_data.csv`</span></span>
-<span id="cb9-45"><a href="#cb9-45" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-46"><a href="#cb9-46" aria-hidden="true" tabindex="-1"></a>The Olympic dataset is imported and cleaned to provide athlete-level metadata. (We standardize names, split date ranges, split gender/event, remove wheelchair entries, fix one birth date, parse dates, normalize gender, add age at Games end, create an ordered games factor, classify events, normalize an old label, add games_year, and rename nat to nationality.) Key transformations include:</span>
-<span id="cb9-47"><a href="#cb9-47" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-48"><a href="#cb9-48" aria-hidden="true" tabindex="-1"></a>-Read the CSV of Olympic track &amp; field results. -clean_names(): lowercases and snake_cases column names. -Split the date span like “01 Aug 2012 – 12 Aug 2012” into start and end. -Split the event string’s first token into gender (“Men’s/Women’s”) and the remainder into event; too_many="merge" keeps the rest intact. -Drop wheelchair events. -Manual data fix: overwrite a specific athlete’s birth_date. -Normalize gender to “Men/Women.” -Convert birth_date and end from “%d %b %Y” (e.g., “06 DEC 1973”) to Date. -Compute age at Games end. -Recode games to an ordered factor with readable labels. -Classify events into event_type buckets (Sprints/Middle Distance/etc.). -Classify event_category as Track vs Field. -Normalize an event label and add a games_year. -Rename nat to nationality.</span>
-<span id="cb9-49"><a href="#cb9-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-50"><a href="#cb9-50" aria-hidden="true" tabindex="-1"></a>Extracted competition year from the end date Code shows below:</span>
-<span id="cb9-51"><a href="#cb9-51" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-52"><a href="#cb9-52" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, echo = TRUE}</span></span>
-<span id="cb9-53"><a href="#cb9-53" aria-hidden="true" tabindex="-1"></a><span class="in">Olympics_data &lt;- read_csv("/Users/yushiliu/Stat 468 final project/data/track and field data/olympics_data.csv", show_col_types = F) %&gt;%</span></span>
-<span id="cb9-54"><a href="#cb9-54" aria-hidden="true" tabindex="-1"></a><span class="in">  janitor::clean_names() %&gt;% </span></span>
-<span id="cb9-55"><a href="#cb9-55" aria-hidden="true" tabindex="-1"></a><span class="in">  separate_wider_delim(date, delim = "–", names = c("start", "end")) %&gt;%</span></span>
-<span id="cb9-56"><a href="#cb9-56" aria-hidden="true" tabindex="-1"></a><span class="in">  separate_wider_delim(cols = event, names = c("gender", "event"), delim = " ",</span></span>
-<span id="cb9-57"><a href="#cb9-57" aria-hidden="true" tabindex="-1"></a><span class="in">                           too_many = "merge") %&gt;%</span></span>
-<span id="cb9-58"><a href="#cb9-58" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(str_detect(event, "Wheelchair", negate = T)) %&gt;% </span></span>
-<span id="cb9-59"><a href="#cb9-59" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(</span></span>
-<span id="cb9-60"><a href="#cb9-60" aria-hidden="true" tabindex="-1"></a><span class="in">        # Manually fixed Aminata CAMARA's age</span></span>
-<span id="cb9-61"><a href="#cb9-61" aria-hidden="true" tabindex="-1"></a><span class="in">    birth_date = if_else(name == "Aminata CAMARA", "06 DEC 1973", birth_date),</span></span>
-<span id="cb9-62"><a href="#cb9-62" aria-hidden="true" tabindex="-1"></a><span class="in">    gender = if_else(gender == "Men's", "Men", "Women"),</span></span>
-<span id="cb9-63"><a href="#cb9-63" aria-hidden="true" tabindex="-1"></a><span class="in">    across(c(birth_date, end),  ~as.Date(format(</span></span>
-<span id="cb9-64"><a href="#cb9-64" aria-hidden="true" tabindex="-1"></a><span class="in">    as.Date(., format = "%d %b %Y"), "%Y-%m-%d"))),</span></span>
-<span id="cb9-65"><a href="#cb9-65" aria-hidden="true" tabindex="-1"></a><span class="in">    age = year(end) - year(birth_date),</span></span>
-<span id="cb9-66"><a href="#cb9-66" aria-hidden="true" tabindex="-1"></a><span class="in">         games = factor(games, ordered = T,</span></span>
-<span id="cb9-67"><a href="#cb9-67" aria-hidden="true" tabindex="-1"></a><span class="in">                        levels = c("The XXXII Olympic Games",</span></span>
-<span id="cb9-68"><a href="#cb9-68" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXXI Olympic Games",</span></span>
-<span id="cb9-69"><a href="#cb9-69" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXX Olympic Games",</span></span>
-<span id="cb9-70"><a href="#cb9-70" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXIX Olympic Games",</span></span>
-<span id="cb9-71"><a href="#cb9-71" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXVIII Olympic Games",</span></span>
-<span id="cb9-72"><a href="#cb9-72" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXVII Olympic Games",</span></span>
-<span id="cb9-73"><a href="#cb9-73" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXVI Olympic Games"</span></span>
-<span id="cb9-74"><a href="#cb9-74" aria-hidden="true" tabindex="-1"></a><span class="in">                        ),</span></span>
-<span id="cb9-75"><a href="#cb9-75" aria-hidden="true" tabindex="-1"></a><span class="in">                        labels = c("Tokyo '20", "Rio '16", "London '12", </span></span>
-<span id="cb9-76"><a href="#cb9-76" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "Beijing '08", "Athens '04", "Sydney '00",</span></span>
-<span id="cb9-77"><a href="#cb9-77" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "Atlanta '96")),</span></span>
-<span id="cb9-78"><a href="#cb9-78" aria-hidden="true" tabindex="-1"></a><span class="in">    event_type = case_match(</span></span>
-<span id="cb9-79"><a href="#cb9-79" aria-hidden="true" tabindex="-1"></a><span class="in">      event,</span></span>
-<span id="cb9-80"><a href="#cb9-80" aria-hidden="true" tabindex="-1"></a><span class="in">      c("100 Metres", "200 Metres", "400 Metres", "400 Metres Hurdles", "100 Metres Hurdles", "110 Metres Hurdles") ~ "Sprints",</span></span>
-<span id="cb9-81"><a href="#cb9-81" aria-hidden="true" tabindex="-1"></a><span class="in">      c("800 Metres", "1500 Metres", "3000 Metres Steeplechase") ~ "Middle Distance",</span></span>
-<span id="cb9-82"><a href="#cb9-82" aria-hidden="true" tabindex="-1"></a><span class="in">      c("5000 Metres", "10,000 Metres") ~ "Long Distance",</span></span>
-<span id="cb9-83"><a href="#cb9-83" aria-hidden="true" tabindex="-1"></a><span class="in">      c("Heptathlon", "Decathlon") ~ "Combined Events",</span></span>
-<span id="cb9-84"><a href="#cb9-84" aria-hidden="true" tabindex="-1"></a><span class="in">      c("High Jump", "Long Jump", "Triple Jump", "Pole Vault") ~ "Jumps",</span></span>
-<span id="cb9-85"><a href="#cb9-85" aria-hidden="true" tabindex="-1"></a><span class="in">      c("Shot Put", "Discus Throw", "Hammer Throw", "Javelin Throw", "Javelin Throw (old)") ~ "Throws",</span></span>
-<span id="cb9-86"><a href="#cb9-86" aria-hidden="true" tabindex="-1"></a><span class="in">      c("10 Kilometres Race Walk", "20 Kilometres Race Walk", "50 Kilometres Race Walk", "Marathon") ~ "Road Races",</span></span>
-<span id="cb9-87"><a href="#cb9-87" aria-hidden="true" tabindex="-1"></a><span class="in">      .default = "Other"</span></span>
-<span id="cb9-88"><a href="#cb9-88" aria-hidden="true" tabindex="-1"></a><span class="in">    ),</span></span>
-<span id="cb9-89"><a href="#cb9-89" aria-hidden="true" tabindex="-1"></a><span class="in">         event_category = if_else(str_detect(event, "Metres|Walk|Wheelchair") |event %in% c("Marathon"), "Track", "Field")</span></span>
-<span id="cb9-90"><a href="#cb9-90" aria-hidden="true" tabindex="-1"></a><span class="in">         ) %&gt;% </span></span>
-<span id="cb9-91"><a href="#cb9-91" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(event = if_else(event == "Javelin Throw (old)", "Javelin Throw", event),</span></span>
-<span id="cb9-92"><a href="#cb9-92" aria-hidden="true" tabindex="-1"></a><span class="in">         games_year = year(end)) %&gt;% rename("nationality" = nat)</span></span>
-<span id="cb9-93"><a href="#cb9-93" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-94"><a href="#cb9-94" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-95"><a href="#cb9-95" aria-hidden="true" tabindex="-1"></a>The result is a clean metadata table named Olympics_data.</span>
-<span id="cb9-96"><a href="#cb9-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-97"><a href="#cb9-97" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clean `Career_Progression.csv`</span></span>
-<span id="cb9-98"><a href="#cb9-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-99"><a href="#cb9-99" aria-hidden="true" tabindex="-1"></a>The career progression dataset is imported and cleaned to provide yearly performance records.</span>
-<span id="cb9-100"><a href="#cb9-100" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-101"><a href="#cb9-101" aria-hidden="true" tabindex="-1"></a>Key steps include: -Removed duplicate rows -Parsed dates: Converts data string to <span class="in">`Data`</span> objects. -Compute retired and training_age by athlete/event.</span>
-<span id="cb9-102"><a href="#cb9-102" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-103"><a href="#cb9-103" aria-hidden="true" tabindex="-1"></a>(Flag retirement: <span class="in">`retired`</span> flag true if their last recorded <span class="in">`year`</span> ≤ 2022, many athletes as retired if last competition was before or in 2022.)</span>
-<span id="cb9-104"><a href="#cb9-104" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-107"><a href="#cb9-107" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-108"><a href="#cb9-108" aria-hidden="true" tabindex="-1"></a><span class="co"># load career progression data and identify athletes who are still active</span></span>
-<span id="cb9-109"><a href="#cb9-109" aria-hidden="true" tabindex="-1"></a>Career_progression <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/track and field data/career_progression (2).csv"</span>, <span class="at">show_col_types =</span> F) <span class="sc">%&gt;%</span> </span>
-<span id="cb9-110"><a href="#cb9-110" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span> </span>
-<span id="cb9-111"><a href="#cb9-111" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">parse_date_time</span>(date, <span class="at">orders =</span> <span class="fu">c</span>(<span class="st">"%d %b %Y"</span>, <span class="st">"%d-%b-%y"</span>))) <span class="sc">%&gt;%</span></span>
-<span id="cb9-112"><a href="#cb9-112" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">retired =</span> <span class="fu">if_else</span>(<span class="fu">max</span>(year) <span class="sc">&lt;=</span> <span class="dv">2022</span>, T, F),</span>
-<span id="cb9-113"><a href="#cb9-113" aria-hidden="true" tabindex="-1"></a>         <span class="at">training_age =</span> year <span class="sc">-</span> <span class="fu">min</span>(year) <span class="sc">+</span> <span class="dv">1</span>,</span>
-<span id="cb9-114"><a href="#cb9-114" aria-hidden="true" tabindex="-1"></a>         <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"athlete_link"</span>, <span class="st">"event"</span>)) </span>
-<span id="cb9-115"><a href="#cb9-115" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-116"><a href="#cb9-116" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-117"><a href="#cb9-117" aria-hidden="true" tabindex="-1"></a><span class="fu">## Flatten IAAF points reference(`iaaf-2005.json`)</span></span>
-<span id="cb9-118"><a href="#cb9-118" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-119"><a href="#cb9-119" aria-hidden="true" tabindex="-1"></a>We then:</span>
-<span id="cb9-120"><a href="#cb9-120" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-121"><a href="#cb9-121" aria-hidden="true" tabindex="-1"></a>-Read JSON: Loads IAAF scoring data. -Flatten JSON: Converts nested list into a tidy table with <span class="in">`gender`</span>, <span class="in">`event`</span>, <span class="in">`mark`</span>, and <span class="in">`points`</span>.</span>
-<span id="cb9-122"><a href="#cb9-122" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-125"><a href="#cb9-125" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-126"><a href="#cb9-126" aria-hidden="true" tabindex="-1"></a>raw_json <span class="ot">&lt;-</span> <span class="fu">read_json</span>(<span class="st">"../data/track and field data/iaaf-2025.json"</span>, <span class="at">simplifyVector =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb9-127"><a href="#cb9-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-128"><a href="#cb9-128" aria-hidden="true" tabindex="-1"></a><span class="co"># Convert list of lists to a flat tibble</span></span>
-<span id="cb9-129"><a href="#cb9-129" aria-hidden="true" tabindex="-1"></a>iaaf_table <span class="ot">&lt;-</span> tibble<span class="sc">::</span><span class="fu">tibble</span>(</span>
-<span id="cb9-130"><a href="#cb9-130" aria-hidden="true" tabindex="-1"></a>  <span class="at">gender =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"gender"</span>),</span>
-<span id="cb9-131"><a href="#cb9-131" aria-hidden="true" tabindex="-1"></a>  <span class="at">event =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"event"</span>),</span>
-<span id="cb9-132"><a href="#cb9-132" aria-hidden="true" tabindex="-1"></a>  <span class="at">mark =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"mark"</span>),</span>
-<span id="cb9-133"><a href="#cb9-133" aria-hidden="true" tabindex="-1"></a>  <span class="at">points =</span> <span class="fu">sapply</span>(raw_json, <span class="st">`</span><span class="at">[[</span><span class="st">`</span>, <span class="st">"points"</span>)</span>
-<span id="cb9-134"><a href="#cb9-134" aria-hidden="true" tabindex="-1"></a>)</span>
-<span id="cb9-135"><a href="#cb9-135" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-136"><a href="#cb9-136" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-137"><a href="#cb9-137" aria-hidden="true" tabindex="-1"></a><span class="fu">## Tidy world-class standards(`wac-standards`)</span></span>
-<span id="cb9-138"><a href="#cb9-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-139"><a href="#cb9-139" aria-hidden="true" tabindex="-1"></a>What we do: -Put into long/“tidy” format (gender as a variable). -Harmonize event names to match IAAF vocabulary. -Convert time-like marks to seconds (HH:MM:SS / MM:SS / SS). -Adjust women’s hurdles label to 100mH.</span>
-<span id="cb9-140"><a href="#cb9-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-143"><a href="#cb9-143" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-144"><a href="#cb9-144" aria-hidden="true" tabindex="-1"></a><span class="co">#compute world class standard and take mean of men and women</span></span>
-<span id="cb9-145"><a href="#cb9-145" aria-hidden="true" tabindex="-1"></a>wac_standards <span class="ot">&lt;-</span> <span class="fu">tribble</span>(</span>
-<span id="cb9-146"><a href="#cb9-146" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>Men, <span class="sc">~</span>Event, <span class="sc">~</span>Women,</span>
-<span id="cb9-147"><a href="#cb9-147" aria-hidden="true" tabindex="-1"></a>  <span class="st">"10.00"</span>, <span class="st">"100m"</span>, <span class="st">"11.07"</span>,</span>
-<span id="cb9-148"><a href="#cb9-148" aria-hidden="true" tabindex="-1"></a>  <span class="st">"20.16"</span>, <span class="st">"200m"</span>, <span class="st">"22.57"</span>,</span>
-<span id="cb9-149"><a href="#cb9-149" aria-hidden="true" tabindex="-1"></a>  <span class="st">"44.85"</span>, <span class="st">"400m"</span>, <span class="st">"50.75"</span>,</span>
-<span id="cb9-150"><a href="#cb9-150" aria-hidden="true" tabindex="-1"></a>  <span class="st">"1:44.50"</span>, <span class="st">"800m"</span>, <span class="st">"1:59.00"</span>,</span>
-<span id="cb9-151"><a href="#cb9-151" aria-hidden="true" tabindex="-1"></a>  <span class="st">"3:33.00"</span>, <span class="st">"1500m"</span>, <span class="st">"4:01.50"</span>,</span>
-<span id="cb9-152"><a href="#cb9-152" aria-hidden="true" tabindex="-1"></a>  <span class="st">"13:01.00"</span>, <span class="st">"5000m / 5km road"</span>, <span class="st">"14:50.00"</span>,</span>
-<span id="cb9-153"><a href="#cb9-153" aria-hidden="true" tabindex="-1"></a>  <span class="st">"27:00.00"</span>, <span class="st">"10,000m / 10km road"</span>, <span class="st">"30:20.00"</span>,</span>
-<span id="cb9-154"><a href="#cb9-154" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2:06:30"</span>, <span class="st">"Marathon"</span>, <span class="st">"2:23:30"</span>,</span>
-<span id="cb9-155"><a href="#cb9-155" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8:15.00"</span>, <span class="st">"3000m SC"</span>, <span class="st">"9:18.00"</span>,</span>
-<span id="cb9-156"><a href="#cb9-156" aria-hidden="true" tabindex="-1"></a>  <span class="st">"13.27"</span>, <span class="st">"110mH / 100mH"</span>, <span class="st">"12.73"</span>,</span>
-<span id="cb9-157"><a href="#cb9-157" aria-hidden="true" tabindex="-1"></a>  <span class="st">"48.50"</span>, <span class="st">"400m H"</span>, <span class="st">"54.65"</span>,</span>
-<span id="cb9-158"><a href="#cb9-158" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2.33"</span>, <span class="st">"High Jump"</span>, <span class="st">"1.97"</span>,</span>
-<span id="cb9-159"><a href="#cb9-159" aria-hidden="true" tabindex="-1"></a>  <span class="st">"5.82"</span>, <span class="st">"Pole Vault"</span>, <span class="st">"4.73"</span>,</span>
-<span id="cb9-160"><a href="#cb9-160" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8.27"</span>, <span class="st">"Long Jump"</span>, <span class="st">"6.86"</span>,</span>
-<span id="cb9-161"><a href="#cb9-161" aria-hidden="true" tabindex="-1"></a>  <span class="st">"17.22"</span>, <span class="st">"Triple Jump"</span>, <span class="st">"14.55"</span>,</span>
-<span id="cb9-162"><a href="#cb9-162" aria-hidden="true" tabindex="-1"></a>  <span class="st">"21.50"</span>, <span class="st">"Shot Put"</span>, <span class="st">"18.80"</span>,</span>
-<span id="cb9-163"><a href="#cb9-163" aria-hidden="true" tabindex="-1"></a>  <span class="st">"67.50"</span>, <span class="st">"Discus Throw"</span>, <span class="st">"64.50"</span>,</span>
-<span id="cb9-164"><a href="#cb9-164" aria-hidden="true" tabindex="-1"></a>  <span class="st">"78.20"</span>, <span class="st">"Hammer Throw"</span>, <span class="st">"74.00"</span>,</span>
-<span id="cb9-165"><a href="#cb9-165" aria-hidden="true" tabindex="-1"></a>  <span class="st">"85.50"</span>, <span class="st">"Javelin Throw"</span>, <span class="st">"64.00"</span>,</span>
-<span id="cb9-166"><a href="#cb9-166" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NA</span>, <span class="st">"Heptathlon"</span>, <span class="st">"6500"</span>, <span class="co">#points 1174</span></span>
-<span id="cb9-167"><a href="#cb9-167" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8550"</span>, <span class="st">"Decathlon"</span>, <span class="cn">NA</span>, <span class="co">#1212</span></span>
-<span id="cb9-168"><a href="#cb9-168" aria-hidden="true" tabindex="-1"></a>  <span class="st">"1:19:20"</span>, <span class="st">"20km Race Walk"</span>, <span class="st">"1:29:00"</span>,</span>
-<span id="cb9-169"><a href="#cb9-169" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2:28:00"</span>, <span class="st">"35km Race Walk"</span>, <span class="st">"2:48:00"</span>)</span>
-<span id="cb9-170"><a href="#cb9-170" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-171"><a href="#cb9-171" aria-hidden="true" tabindex="-1"></a>wac_standards <span class="ot">&lt;-</span> wac_standards <span class="sc">|&gt;</span> </span>
-<span id="cb9-172"><a href="#cb9-172" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Event =</span> <span class="fu">case_match</span>(</span>
-<span id="cb9-173"><a href="#cb9-173" aria-hidden="true" tabindex="-1"></a>    Event,</span>
-<span id="cb9-174"><a href="#cb9-174" aria-hidden="true" tabindex="-1"></a>    <span class="st">"5000m / 5km road"</span>       <span class="sc">~</span> <span class="st">"5000m"</span>,</span>
-<span id="cb9-175"><a href="#cb9-175" aria-hidden="true" tabindex="-1"></a>    <span class="st">"10,000m / 10km road"</span>    <span class="sc">~</span> <span class="st">"10000m"</span>,</span>
-<span id="cb9-176"><a href="#cb9-176" aria-hidden="true" tabindex="-1"></a>    <span class="st">"110mH / 100mH"</span>          <span class="sc">~</span> <span class="st">"110mH"</span>,  </span>
-<span id="cb9-177"><a href="#cb9-177" aria-hidden="true" tabindex="-1"></a>    <span class="st">"400m H"</span>                 <span class="sc">~</span> <span class="st">"400mH"</span>,</span>
-<span id="cb9-178"><a href="#cb9-178" aria-hidden="true" tabindex="-1"></a>    <span class="st">"High Jump"</span>              <span class="sc">~</span> <span class="st">"HJ"</span>,</span>
-<span id="cb9-179"><a href="#cb9-179" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Pole Vault"</span>             <span class="sc">~</span> <span class="st">"PV"</span>,</span>
-<span id="cb9-180"><a href="#cb9-180" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Long Jump"</span>              <span class="sc">~</span> <span class="st">"LJ"</span>,</span>
-<span id="cb9-181"><a href="#cb9-181" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Triple Jump"</span>            <span class="sc">~</span> <span class="st">"TJ"</span>,</span>
-<span id="cb9-182"><a href="#cb9-182" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Shot Put"</span>               <span class="sc">~</span> <span class="st">"SP"</span>,</span>
-<span id="cb9-183"><a href="#cb9-183" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Discus Throw"</span>           <span class="sc">~</span> <span class="st">"DT"</span>,</span>
-<span id="cb9-184"><a href="#cb9-184" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Hammer Throw"</span>           <span class="sc">~</span> <span class="st">"HT"</span>,</span>
-<span id="cb9-185"><a href="#cb9-185" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Javelin Throw"</span>          <span class="sc">~</span> <span class="st">"JT"</span>,</span>
-<span id="cb9-186"><a href="#cb9-186" aria-hidden="true" tabindex="-1"></a>    <span class="st">"20km Race Walk"</span>         <span class="sc">~</span> <span class="st">"20,000mW"</span>,</span>
-<span id="cb9-187"><a href="#cb9-187" aria-hidden="true" tabindex="-1"></a>    <span class="st">"35km Race Walk"</span>         <span class="sc">~</span> <span class="st">"35,000mW"</span>,</span>
-<span id="cb9-188"><a href="#cb9-188" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Marathon"</span>               <span class="sc">~</span> <span class="st">"Road Marathon"</span>,</span>
-<span id="cb9-189"><a href="#cb9-189" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Heptathlon"</span>             <span class="sc">~</span> <span class="st">"Hept."</span>,</span>
-<span id="cb9-190"><a href="#cb9-190" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Decathlon"</span>              <span class="sc">~</span> <span class="st">"Dec."</span>,</span>
-<span id="cb9-191"><a href="#cb9-191" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Event</span>
-<span id="cb9-192"><a href="#cb9-192" aria-hidden="true" tabindex="-1"></a>  ))</span>
-<span id="cb9-193"><a href="#cb9-193" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-194"><a href="#cb9-194" aria-hidden="true" tabindex="-1"></a><span class="co">#convert time to seconds</span></span>
-<span id="cb9-195"><a href="#cb9-195" aria-hidden="true" tabindex="-1"></a>parse_mark_to_seconds <span class="ot">&lt;-</span> <span class="cf">function</span>(mark_vec) {</span>
-<span id="cb9-196"><a href="#cb9-196" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(mark_vec, <span class="cf">function</span>(mark) {</span>
-<span id="cb9-197"><a href="#cb9-197" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.na</span>(mark)) <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
-<span id="cb9-198"><a href="#cb9-198" aria-hidden="true" tabindex="-1"></a>    parts <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">strsplit</span>(mark, <span class="st">":"</span>))</span>
-<span id="cb9-199"><a href="#cb9-199" aria-hidden="true" tabindex="-1"></a>    parts <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(parts)</span>
-<span id="cb9-200"><a href="#cb9-200" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(parts) <span class="sc">==</span> <span class="dv">3</span>) {</span>
-<span id="cb9-201"><a href="#cb9-201" aria-hidden="true" tabindex="-1"></a>      <span class="co"># HH:MM:SS</span></span>
-<span id="cb9-202"><a href="#cb9-202" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(parts[<span class="dv">1</span>]<span class="sc">*</span><span class="dv">3600</span> <span class="sc">+</span> parts[<span class="dv">2</span>]<span class="sc">*</span><span class="dv">60</span> <span class="sc">+</span> parts[<span class="dv">3</span>])</span>
-<span id="cb9-203"><a href="#cb9-203" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">length</span>(parts) <span class="sc">==</span> <span class="dv">2</span>) {</span>
-<span id="cb9-204"><a href="#cb9-204" aria-hidden="true" tabindex="-1"></a>      <span class="co"># MM:SS</span></span>
-<span id="cb9-205"><a href="#cb9-205" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(parts[<span class="dv">1</span>]<span class="sc">*</span><span class="dv">60</span> <span class="sc">+</span> parts[<span class="dv">2</span>])</span>
-<span id="cb9-206"><a href="#cb9-206" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
-<span id="cb9-207"><a href="#cb9-207" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Assume plain seconds</span></span>
-<span id="cb9-208"><a href="#cb9-208" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="fu">as.numeric</span>(mark))</span>
-<span id="cb9-209"><a href="#cb9-209" aria-hidden="true" tabindex="-1"></a>    }</span>
-<span id="cb9-210"><a href="#cb9-210" aria-hidden="true" tabindex="-1"></a>  })</span>
-<span id="cb9-211"><a href="#cb9-211" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb9-212"><a href="#cb9-212" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-213"><a href="#cb9-213" aria-hidden="true" tabindex="-1"></a>wac_long <span class="ot">&lt;-</span> wac_standards <span class="sc">|&gt;</span> </span>
-<span id="cb9-214"><a href="#cb9-214" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
-<span id="cb9-215"><a href="#cb9-215" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(Men, Women),</span>
-<span id="cb9-216"><a href="#cb9-216" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"gender"</span>,</span>
-<span id="cb9-217"><a href="#cb9-217" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"mark"</span></span>
-<span id="cb9-218"><a href="#cb9-218" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
-<span id="cb9-219"><a href="#cb9-219" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mark =</span> <span class="fu">parse_mark_to_seconds</span>(mark), </span>
-<span id="cb9-220"><a href="#cb9-220" aria-hidden="true" tabindex="-1"></a>         <span class="at">gender =</span> <span class="fu">tolower</span>(gender), </span>
-<span id="cb9-221"><a href="#cb9-221" aria-hidden="true" tabindex="-1"></a>         <span class="at">Event =</span> <span class="fu">case_when</span>(</span>
-<span id="cb9-222"><a href="#cb9-222" aria-hidden="true" tabindex="-1"></a>           Event <span class="sc">==</span> <span class="st">"110mH"</span> <span class="sc">&amp;</span> gender <span class="sc">==</span> <span class="st">"women"</span> <span class="sc">~</span> <span class="st">"100mH"</span>,</span>
-<span id="cb9-223"><a href="#cb9-223" aria-hidden="true" tabindex="-1"></a>          <span class="cn">TRUE</span> <span class="sc">~</span> Event))</span>
-<span id="cb9-224"><a href="#cb9-224" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-225"><a href="#cb9-225" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-226"><a href="#cb9-226" aria-hidden="true" tabindex="-1"></a>After load the Career Progression data, we compute:</span>
-<span id="cb9-227"><a href="#cb9-227" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-228"><a href="#cb9-228" aria-hidden="true" tabindex="-1"></a>-Join with Olymics data: Merge career progress data with olympic metadata using athlete_link and event.</span>
-<span id="cb9-229"><a href="#cb9-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-230"><a href="#cb9-230" aria-hidden="true" tabindex="-1"></a>-Calculate age at performance(In years and days):</span>
-<span id="cb9-231"><a href="#cb9-231" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-232"><a href="#cb9-232" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>age_years: Year of performance minus year of birth</span>
-<span id="cb9-233"><a href="#cb9-233" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-234"><a href="#cb9-234" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>age_days: Exact age in days using difftime(date, birth_date)</span>
-<span id="cb9-235"><a href="#cb9-235" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-236"><a href="#cb9-236" aria-hidden="true" tabindex="-1"></a>-Clean performance times: Removed "h" (hand-timed) from results.</span>
-<span id="cb9-237"><a href="#cb9-237" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-238"><a href="#cb9-238" aria-hidden="true" tabindex="-1"></a>-Convert marks:</span>
-<span id="cb9-239"><a href="#cb9-239" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-240"><a href="#cb9-240" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>For Track events: Convert time strings to seconds</span>
-<span id="cb9-241"><a href="#cb9-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-242"><a href="#cb9-242" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>For Field events: Parses numeric distances</span>
-<span id="cb9-243"><a href="#cb9-243" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-244"><a href="#cb9-244" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>handles edge cases where parsing fails.</span>
-<span id="cb9-245"><a href="#cb9-245" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-246"><a href="#cb9-246" aria-hidden="true" tabindex="-1"></a>-Identify best performance:</span>
-<span id="cb9-247"><a href="#cb9-247" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-248"><a href="#cb9-248" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Track: lowest time</span>
-<span id="cb9-249"><a href="#cb9-249" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-250"><a href="#cb9-250" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Field: highest mark</span>
-<span id="cb9-251"><a href="#cb9-251" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-252"><a href="#cb9-252" aria-hidden="true" tabindex="-1"></a>-Calculate percent off peak: Measures deviation from best performance</span>
-<span id="cb9-253"><a href="#cb9-253" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-254"><a href="#cb9-254" aria-hidden="true" tabindex="-1"></a>-Flag Olympic year: Marks years that were Olympic year.</span>
-<span id="cb9-255"><a href="#cb9-255" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-256"><a href="#cb9-256" aria-hidden="true" tabindex="-1"></a>-Remove duplicates: Keeps only the best performance per athlete-event-year</span>
-<span id="cb9-257"><a href="#cb9-257" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-258"><a href="#cb9-258" aria-hidden="true" tabindex="-1"></a>This produces a clean performance table containing both performance records and athlete metadata named <span class="in">`athlete_bests`</span>.</span>
-<span id="cb9-259"><a href="#cb9-259" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-260"><a href="#cb9-260" aria-hidden="true" tabindex="-1"></a><span class="fu">### Clean and Standardize Events:</span></span>
-<span id="cb9-261"><a href="#cb9-261" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-262"><a href="#cb9-262" aria-hidden="true" tabindex="-1"></a>To ensure compatibility, we create a copy of athlete_bests named athlete_bests_clean with: -Lowercase gender: Standardizes gender format -Rename events: Maps verbose event names to IAAF-compatible short forms(e.g., "100 Meters" -<span class="sc">\&gt;</span> "100m")</span>
-<span id="cb9-263"><a href="#cb9-263" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-266"><a href="#cb9-266" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-267"><a href="#cb9-267" aria-hidden="true" tabindex="-1"></a>athlete_bests_clean <span class="ot">&lt;-</span> athlete_bests <span class="sc">|&gt;</span> </span>
-<span id="cb9-268"><a href="#cb9-268" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
-<span id="cb9-269"><a href="#cb9-269" aria-hidden="true" tabindex="-1"></a>    <span class="at">gender =</span> <span class="fu">tolower</span>(gender),</span>
-<span id="cb9-270"><a href="#cb9-270" aria-hidden="true" tabindex="-1"></a>    <span class="at">event =</span> <span class="fu">case_when</span>(</span>
-<span id="cb9-271"><a href="#cb9-271" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"100 Metres"</span> <span class="sc">~</span> <span class="st">"100m"</span>,</span>
-<span id="cb9-272"><a href="#cb9-272" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"200 Metres"</span> <span class="sc">~</span> <span class="st">"200m"</span>,</span>
-<span id="cb9-273"><a href="#cb9-273" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"400 Metres"</span> <span class="sc">~</span> <span class="st">"400m"</span>,</span>
-<span id="cb9-274"><a href="#cb9-274" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"800 Metres"</span> <span class="sc">~</span> <span class="st">"800m"</span>,</span>
-<span id="cb9-275"><a href="#cb9-275" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"1500 Metres"</span> <span class="sc">~</span> <span class="st">"1500m"</span>,</span>
-<span id="cb9-276"><a href="#cb9-276" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"5000 Metres"</span> <span class="sc">~</span> <span class="st">"5000m"</span>,</span>
-<span id="cb9-277"><a href="#cb9-277" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"10,000 Metres"</span> <span class="sc">~</span> <span class="st">"10000m"</span>,</span>
-<span id="cb9-278"><a href="#cb9-278" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Marathon"</span> <span class="sc">~</span> <span class="st">"Road Marathon"</span>,</span>
-<span id="cb9-279"><a href="#cb9-279" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Triple Jump"</span> <span class="sc">~</span> <span class="st">"TJ"</span>,</span>
-<span id="cb9-280"><a href="#cb9-280" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Long Jump"</span> <span class="sc">~</span> <span class="st">"LJ"</span>,</span>
-<span id="cb9-281"><a href="#cb9-281" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"High Jump"</span> <span class="sc">~</span> <span class="st">"HJ"</span>,</span>
-<span id="cb9-282"><a href="#cb9-282" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Shot Put"</span> <span class="sc">~</span> <span class="st">"SP"</span>,</span>
-<span id="cb9-283"><a href="#cb9-283" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Discus Throw"</span> <span class="sc">~</span> <span class="st">"DT"</span>,</span>
-<span id="cb9-284"><a href="#cb9-284" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Hammer Throw"</span> <span class="sc">~</span> <span class="st">"HT"</span>,</span>
-<span id="cb9-285"><a href="#cb9-285" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Javelin Throw"</span> <span class="sc">~</span> <span class="st">"JT"</span>,</span>
-<span id="cb9-286"><a href="#cb9-286" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Decathlon"</span> <span class="sc">~</span> <span class="st">"Dec."</span>,</span>
-<span id="cb9-287"><a href="#cb9-287" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Heptathlon"</span> <span class="sc">~</span> <span class="st">"Hept."</span>,</span>
-<span id="cb9-288"><a href="#cb9-288" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Pole Vault"</span> <span class="sc">~</span> <span class="st">"PV"</span>,</span>
-<span id="cb9-289"><a href="#cb9-289" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"10 Kilometres Race Walk"</span> <span class="sc">~</span> <span class="st">"10,000mW"</span>,</span>
-<span id="cb9-290"><a href="#cb9-290" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"50 Kilometres Race Walk"</span> <span class="sc">~</span> <span class="st">"50,000mW"</span>,</span>
-<span id="cb9-291"><a href="#cb9-291" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"20 Kilometres Race Walk"</span> <span class="sc">~</span> <span class="st">"20,000mW"</span>,</span>
-<span id="cb9-292"><a href="#cb9-292" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"100 Metres Hurdles"</span> <span class="sc">~</span> <span class="st">"100mH"</span>,</span>
-<span id="cb9-293"><a href="#cb9-293" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"110 Metres Hurdles"</span> <span class="sc">~</span> <span class="st">"110mH"</span>,</span>
-<span id="cb9-294"><a href="#cb9-294" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"400 Metres Hurdles"</span> <span class="sc">~</span> <span class="st">"400mH"</span>,</span>
-<span id="cb9-295"><a href="#cb9-295" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"3000 Metres Steeplechase"</span> <span class="sc">~</span> <span class="st">"3000m SC"</span>,</span>
-<span id="cb9-296"><a href="#cb9-296" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> event</span>
-<span id="cb9-297"><a href="#cb9-297" aria-hidden="true" tabindex="-1"></a>    )</span>
-<span id="cb9-298"><a href="#cb9-298" aria-hidden="true" tabindex="-1"></a>  )</span>
-<span id="cb9-299"><a href="#cb9-299" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-300"><a href="#cb9-300" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-301"><a href="#cb9-301" aria-hidden="true" tabindex="-1"></a>We then join athlete_bests_clean to iaaf_table, match athlete performances to IAAF scoring table using gender, event, and cluset mark less than or equal to athlete's mark. And we fill missing points, replaces <span class="in">`NA`</span> with 0 for unmatched entries.</span>
-<span id="cb9-302"><a href="#cb9-302" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-305"><a href="#cb9-305" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
-<span id="cb9-306"><a href="#cb9-306" aria-hidden="true" tabindex="-1"></a><span class="co"># join iaaf_table with athlete_bests_clean and get full dataset with result points</span></span>
-<span id="cb9-307"><a href="#cb9-307" aria-hidden="true" tabindex="-1"></a>round_decimals <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">digits =</span> <span class="dv">2</span>) {</span>
-<span id="cb9-308"><a href="#cb9-308" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(x <span class="sc">*</span> <span class="dv">10</span><span class="sc">^</span>digits) <span class="sc">/</span> <span class="dv">10</span><span class="sc">^</span>digits}</span>
-<span id="cb9-309"><a href="#cb9-309" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-310"><a href="#cb9-310" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-311"><a href="#cb9-311" aria-hidden="true" tabindex="-1"></a>athlete_bests_points <span class="ot">&lt;-</span> </span>
-<span id="cb9-312"><a href="#cb9-312" aria-hidden="true" tabindex="-1"></a>  athlete_bests_clean <span class="sc">|&gt;</span></span>
-<span id="cb9-313"><a href="#cb9-313" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(iaaf_table, <span class="fu">join_by</span>(gender, event, <span class="fu">closest</span>(mark <span class="sc">&lt;=</span> mark))) <span class="sc">|&gt;</span> </span>
-<span id="cb9-314"><a href="#cb9-314" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="at">points =</span> <span class="dv">0</span>))</span>
-<span id="cb9-315"><a href="#cb9-315" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb9-316"><a href="#cb9-316" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-317"><a href="#cb9-317" aria-hidden="true" tabindex="-1"></a><span class="fu">## Notes on join Behaviour</span></span>
-<span id="cb9-318"><a href="#cb9-318" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-319"><a href="#cb9-319" aria-hidden="true" tabindex="-1"></a>Your join uses closest on a condition with mark on both sides. That requires a recent dplyr and depends on how the IAAF reference orders marks. If you ever observe mismatched points at event boundaries, consider switching to an explicit directional rule that treats track and field differently, where track uses the largest IAAF mark that is less than or equal to the observed time and field uses the smallest IAAF mark that is greater than or equal to the observed distance or height.</span>
-<span id="cb9-320"><a href="#cb9-320" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-321"><a href="#cb9-321" aria-hidden="true" tabindex="-1"></a>The closest() join on mark requires a recent version of dplyr. If mismatches occur near event boundaries, consider refining the logic:</span>
-<span id="cb9-322"><a href="#cb9-322" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-323"><a href="#cb9-323" aria-hidden="true" tabindex="-1"></a>Track events: Use the largest IAAF mark ≤ observed time</span>
-<span id="cb9-324"><a href="#cb9-324" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-325"><a href="#cb9-325" aria-hidden="true" tabindex="-1"></a>Field events: Use the smallest IAAF mark ≥ observed distance</span>
-<span id="cb9-326"><a href="#cb9-326" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb9-327"><a href="#cb9-327" aria-hidden="true" tabindex="-1"></a>This directional rule ensures accurate scoring near performance thresholds.</span>
+<div class="sourceCode" id="cb5" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Tidy"</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="an">editor:</span><span class="co"> </span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">  markdown: </span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">    wrap: sentence</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>This section performs the complete data cleaning and standardization of the Olympic results, career progression data, IAAF 2005 scoring table (iaaf-2005.json), and the world-class standards table.</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>The objective is to produce a unified, well-structured dataset containing each athlete’s best annual performance, age at performance, event metadata, and standardized IAAF points.</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>Four key tidy tables are produced for use in downstream analysis:</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Olympics_data:** cleaned athlete, event, and Games metadata</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**Career_progression:** cleaned and date-formatted yearly performance records</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**iaaf_table:** flattened IAAF reference table in tidy format</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>**wac_standards:** standardized world-class standards in long format</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clean `Olympics_data.csv`</span></span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>The Olympic results file is processed to create a clean athlete-level metadata table, ensuring consistent formats, corrected anomalies, and standardized event classifications.</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a>This cleaned dataset will later be joined with career progression records to enrich performance analysis.</span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>**Key transformations:**</span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Read the raw CSV of Olympic track &amp; field results.</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`clean_names()`</span> to lowercase and snake_case all column names.</span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Split date spans (e.g., <span class="in">`"01 Aug 2012 – 12 Aug 2012"`</span>) into <span class="in">`start`</span> and <span class="in">`end`</span> dates.</span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Split event strings into gender (<span class="in">`"Men"`</span>/<span class="in">`"Women"`</span>) and event name, keeping remaining tokens intact.</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Remove wheelchair events.</span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Correct one known birthdate anomaly (<span class="in">`Aminata CAMARA`</span>).</span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Normalize gender labels to <span class="in">`"Men"`</span>/<span class="in">`"Women"`</span>.</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Convert <span class="in">`birth_date`</span> and <span class="in">`end`</span> to <span class="in">`Date`</span> objects (<span class="in">`%Y-%m-%d`</span>).</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Calculate <span class="in">`age`</span> at Games end date.</span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Recode <span class="in">`games`</span> as an ordered factor with readable labels (e.g., <span class="in">`"Tokyo '20"`</span>).</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Classify each event into <span class="in">`event_type`</span> categories (Sprints, Middle Distance, Throws, etc.).</span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Assign <span class="in">`event_category`</span> as <span class="in">`"Track"`</span> or <span class="in">`"Field"`</span>.</span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Normalize legacy event labels (e.g., <span class="in">`"Javelin Throw (old)" → "Javelin Throw"`</span>).</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Extract <span class="in">`games_year`</span> from the Games end date.</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Rename <span class="in">`nat`</span> to <span class="in">`nationality`</span>.</span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>This process produces a clean metadata table, <span class="in">`Olympics_data_tidy`</span></span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, echo = TRUE}</span></span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="in">Olympics_data &lt;- read_csv("/Users/yushiliu/Stat 468 final project/data/track and field data/olympics_data.csv", show_col_types = F) %&gt;%</span></span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a><span class="in">  janitor::clean_names() %&gt;% </span></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a><span class="in">  separate_wider_delim(date, delim = "–", names = c("start", "end")) %&gt;%</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a><span class="in">  separate_wider_delim(cols = event, names = c("gender", "event"), delim = " ",</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a><span class="in">                           too_many = "merge") %&gt;%</span></span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(str_detect(event, "Wheelchair", negate = T)) %&gt;% </span></span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(</span></span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a><span class="in">        # Manually fixed Aminata CAMARA's age</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a><span class="in">    birth_date = if_else(name == "Aminata CAMARA", "06 DEC 1973", birth_date),</span></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a><span class="in">    gender = if_else(gender == "Men's", "Men", "Women"),</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="in">    across(c(birth_date, end),  ~as.Date(format(</span></span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a><span class="in">    as.Date(., format = "%d %b %Y"), "%Y-%m-%d"))),</span></span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="in">    age = year(end) - year(birth_date),</span></span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a><span class="in">         games = factor(games, ordered = T,</span></span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a><span class="in">                        levels = c("The XXXII Olympic Games",</span></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXXI Olympic Games",</span></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXX Olympic Games",</span></span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXIX Olympic Games",</span></span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXVIII Olympic Games",</span></span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXVII Olympic Games",</span></span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXVI Olympic Games"</span></span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a><span class="in">                        ),</span></span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a><span class="in">                        labels = c("Tokyo '20", "Rio '16", "London '12", </span></span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "Beijing '08", "Athens '04", "Sydney '00",</span></span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "Atlanta '96")),</span></span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a><span class="in">    event_type = case_match(</span></span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a><span class="in">      event,</span></span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a><span class="in">      c("100 Metres", "200 Metres", "400 Metres", "400 Metres Hurdles", "100 Metres Hurdles", "110 Metres Hurdles") ~ "Sprints",</span></span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a><span class="in">      c("800 Metres", "1500 Metres", "3000 Metres Steeplechase") ~ "Middle Distance",</span></span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a><span class="in">      c("5000 Metres", "10,000 Metres") ~ "Long Distance",</span></span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a><span class="in">      c("Heptathlon", "Decathlon") ~ "Combined Events",</span></span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a><span class="in">      c("High Jump", "Long Jump", "Triple Jump", "Pole Vault") ~ "Jumps",</span></span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a><span class="in">      c("Shot Put", "Discus Throw", "Hammer Throw", "Javelin Throw", "Javelin Throw (old)") ~ "Throws",</span></span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a><span class="in">      c("10 Kilometres Race Walk", "20 Kilometres Race Walk", "50 Kilometres Race Walk", "Marathon") ~ "Road Races",</span></span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a><span class="in">      .default = "Other"</span></span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a><span class="in">    ),</span></span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a><span class="in">         event_category = if_else(str_detect(event, "Metres|Walk|Wheelchair") |event %in% c("Marathon"), "Track", "Field")</span></span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a><span class="in">         ) %&gt;% </span></span>
+<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(event = if_else(event == "Javelin Throw (old)", "Javelin Throw", event),</span></span>
+<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a><span class="in">         games_year = year(end)) %&gt;% rename("nationality" = nat)</span></span>
+<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clean `Career_Progression.csv`</span></span>
+<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a>The career progression dataset is cleaned to provide yearly performance records.\</span>
+<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a>Key steps:</span>
+<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Removing duplicate rows.</span>
+<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Parsing competition dates.</span>
+<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Flagging retirement status (<span class="in">`retired = TRUE`</span> if last competition year ≤ 2022).</span>
+<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Calculating **training age** (number of years since first recorded season) for each athlete-event.</span>
+<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a>The result is stored as <span class="in">`Career_progression`</span>.</span>
+<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a><span class="co"># load career progression data and identify athletes who are still active</span></span>
+<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>Career_progression <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">"../data/track and field data/career_progression (2).csv"</span>, <span class="at">show_col_types =</span> F) <span class="sc">%&gt;%</span> </span>
+<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>  <span class="fu">distinct</span>() <span class="sc">|&gt;</span> </span>
+<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">date =</span> <span class="fu">parse_date_time</span>(date, <span class="at">orders =</span> <span class="fu">c</span>(<span class="st">"%d %b %Y"</span>, <span class="st">"%d-%b-%y"</span>))) <span class="sc">%&gt;%</span></span>
+<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">retired =</span> <span class="fu">if_else</span>(<span class="fu">max</span>(year) <span class="sc">&lt;=</span> <span class="dv">2022</span>, T, F),</span>
+<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a>         <span class="at">training_age =</span> year <span class="sc">-</span> <span class="fu">min</span>(year) <span class="sc">+</span> <span class="dv">1</span>,</span>
+<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a>         <span class="at">.by =</span> <span class="fu">c</span>(<span class="st">"athlete_link"</span>, <span class="st">"event"</span>)) </span>
+<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a><span class="fu">## Flatten the IAAF Reference Table (`iaaf-2005.json`)</span></span>
+<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a><span class="ss">1.  </span>Reading the JSON file containing IAAF scoring data.</span>
+<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a><span class="ss">2.  </span>Flattening the nested structure into a tidy table with columns: <span class="in">`gender`</span>, <span class="in">`event`</span>, <span class="in">`mark`</span>, and <span class="in">`points`</span>.</span>
+<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a>    This creates the reference table <span class="in">`iaaf_table`</span>.</span>
+<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, echo=TRUE}</span></span>
+<span id="cb5-140"><a href="#cb5-140" aria-hidden="true" tabindex="-1"></a><span class="in">raw_json &lt;- read_json("../data/track and field data/iaaf-2025.json", simplifyVector = FALSE)</span></span>
+<span id="cb5-141"><a href="#cb5-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-142"><a href="#cb5-142" aria-hidden="true" tabindex="-1"></a><span class="in"># Convert list of lists to a flat tibble</span></span>
+<span id="cb5-143"><a href="#cb5-143" aria-hidden="true" tabindex="-1"></a><span class="in">iaaf_table &lt;- tibble::tibble(</span></span>
+<span id="cb5-144"><a href="#cb5-144" aria-hidden="true" tabindex="-1"></a><span class="in">  gender = sapply(raw_json, `[[`, "gender"),</span></span>
+<span id="cb5-145"><a href="#cb5-145" aria-hidden="true" tabindex="-1"></a><span class="in">  event = sapply(raw_json, `[[`, "event"),</span></span>
+<span id="cb5-146"><a href="#cb5-146" aria-hidden="true" tabindex="-1"></a><span class="in">  mark = sapply(raw_json, `[[`, "mark"),</span></span>
+<span id="cb5-147"><a href="#cb5-147" aria-hidden="true" tabindex="-1"></a><span class="in">  points = sapply(raw_json, `[[`, "points")</span></span>
+<span id="cb5-148"><a href="#cb5-148" aria-hidden="true" tabindex="-1"></a><span class="in">)</span></span>
+<span id="cb5-149"><a href="#cb5-149" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-150"><a href="#cb5-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-151"><a href="#cb5-151" aria-hidden="true" tabindex="-1"></a><span class="fu">## Tidy world-class standards(`wac-standards`)</span></span>
+<span id="cb5-152"><a href="#cb5-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-153"><a href="#cb5-153" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Reshaping the data into long format with <span class="in">`gender`</span> as a variable.</span>
+<span id="cb5-154"><a href="#cb5-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-155"><a href="#cb5-155" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Standardizing event names to match IAAF vocabulary.</span>
+<span id="cb5-156"><a href="#cb5-156" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-157"><a href="#cb5-157" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Converting all time-based marks to seconds (HH:MM:SS → seconds).</span>
+<span id="cb5-158"><a href="#cb5-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-159"><a href="#cb5-159" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Adjusting women’s hurdles labels to <span class="in">`100mH`</span>.</span>
+<span id="cb5-160"><a href="#cb5-160" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-161"><a href="#cb5-161" aria-hidden="true" tabindex="-1"></a>The result is stored as <span class="in">`wac_standards`</span>.</span>
+<span id="cb5-162"><a href="#cb5-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-165"><a href="#cb5-165" aria-hidden="true" tabindex="-1"></a><span class="in">```{r}</span></span>
+<span id="cb5-166"><a href="#cb5-166" aria-hidden="true" tabindex="-1"></a><span class="co">#compute world class standard and take mean of men and women</span></span>
+<span id="cb5-167"><a href="#cb5-167" aria-hidden="true" tabindex="-1"></a>wac_standards <span class="ot">&lt;-</span> <span class="fu">tribble</span>(</span>
+<span id="cb5-168"><a href="#cb5-168" aria-hidden="true" tabindex="-1"></a>  <span class="sc">~</span>Men, <span class="sc">~</span>Event, <span class="sc">~</span>Women,</span>
+<span id="cb5-169"><a href="#cb5-169" aria-hidden="true" tabindex="-1"></a>  <span class="st">"10.00"</span>, <span class="st">"100m"</span>, <span class="st">"11.07"</span>,</span>
+<span id="cb5-170"><a href="#cb5-170" aria-hidden="true" tabindex="-1"></a>  <span class="st">"20.16"</span>, <span class="st">"200m"</span>, <span class="st">"22.57"</span>,</span>
+<span id="cb5-171"><a href="#cb5-171" aria-hidden="true" tabindex="-1"></a>  <span class="st">"44.85"</span>, <span class="st">"400m"</span>, <span class="st">"50.75"</span>,</span>
+<span id="cb5-172"><a href="#cb5-172" aria-hidden="true" tabindex="-1"></a>  <span class="st">"1:44.50"</span>, <span class="st">"800m"</span>, <span class="st">"1:59.00"</span>,</span>
+<span id="cb5-173"><a href="#cb5-173" aria-hidden="true" tabindex="-1"></a>  <span class="st">"3:33.00"</span>, <span class="st">"1500m"</span>, <span class="st">"4:01.50"</span>,</span>
+<span id="cb5-174"><a href="#cb5-174" aria-hidden="true" tabindex="-1"></a>  <span class="st">"13:01.00"</span>, <span class="st">"5000m / 5km road"</span>, <span class="st">"14:50.00"</span>,</span>
+<span id="cb5-175"><a href="#cb5-175" aria-hidden="true" tabindex="-1"></a>  <span class="st">"27:00.00"</span>, <span class="st">"10,000m / 10km road"</span>, <span class="st">"30:20.00"</span>,</span>
+<span id="cb5-176"><a href="#cb5-176" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2:06:30"</span>, <span class="st">"Marathon"</span>, <span class="st">"2:23:30"</span>,</span>
+<span id="cb5-177"><a href="#cb5-177" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8:15.00"</span>, <span class="st">"3000m SC"</span>, <span class="st">"9:18.00"</span>,</span>
+<span id="cb5-178"><a href="#cb5-178" aria-hidden="true" tabindex="-1"></a>  <span class="st">"13.27"</span>, <span class="st">"110mH / 100mH"</span>, <span class="st">"12.73"</span>,</span>
+<span id="cb5-179"><a href="#cb5-179" aria-hidden="true" tabindex="-1"></a>  <span class="st">"48.50"</span>, <span class="st">"400m H"</span>, <span class="st">"54.65"</span>,</span>
+<span id="cb5-180"><a href="#cb5-180" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2.33"</span>, <span class="st">"High Jump"</span>, <span class="st">"1.97"</span>,</span>
+<span id="cb5-181"><a href="#cb5-181" aria-hidden="true" tabindex="-1"></a>  <span class="st">"5.82"</span>, <span class="st">"Pole Vault"</span>, <span class="st">"4.73"</span>,</span>
+<span id="cb5-182"><a href="#cb5-182" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8.27"</span>, <span class="st">"Long Jump"</span>, <span class="st">"6.86"</span>,</span>
+<span id="cb5-183"><a href="#cb5-183" aria-hidden="true" tabindex="-1"></a>  <span class="st">"17.22"</span>, <span class="st">"Triple Jump"</span>, <span class="st">"14.55"</span>,</span>
+<span id="cb5-184"><a href="#cb5-184" aria-hidden="true" tabindex="-1"></a>  <span class="st">"21.50"</span>, <span class="st">"Shot Put"</span>, <span class="st">"18.80"</span>,</span>
+<span id="cb5-185"><a href="#cb5-185" aria-hidden="true" tabindex="-1"></a>  <span class="st">"67.50"</span>, <span class="st">"Discus Throw"</span>, <span class="st">"64.50"</span>,</span>
+<span id="cb5-186"><a href="#cb5-186" aria-hidden="true" tabindex="-1"></a>  <span class="st">"78.20"</span>, <span class="st">"Hammer Throw"</span>, <span class="st">"74.00"</span>,</span>
+<span id="cb5-187"><a href="#cb5-187" aria-hidden="true" tabindex="-1"></a>  <span class="st">"85.50"</span>, <span class="st">"Javelin Throw"</span>, <span class="st">"64.00"</span>,</span>
+<span id="cb5-188"><a href="#cb5-188" aria-hidden="true" tabindex="-1"></a>  <span class="cn">NA</span>, <span class="st">"Heptathlon"</span>, <span class="st">"6500"</span>, <span class="co">#points 1174</span></span>
+<span id="cb5-189"><a href="#cb5-189" aria-hidden="true" tabindex="-1"></a>  <span class="st">"8550"</span>, <span class="st">"Decathlon"</span>, <span class="cn">NA</span>, <span class="co">#1212</span></span>
+<span id="cb5-190"><a href="#cb5-190" aria-hidden="true" tabindex="-1"></a>  <span class="st">"1:19:20"</span>, <span class="st">"20km Race Walk"</span>, <span class="st">"1:29:00"</span>,</span>
+<span id="cb5-191"><a href="#cb5-191" aria-hidden="true" tabindex="-1"></a>  <span class="st">"2:28:00"</span>, <span class="st">"35km Race Walk"</span>, <span class="st">"2:48:00"</span>)</span>
+<span id="cb5-192"><a href="#cb5-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-193"><a href="#cb5-193" aria-hidden="true" tabindex="-1"></a>wac_standards <span class="ot">&lt;-</span> wac_standards <span class="sc">|&gt;</span> </span>
+<span id="cb5-194"><a href="#cb5-194" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">Event =</span> <span class="fu">case_match</span>(</span>
+<span id="cb5-195"><a href="#cb5-195" aria-hidden="true" tabindex="-1"></a>    Event,</span>
+<span id="cb5-196"><a href="#cb5-196" aria-hidden="true" tabindex="-1"></a>    <span class="st">"5000m / 5km road"</span>       <span class="sc">~</span> <span class="st">"5000m"</span>,</span>
+<span id="cb5-197"><a href="#cb5-197" aria-hidden="true" tabindex="-1"></a>    <span class="st">"10,000m / 10km road"</span>    <span class="sc">~</span> <span class="st">"10000m"</span>,</span>
+<span id="cb5-198"><a href="#cb5-198" aria-hidden="true" tabindex="-1"></a>    <span class="st">"110mH / 100mH"</span>          <span class="sc">~</span> <span class="st">"110mH"</span>,  </span>
+<span id="cb5-199"><a href="#cb5-199" aria-hidden="true" tabindex="-1"></a>    <span class="st">"400m H"</span>                 <span class="sc">~</span> <span class="st">"400mH"</span>,</span>
+<span id="cb5-200"><a href="#cb5-200" aria-hidden="true" tabindex="-1"></a>    <span class="st">"High Jump"</span>              <span class="sc">~</span> <span class="st">"HJ"</span>,</span>
+<span id="cb5-201"><a href="#cb5-201" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Pole Vault"</span>             <span class="sc">~</span> <span class="st">"PV"</span>,</span>
+<span id="cb5-202"><a href="#cb5-202" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Long Jump"</span>              <span class="sc">~</span> <span class="st">"LJ"</span>,</span>
+<span id="cb5-203"><a href="#cb5-203" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Triple Jump"</span>            <span class="sc">~</span> <span class="st">"TJ"</span>,</span>
+<span id="cb5-204"><a href="#cb5-204" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Shot Put"</span>               <span class="sc">~</span> <span class="st">"SP"</span>,</span>
+<span id="cb5-205"><a href="#cb5-205" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Discus Throw"</span>           <span class="sc">~</span> <span class="st">"DT"</span>,</span>
+<span id="cb5-206"><a href="#cb5-206" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Hammer Throw"</span>           <span class="sc">~</span> <span class="st">"HT"</span>,</span>
+<span id="cb5-207"><a href="#cb5-207" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Javelin Throw"</span>          <span class="sc">~</span> <span class="st">"JT"</span>,</span>
+<span id="cb5-208"><a href="#cb5-208" aria-hidden="true" tabindex="-1"></a>    <span class="st">"20km Race Walk"</span>         <span class="sc">~</span> <span class="st">"20,000mW"</span>,</span>
+<span id="cb5-209"><a href="#cb5-209" aria-hidden="true" tabindex="-1"></a>    <span class="st">"35km Race Walk"</span>         <span class="sc">~</span> <span class="st">"35,000mW"</span>,</span>
+<span id="cb5-210"><a href="#cb5-210" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Marathon"</span>               <span class="sc">~</span> <span class="st">"Road Marathon"</span>,</span>
+<span id="cb5-211"><a href="#cb5-211" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Heptathlon"</span>             <span class="sc">~</span> <span class="st">"Hept."</span>,</span>
+<span id="cb5-212"><a href="#cb5-212" aria-hidden="true" tabindex="-1"></a>    <span class="st">"Decathlon"</span>              <span class="sc">~</span> <span class="st">"Dec."</span>,</span>
+<span id="cb5-213"><a href="#cb5-213" aria-hidden="true" tabindex="-1"></a>    <span class="at">.default =</span> Event</span>
+<span id="cb5-214"><a href="#cb5-214" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb5-215"><a href="#cb5-215" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-216"><a href="#cb5-216" aria-hidden="true" tabindex="-1"></a><span class="co">#convert time to seconds</span></span>
+<span id="cb5-217"><a href="#cb5-217" aria-hidden="true" tabindex="-1"></a>parse_mark_to_seconds <span class="ot">&lt;-</span> <span class="cf">function</span>(mark_vec) {</span>
+<span id="cb5-218"><a href="#cb5-218" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sapply</span>(mark_vec, <span class="cf">function</span>(mark) {</span>
+<span id="cb5-219"><a href="#cb5-219" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">is.na</span>(mark)) <span class="fu">return</span>(<span class="cn">NA_real_</span>)</span>
+<span id="cb5-220"><a href="#cb5-220" aria-hidden="true" tabindex="-1"></a>    parts <span class="ot">&lt;-</span> <span class="fu">unlist</span>(<span class="fu">strsplit</span>(mark, <span class="st">":"</span>))</span>
+<span id="cb5-221"><a href="#cb5-221" aria-hidden="true" tabindex="-1"></a>    parts <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(parts)</span>
+<span id="cb5-222"><a href="#cb5-222" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> (<span class="fu">length</span>(parts) <span class="sc">==</span> <span class="dv">3</span>) {</span>
+<span id="cb5-223"><a href="#cb5-223" aria-hidden="true" tabindex="-1"></a>      <span class="co"># HH:MM:SS</span></span>
+<span id="cb5-224"><a href="#cb5-224" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(parts[<span class="dv">1</span>]<span class="sc">*</span><span class="dv">3600</span> <span class="sc">+</span> parts[<span class="dv">2</span>]<span class="sc">*</span><span class="dv">60</span> <span class="sc">+</span> parts[<span class="dv">3</span>])</span>
+<span id="cb5-225"><a href="#cb5-225" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> <span class="cf">if</span> (<span class="fu">length</span>(parts) <span class="sc">==</span> <span class="dv">2</span>) {</span>
+<span id="cb5-226"><a href="#cb5-226" aria-hidden="true" tabindex="-1"></a>      <span class="co"># MM:SS</span></span>
+<span id="cb5-227"><a href="#cb5-227" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(parts[<span class="dv">1</span>]<span class="sc">*</span><span class="dv">60</span> <span class="sc">+</span> parts[<span class="dv">2</span>])</span>
+<span id="cb5-228"><a href="#cb5-228" aria-hidden="true" tabindex="-1"></a>    } <span class="cf">else</span> {</span>
+<span id="cb5-229"><a href="#cb5-229" aria-hidden="true" tabindex="-1"></a>      <span class="co"># Assume plain seconds</span></span>
+<span id="cb5-230"><a href="#cb5-230" aria-hidden="true" tabindex="-1"></a>      <span class="fu">return</span>(<span class="fu">as.numeric</span>(mark))</span>
+<span id="cb5-231"><a href="#cb5-231" aria-hidden="true" tabindex="-1"></a>    }</span>
+<span id="cb5-232"><a href="#cb5-232" aria-hidden="true" tabindex="-1"></a>  })</span>
+<span id="cb5-233"><a href="#cb5-233" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb5-234"><a href="#cb5-234" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-235"><a href="#cb5-235" aria-hidden="true" tabindex="-1"></a>wac_long <span class="ot">&lt;-</span> wac_standards <span class="sc">|&gt;</span> </span>
+<span id="cb5-236"><a href="#cb5-236" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(</span>
+<span id="cb5-237"><a href="#cb5-237" aria-hidden="true" tabindex="-1"></a>    <span class="at">cols =</span> <span class="fu">c</span>(Men, Women),</span>
+<span id="cb5-238"><a href="#cb5-238" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_to =</span> <span class="st">"gender"</span>,</span>
+<span id="cb5-239"><a href="#cb5-239" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_to =</span> <span class="st">"mark"</span></span>
+<span id="cb5-240"><a href="#cb5-240" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">|&gt;</span> </span>
+<span id="cb5-241"><a href="#cb5-241" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">mark =</span> <span class="fu">parse_mark_to_seconds</span>(mark), </span>
+<span id="cb5-242"><a href="#cb5-242" aria-hidden="true" tabindex="-1"></a>         <span class="at">gender =</span> <span class="fu">tolower</span>(gender), </span>
+<span id="cb5-243"><a href="#cb5-243" aria-hidden="true" tabindex="-1"></a>         <span class="at">Event =</span> <span class="fu">case_when</span>(</span>
+<span id="cb5-244"><a href="#cb5-244" aria-hidden="true" tabindex="-1"></a>           Event <span class="sc">==</span> <span class="st">"110mH"</span> <span class="sc">&amp;</span> gender <span class="sc">==</span> <span class="st">"women"</span> <span class="sc">~</span> <span class="st">"100mH"</span>,</span>
+<span id="cb5-245"><a href="#cb5-245" aria-hidden="true" tabindex="-1"></a>          <span class="cn">TRUE</span> <span class="sc">~</span> Event))</span>
+<span id="cb5-246"><a href="#cb5-246" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb5-247"><a href="#cb5-247" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-248"><a href="#cb5-248" aria-hidden="true" tabindex="-1"></a><span class="fu">## Summary and Importance</span></span>
+<span id="cb5-249"><a href="#cb5-249" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-250"><a href="#cb5-250" aria-hidden="true" tabindex="-1"></a>This unified tidy dataset forms the foundation for all subsequent modeling.</span>
+<span id="cb5-251"><a href="#cb5-251" aria-hidden="true" tabindex="-1"></a>By integrating performance records, event metadata, and standardized scoring into a consistent structure, it supports accurate estimation of aging curves through Functional Principal Component Analysis (FPCA) and enables effective clustering of performance trajectories.</span>
+<span id="cb5-252"><a href="#cb5-252" aria-hidden="true" tabindex="-1"></a>The standardized format also ensures reproducibility and makes predictions directly interpretable across athletes, events, and time periods.</span>
 </code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->

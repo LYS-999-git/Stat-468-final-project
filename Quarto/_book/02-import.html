@@ -2,7 +2,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
 
 <meta charset="utf-8">
-<meta name="generator" content="quarto-1.4.555">
+<meta name="generator" content="quarto-1.4.553">
 
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
@@ -251,16 +251,16 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>Both are imported with <code>read_csv()</code> and cleaned as follows:</p>
 <section id="information-required" class="level2" data-number="2.1">
 <h2 data-number="2.1" class="anchored" data-anchor-id="information-required"><span class="header-section-number">2.1</span> Information Required</h2>
 <p>The analysis requires the following information for each athlete and event observation.<br>
-- Athlete identifier which includes name and athlete link.<br>
-- Performance which is time for races and distance.</p>
-<p>- Event type which comes from the event field.<br>
-- Date of performance which comes from the “date” field.<br>
-- Birthdate which comes from the “Birth.Date” field.<br>
-- Athlete age at the time of performance which will be derived from “Birthdate” and “Date of performance”.</p>
+</p>
+<p>-Athlete identifier, which includes name and athlete link<br>
+-Performance, which is time for races and distance<br>
+-Event type, which comes from the event field<br>
+-Date of performance, which comes from the “date” field<br>
+-Birthdate, which comes from the “Birth.Date” field<br>
+-Athlete age at the time of performance, derived from “Birthdate” and “Date of performance”</p>
 </section>
 <section id="data-sources" class="level2" data-number="2.2">
 <h2 data-number="2.2" class="anchored" data-anchor-id="data-sources"><span class="header-section-number">2.2</span> Data Sources</h2>
@@ -785,139 +785,40 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
 <span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="in">library(ggplot2)</span></span>
 <span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
 <span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>Both are imported with <span class="in">`read_csv()`</span> and cleaned as follows:</span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## Information Required</span></span>
 <span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,message = FALSE, warning = FALSE}</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="in">Career_progression &lt;- read.csv("data/track and field data/career_progression (2).csv")</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="in">Olympics_data &lt;- read_csv("data/track and field data/olympics_data.csv", show_col_types = F) %&gt;%</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="in">  janitor::clean_names() %&gt;% </span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="in">  separate_wider_delim(date, delim = "–", names = c("start", "end")) %&gt;%</span></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="in">  separate_wider_delim(cols = event, names = c("gender", "event"), delim = " ",</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="in">                           too_many = "merge") %&gt;%</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(str_detect(event, "Wheelchair", negate = T)) %&gt;% </span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="in">        # Manually fixed Aminata CAMARA's age</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="in">    birth_date = if_else(name == "Aminata CAMARA", "06 DEC 1973", birth_date),</span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="in">    gender = if_else(gender == "Men's", "Men", "Women"),</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="in">    across(c(birth_date, end),  ~as.Date(format(</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="in">    as.Date(., format = "%d %b %Y"), "%Y-%m-%d"))),</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="in">    age = year(end) - year(birth_date),</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="in">         games = factor(games, ordered = T,</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="in">                        levels = c("The XXXII Olympic Games",</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXXI Olympic Games",</span></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXX Olympic Games",</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXIX Olympic Games",</span></span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXVIII Olympic Games",</span></span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXVII Olympic Games",</span></span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "The XXVI Olympic Games"</span></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="in">                        ),</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="in">                        labels = c("Tokyo '20", "Rio '16", "London '12", </span></span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "Beijing '08", "Athens '04", "Sydney '00",</span></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="in">                                   "Atlanta '96")),</span></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="in">    event_type = case_match(</span></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="in">      event,</span></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="in">      c("100 Metres", "200 Metres", "400 Metres", "400 Metres Hurdles", "100 Metres Hurdles", "110 Metres Hurdles") ~ "Sprints",</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="in">      c("800 Metres", "1500 Metres", "3000 Metres Steeplechase") ~ "Middle Distance",</span></span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="in">      c("5000 Metres", "10,000 Metres") ~ "Long Distance",</span></span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a><span class="in">      c("Heptathlon", "Decathlon") ~ "Combined Events",</span></span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a><span class="in">      c("High Jump", "Long Jump", "Triple Jump", "Pole Vault") ~ "Jumps",</span></span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a><span class="in">      c("Shot Put", "Discus Throw", "Hammer Throw", "Javelin Throw", "Javelin Throw (old)") ~ "Throws",</span></span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a><span class="in">      c("10 Kilometres Race Walk", "20 Kilometres Race Walk", "50 Kilometres Race Walk", "Marathon") ~ "Road Races",</span></span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a><span class="in">      .default = "Other"</span></span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a><span class="in">    ),</span></span>
-<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a><span class="in">         event_category = if_else(str_detect(event, "Metres|Walk|Wheelchair") |event %in% c("Marathon"), "Track", "Field")</span></span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a><span class="in">         ) %&gt;% </span></span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(event = if_else(event == "Javelin Throw (old)", "Javelin Throw", event),</span></span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="in">         games_year = year(end)) %&gt;% rename("nationality" = nat)</span></span>
-<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="in"># load career progression data and identify athletes who are still active</span></span>
-<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a><span class="in">Career_progression &lt;- read_csv("data/track and field data/career_progression (2).csv", show_col_types = F) %&gt;% </span></span>
-<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="in">  distinct() |&gt; </span></span>
-<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(date = parse_date_time(date, orders = c("%d %b %Y", "%d-%b-%y"))) %&gt;%</span></span>
-<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(retired = if_else(max(year) &lt;= 2022, T, F),</span></span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a><span class="in">         training_age = year - min(year) + 1,</span></span>
-<span id="cb2-73"><a href="#cb2-73" aria-hidden="true" tabindex="-1"></a><span class="in">         .by = c("athlete_link", "event")) </span></span>
-<span id="cb2-74"><a href="#cb2-74" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-75"><a href="#cb2-75" aria-hidden="true" tabindex="-1"></a><span class="in"># find the seasons best performances of each athlete</span></span>
-<span id="cb2-76"><a href="#cb2-76" aria-hidden="true" tabindex="-1"></a><span class="in">athlete_bests &lt;-</span></span>
-<span id="cb2-77"><a href="#cb2-77" aria-hidden="true" tabindex="-1"></a><span class="in">  Career_progression %&gt;%  inner_join(</span></span>
-<span id="cb2-78"><a href="#cb2-78" aria-hidden="true" tabindex="-1"></a><span class="in">    Olympics_data %&gt;%  filter(!is.na(birth_date)) %&gt;%</span></span>
-<span id="cb2-79"><a href="#cb2-79" aria-hidden="true" tabindex="-1"></a><span class="in">      distinct(birth_date, athlete_links, event, event_type, .keep_all = T) %&gt;%</span></span>
-<span id="cb2-80"><a href="#cb2-80" aria-hidden="true" tabindex="-1"></a><span class="in">      select(name, birth_date, athlete_links, event, nationality, event_type, </span></span>
-<span id="cb2-81"><a href="#cb2-81" aria-hidden="true" tabindex="-1"></a><span class="in">             event_category, gender, games_year),</span></span>
-<span id="cb2-82"><a href="#cb2-82" aria-hidden="true" tabindex="-1"></a><span class="in">    by = c("athlete_link" = "athlete_links", "event")</span></span>
-<span id="cb2-83"><a href="#cb2-83" aria-hidden="true" tabindex="-1"></a><span class="in">  ) %&gt;%  </span></span>
-<span id="cb2-84"><a href="#cb2-84" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(age_years = year(date) - year(birth_date), </span></span>
-<span id="cb2-85"><a href="#cb2-85" aria-hidden="true" tabindex="-1"></a><span class="in">         age_days = as.double(</span></span>
-<span id="cb2-86"><a href="#cb2-86" aria-hidden="true" tabindex="-1"></a><span class="in">           difftime(</span></span>
-<span id="cb2-87"><a href="#cb2-87" aria-hidden="true" tabindex="-1"></a><span class="in">             date, birth_date,units = "days"</span></span>
-<span id="cb2-88"><a href="#cb2-88" aria-hidden="true" tabindex="-1"></a><span class="in">           )</span></span>
-<span id="cb2-89"><a href="#cb2-89" aria-hidden="true" tabindex="-1"></a><span class="in">         ),</span></span>
-<span id="cb2-90"><a href="#cb2-90" aria-hidden="true" tabindex="-1"></a><span class="in">         performance = str_remove_all(performance, "h") # I will count hand timed results as legitimate</span></span>
-<span id="cb2-91"><a href="#cb2-91" aria-hidden="true" tabindex="-1"></a><span class="in">         ) %&gt;%</span></span>
-<span id="cb2-92"><a href="#cb2-92" aria-hidden="true" tabindex="-1"></a><span class="in">    mutate(mark = if_else(</span></span>
-<span id="cb2-93"><a href="#cb2-93" aria-hidden="true" tabindex="-1"></a><span class="in">      event_category == "Track",</span></span>
-<span id="cb2-94"><a href="#cb2-94" aria-hidden="true" tabindex="-1"></a><span class="in">      as.numeric(</span></span>
-<span id="cb2-95"><a href="#cb2-95" aria-hidden="true" tabindex="-1"></a><span class="in">        difftime(</span></span>
-<span id="cb2-96"><a href="#cb2-96" aria-hidden="true" tabindex="-1"></a><span class="in">          lubridate::parse_date_time2(performance, orders = c("%H:%M:%S", "%M:%S:00", "%M:%OS", "%OS"), exact = T),</span></span>
-<span id="cb2-97"><a href="#cb2-97" aria-hidden="true" tabindex="-1"></a><span class="in">          lubridate::parse_date_time2("0", orders ="S"),</span></span>
-<span id="cb2-98"><a href="#cb2-98" aria-hidden="true" tabindex="-1"></a><span class="in">          units = "secs"</span></span>
-<span id="cb2-99"><a href="#cb2-99" aria-hidden="true" tabindex="-1"></a><span class="in">        )</span></span>
-<span id="cb2-100"><a href="#cb2-100" aria-hidden="true" tabindex="-1"></a><span class="in">      ), parse_number(performance)),</span></span>
-<span id="cb2-101"><a href="#cb2-101" aria-hidden="true" tabindex="-1"></a><span class="in">      # the below accounts for edge cases that lubridate can't parse, like a 62s 400MH</span></span>
-<span id="cb2-102"><a href="#cb2-102" aria-hidden="true" tabindex="-1"></a><span class="in">      mark = if_else(is.na(mark), parse_number(performance), mark)</span></span>
-<span id="cb2-103"><a href="#cb2-103" aria-hidden="true" tabindex="-1"></a><span class="in">      ) %&gt;%</span></span>
-<span id="cb2-104"><a href="#cb2-104" aria-hidden="true" tabindex="-1"></a><span class="in">    mutate(</span></span>
-<span id="cb2-105"><a href="#cb2-105" aria-hidden="true" tabindex="-1"></a><span class="in">      best_performance = case_when(</span></span>
-<span id="cb2-106"><a href="#cb2-106" aria-hidden="true" tabindex="-1"></a><span class="in">        event_category == "Track" &amp; mark == min(mark, na.rm = T) ~ T, # we want the lowest time</span></span>
-<span id="cb2-107"><a href="#cb2-107" aria-hidden="true" tabindex="-1"></a><span class="in">        event_category == "Field" &amp; mark == max(mark, na.rm = T) ~ T, # we want the furthest/highest performance</span></span>
-<span id="cb2-108"><a href="#cb2-108" aria-hidden="true" tabindex="-1"></a><span class="in">        .default = F</span></span>
-<span id="cb2-109"><a href="#cb2-109" aria-hidden="true" tabindex="-1"></a><span class="in">      ),</span></span>
-<span id="cb2-110"><a href="#cb2-110" aria-hidden="true" tabindex="-1"></a><span class="in">      percent_off_peak = if_else(event_category == "Track", abs((mark - min(mark, na.rm = T))/mark), </span></span>
-<span id="cb2-111"><a href="#cb2-111" aria-hidden="true" tabindex="-1"></a><span class="in">                                 abs((mark - max(mark, na.rm = T))/mark)),</span></span>
-<span id="cb2-112"><a href="#cb2-112" aria-hidden="true" tabindex="-1"></a><span class="in">      olympic_year = if_else(year %in% c(seq(1980, 2016, 4), 2021), T, F),</span></span>
-<span id="cb2-113"><a href="#cb2-113" aria-hidden="true" tabindex="-1"></a><span class="in">      .by = c("athlete_link", "event")</span></span>
-<span id="cb2-114"><a href="#cb2-114" aria-hidden="true" tabindex="-1"></a><span class="in">    ) %&gt;% </span></span>
-<span id="cb2-115"><a href="#cb2-115" aria-hidden="true" tabindex="-1"></a><span class="in">   # remove duplicate seasons bests</span></span>
-<span id="cb2-116"><a href="#cb2-116" aria-hidden="true" tabindex="-1"></a><span class="in">  slice_max(with_ties = F, n = 1, order_by = age_days, by = c("event", "year",  "athlete_link"))</span></span>
-<span id="cb2-117"><a href="#cb2-117" aria-hidden="true" tabindex="-1"></a><span class="in">saveRDS(athlete_bests, "data/athlete_bests.rds")</span></span>
-<span id="cb2-118"><a href="#cb2-118" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb2-119"><a href="#cb2-119" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-120"><a href="#cb2-120" aria-hidden="true" tabindex="-1"></a><span class="fu">## Information Required</span></span>
-<span id="cb2-121"><a href="#cb2-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-122"><a href="#cb2-122" aria-hidden="true" tabindex="-1"></a>The analysis requires the following information for each athlete and event observation.\</span>
-<span id="cb2-123"><a href="#cb2-123" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Athlete identifier which includes name and athlete link.\</span>
-<span id="cb2-124"><a href="#cb2-124" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Performance which is time for races and distance.</span>
-<span id="cb2-125"><a href="#cb2-125" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-126"><a href="#cb2-126" aria-hidden="true" tabindex="-1"></a><span class="sc">\-</span> Event type which comes from the event field.\</span>
-<span id="cb2-127"><a href="#cb2-127" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Date of performance which comes from the "date" field.\</span>
-<span id="cb2-128"><a href="#cb2-128" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Birthdate which comes from the "Birth.Date" field.\</span>
-<span id="cb2-129"><a href="#cb2-129" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Athlete age at the time of performance which will be derived from "Birthdate" and "Date of performance".</span>
-<span id="cb2-130"><a href="#cb2-130" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-131"><a href="#cb2-131" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Sources</span></span>
-<span id="cb2-132"><a href="#cb2-132" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-133"><a href="#cb2-133" aria-hidden="true" tabindex="-1"></a>This project requires three datasets in total. Two datasets will be obtained from WorldAthelete.org and imported with <span class="in">`read_csv()`</span>. These two datasets contains only the best performance per year for each athlete in each event. That means if an athlete participates in the same event multiple times in a year, only their top result is included. If the same athlete competes in multiple events in the same year, they will have one record for each event. And another <span class="in">`iaaf-2005.json`</span> dataset is obtained from xxxx's github and imported with <span class="in">`read_json()`</span> .</span>
-<span id="cb2-134"><a href="#cb2-134" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-135"><a href="#cb2-135" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The file <span class="in">`career_progression.csv`</span> contains performance data, year, date, event, and athlete-link(identifiers).</span>
-<span id="cb2-136"><a href="#cb2-136" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The file <span class="in">`olympics_data.csv`</span> provides athlete level metadata including name, birthdate, gender, event, game, game-link, athlete-link, nationality, and Olympic appearances(for example: performance mark and their rank)</span>
-<span id="cb2-137"><a href="#cb2-137" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The file <span class="in">`iaaf-2005.json`</span> provides iaaf-points, mark and gender per event</span>
-<span id="cb2-138"><a href="#cb2-138" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-139"><a href="#cb2-139" aria-hidden="true" tabindex="-1"></a><span class="fu">## Collection Method</span></span>
-<span id="cb2-140"><a href="#cb2-140" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-141"><a href="#cb2-141" aria-hidden="true" tabindex="-1"></a>The two athlete related datasets have already been downloaded and imported manually using the standard read-csv() procedure. From "Birthdate" and "Performance date" we will compute the athlete age in years at the time of performance. Age is essential because aging curves are indexed by age rather than by calendar date. Additionally, the iaaf-2005.json dataset is also downloaded and imported manually. We need to convert individual athlete's performance marks to a standard IAAF-points, so that we can compare their aging curves based on the IAAF-points across different events.</span>
-<span id="cb2-142"><a href="#cb2-142" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-143"><a href="#cb2-143" aria-hidden="true" tabindex="-1"></a><span class="fu">## Frequency of Collection</span></span>
-<span id="cb2-144"><a href="#cb2-144" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-145"><a href="#cb2-145" aria-hidden="true" tabindex="-1"></a>A single collection is sufficient for this study because the focus is historical performance progression. The analysis is not designed for live or streaming updates. Any future extensions that add seasons or events can append to these files and rerun the same pipeline.</span>
-<span id="cb2-146"><a href="#cb2-146" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-147"><a href="#cb2-147" aria-hidden="true" tabindex="-1"></a><span class="fu">## Assumptions and Data Preparation Notes</span></span>
-<span id="cb2-148"><a href="#cb2-148" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-149"><a href="#cb2-149" aria-hidden="true" tabindex="-1"></a><span class="sc">\-</span> Athlete age is measured in years using the difference between performance date and birthdate.\</span>
-<span id="cb2-150"><a href="#cb2-150" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Performance is standardized for cross event comparison using IAAF points.\</span>
-<span id="cb2-151"><a href="#cb2-151" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Each row in the linked dataset (linked <span class="in">`career_progression.csv`</span> and <span class="in">`olympics_data.csv`</span> ) represents one athlete performance on one date for one event. (details in tidy chapter)\</span>
-<span id="cb2-152"><a href="#cb2-152" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Athlete identifier fields must be consistent across files to enable a reliable merge.\</span>
-<span id="cb2-153"><a href="#cb2-153" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Basic integrity checks such as duplicate detection and valid date parsing will be performed in the tidy chapter.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>The analysis requires the following information for each athlete and event observation.\</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>-Athlete identifier, which includes name and athlete link\</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>-Performance, which is time for races and distance\</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>-Event type, which comes from the event field\</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>-Date of performance, which comes from the "date" field\</span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>-Birthdate, which comes from the "Birth.Date" field\</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>-Athlete age at the time of performance, derived from "Birthdate" and "Date of performance"</span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="fu">## Data Sources</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>This project requires three datasets in total. Two datasets will be obtained from WorldAthelete.org and imported with <span class="in">`read_csv()`</span>. These two datasets contains only the best performance per year for each athlete in each event. That means if an athlete participates in the same event multiple times in a year, only their top result is included. If the same athlete competes in multiple events in the same year, they will have one record for each event. And another <span class="in">`iaaf-2005.json`</span> dataset is obtained from xxxx's github and imported with <span class="in">`read_json()`</span> .</span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The file <span class="in">`career_progression.csv`</span> contains performance data, year, date, event, and athlete-link(identifiers).</span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The file <span class="in">`olympics_data.csv`</span> provides athlete level metadata including name, birthdate, gender, event, game, game-link, athlete-link, nationality, and Olympic appearances(for example: performance mark and their rank)</span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>The file <span class="in">`iaaf-2005.json`</span> provides iaaf-points, mark and gender per event</span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="fu">## Collection Method</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a>The two athlete related datasets have already been downloaded and imported manually using the standard read-csv() procedure. From "Birthdate" and "Performance date" we will compute the athlete age in years at the time of performance. Age is essential because aging curves are indexed by age rather than by calendar date. Additionally, the iaaf-2005.json dataset is also downloaded and imported manually. We need to convert individual athlete's performance marks to a standard IAAF-points, so that we can compare their aging curves based on the IAAF-points across different events.</span>
+<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a><span class="fu">## Frequency of Collection</span></span>
+<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a>A single collection is sufficient for this study because the focus is historical performance progression. The analysis is not designed for live or streaming updates. Any future extensions that add seasons or events can append to these files and rerun the same pipeline.</span>
+<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a><span class="fu">## Assumptions and Data Preparation Notes</span></span>
+<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="sc">\-</span> Athlete age is measured in years using the difference between performance date and birthdate.\</span>
+<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Performance is standardized for cross event comparison using IAAF points.\</span>
+<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Each row in the linked dataset (linked <span class="in">`career_progression.csv`</span> and <span class="in">`olympics_data.csv`</span> ) represents one athlete performance on one date for one event. (details in tidy chapter)\</span>
+<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Athlete identifier fields must be consistent across files to enable a reliable merge.\</span>
+<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a><span class="ss">- </span>Basic integrity checks such as duplicate detection and valid date parsing will be performed in the tidy chapter.</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 

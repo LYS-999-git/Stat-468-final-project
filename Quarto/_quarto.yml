@@ -1,6 +1,5 @@
 project:
-  type: website
-  output-dir: docs
+  type: book
 
 book:
   title: "Stat 468 final project"
@@ -31,6 +30,5 @@ execute:
   warning: false
   message: false
   echo: true
-  freeze: auto
 
 bibliography: references.bib

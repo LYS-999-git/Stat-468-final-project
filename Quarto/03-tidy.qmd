@@ -1,53 +1,61 @@
 ---
 title: "Tidy"
+editor: 
+  markdown: 
+    wrap: sentence
 ---
 
-```{r,message=FALSE, warning=FALSE}
-library(readr)
-library(tibble)
-library(jsonlite)
-library(tidyverse)
-library(dplyr)
-library(shiny)
-library(refund)
-library(face)
-library(fields)
-library(trelliscope)
-library(ggplot2)
-```
+This section performs the complete data cleaning and standardization of the Olympic results, career progression data, IAAF 2005 scoring table (iaaf-2005.json), and the world-class standards table.
+The objective is to produce a unified, well-structured dataset containing each athlete’s best annual performance, age at performance, event metadata, and standardized IAAF points.
 
-This section performs the complete data cleaning and standardization on the Olympic results, career progression and iaaf-2005.json(world class standard points). <!-- The objective is to produce a unified, well-structured dataset containing each athlete’s best annual performance, age at performance, event information, and standardized IAAF points. -->
+Four key tidy tables are produced for use in downstream analysis:
 
-<!-- The procedure involves merging competition results with athlete metadata, parsing and standardizing dates, harmonizing event names, converting performance marks to a consistent numeric scale, calculating age at performance, and integrating the IAAF 2005 points table with the cleaned and linked datasets (career progression and Olympic data). -->
+-   **Olympics_data:** cleaned athlete, event, and Games metadata
 
-Outputs are four tidy tables that downstream steps can rely on:
+-   **Career_progression:** cleaned and date-formatted yearly performance records
 
--   `Olympics_data_tidy` — cleaned athlete/event/game metadata
--   `Career_progression_tidy` — de-duplicated, date-parsed season records
--   `iaaf_table_tidy` — flattened IAAF reference table
--   `wac_standards_tidy` — harmonized world-class marks in a tidy long format with times converted to seconds (where applicable)
+-   **iaaf_table:** flattened IAAF reference table in tidy format
 
-```{r,message=FALSE, warning=FALSE}
-library(readr)
-library(tibble)
-library(jsonlite)
-library(tidyverse)
-library(dplyr)
-library(shiny)
-library(refund)
-library(face)
-library(fields)
-library(trelliscope)
-library(ggplot2)
-```
+-   **wac_standards:** standardized world-class standards in long format
 
 ## Clean `Olympics_data.csv`
 
-The Olympic dataset is imported and cleaned to provide athlete-level metadata. (We standardize names, split date ranges, split gender/event, remove wheelchair entries, fix one birth date, parse dates, normalize gender, add age at Games end, create an ordered games factor, classify events, normalize an old label, add games_year, and rename nat to nationality.) Key transformations include:
+The Olympic results file is processed to create a clean athlete-level metadata table, ensuring consistent formats, corrected anomalies, and standardized event classifications.
+This cleaned dataset will later be joined with career progression records to enrich performance analysis.
 
--Read the CSV of Olympic track & field results. -clean_names(): lowercases and snake_cases column names. -Split the date span like “01 Aug 2012 – 12 Aug 2012” into start and end. -Split the event string’s first token into gender (“Men’s/Women’s”) and the remainder into event; too_many="merge" keeps the rest intact. -Drop wheelchair events. -Manual data fix: overwrite a specific athlete’s birth_date. -Normalize gender to “Men/Women.” -Convert birth_date and end from “%d %b %Y” (e.g., “06 DEC 1973”) to Date. -Compute age at Games end. -Recode games to an ordered factor with readable labels. -Classify events into event_type buckets (Sprints/Middle Distance/etc.). -Classify event_category as Track vs Field. -Normalize an event label and add a games_year. -Rename nat to nationality.
+**Key transformations:**
 
-Extracted competition year from the end date Code shows below:
+-   Read the raw CSV of Olympic track & field results.
+
+-   `clean_names()` to lowercase and snake_case all column names.
+
+-   Split date spans (e.g., `"01 Aug 2012 – 12 Aug 2012"`) into `start` and `end` dates.
+
+-   Split event strings into gender (`"Men"`/`"Women"`) and event name, keeping remaining tokens intact.
+
+-   Remove wheelchair events.
+
+-   Correct one known birthdate anomaly (`Aminata CAMARA`).
+
+-   Normalize gender labels to `"Men"`/`"Women"`.
+
+-   Convert `birth_date` and `end` to `Date` objects (`%Y-%m-%d`).
+
+-   Calculate `age` at Games end date.
+
+-   Recode `games` as an ordered factor with readable labels (e.g., `"Tokyo '20"`).
+
+-   Classify each event into `event_type` categories (Sprints, Middle Distance, Throws, etc.).
+
+-   Assign `event_category` as `"Track"` or `"Field"`.
+
+-   Normalize legacy event labels (e.g., `"Javelin Throw (old)" → "Javelin Throw"`).
+
+-   Extract `games_year` from the Games end date.
+
+-   Rename `nat` to `nationality`.
+
+This process produces a clean metadata table, `Olympics_data_tidy`
 
 ```{r, echo = TRUE}
 Olympics_data <- read_csv("/Users/yushiliu/Stat 468 final project/data/track and field data/olympics_data.csv", show_col_types = F) %>%
@@ -92,15 +100,21 @@ Olympics_data <- read_csv("/Users/yushiliu/Stat 468 final project/data/track and
          games_year = year(end)) %>% rename("nationality" = nat)
 ```
 
-The result is a clean metadata table named Olympics_data.
-
 ## Clean `Career_Progression.csv`
 
-The career progression dataset is imported and cleaned to provide yearly performance records.
+The career progression dataset is cleaned to provide yearly performance records.\
 
-Key steps include: -Removed duplicate rows -Parsed dates: Converts data string to `Data` objects. -Compute retired and training_age by athlete/event.
+Key steps:
 
-(Flag retirement: `retired` flag true if their last recorded `year` ≤ 2022, many athletes as retired if last competition was before or in 2022.)
+-   Removing duplicate rows.
+
+-   Parsing competition dates.
+
+-   Flagging retirement status (`retired = TRUE` if last competition year ≤ 2022).
+
+-   Calculating **training age** (number of years since first recorded season) for each athlete-event.
+
+The result is stored as `Career_progression`.
 
 ```{r}
 # load career progression data and identify athletes who are still active
@@ -112,13 +126,15 @@ Career_progression <- read_csv("../data/track and field data/career_progression 
          .by = c("athlete_link", "event")) 
 ```
 
-## Flatten IAAF points reference(`iaaf-2005.json`)
+## Flatten the IAAF Reference Table (`iaaf-2005.json`)
 
-We then:
+1.  Reading the JSON file containing IAAF scoring data.
 
--Read JSON: Loads IAAF scoring data. -Flatten JSON: Converts nested list into a tidy table with `gender`, `event`, `mark`, and `points`.
+2.  Flattening the nested structure into a tidy table with columns: `gender`, `event`, `mark`, and `points`.
 
-```{r}
+    This creates the reference table `iaaf_table`.
+
+```{r, echo=TRUE}
 raw_json <- read_json("../data/track and field data/iaaf-2025.json", simplifyVector = FALSE)
 
 # Convert list of lists to a flat tibble
@@ -132,7 +148,15 @@ iaaf_table <- tibble::tibble(
 
 ## Tidy world-class standards(`wac-standards`)
 
-What we do: -Put into long/“tidy” format (gender as a variable). -Harmonize event names to match IAAF vocabulary. -Convert time-like marks to seconds (HH:MM:SS / MM:SS / SS). -Adjust women’s hurdles label to 100mH.
+-   Reshaping the data into long format with `gender` as a variable.
+
+-   Standardizing event names to match IAAF vocabulary.
+
+-   Converting all time-based marks to seconds (HH:MM:SS → seconds).
+
+-   Adjusting women’s hurdles labels to `100mH`.
+
+The result is stored as `wac_standards`.
 
 ```{r}
 #compute world class standard and take mean of men and women
@@ -217,101 +241,8 @@ wac_long <- wac_standards |>
           TRUE ~ Event))
 ```
 
-After load the Career Progression data, we compute:
+## Summary and Importance
 
--Join with Olymics data: Merge career progress data with olympic metadata using athlete_link and event.
-
--Calculate age at performance(In years and days):
-
--   age_years: Year of performance minus year of birth
-
--   age_days: Exact age in days using difftime(date, birth_date)
-
--Clean performance times: Removed "h" (hand-timed) from results.
-
--Convert marks:
-
--   For Track events: Convert time strings to seconds
-
--   For Field events: Parses numeric distances
-
--   handles edge cases where parsing fails.
-
--Identify best performance:
-
--   Track: lowest time
-
--   Field: highest mark
-
--Calculate percent off peak: Measures deviation from best performance
-
--Flag Olympic year: Marks years that were Olympic year.
-
--Remove duplicates: Keeps only the best performance per athlete-event-year
-
-This produces a clean performance table containing both performance records and athlete metadata named `athlete_bests`.
-
-### Clean and Standardize Events:
-
-To ensure compatibility, we create a copy of athlete_bests named athlete_bests_clean with: -Lowercase gender: Standardizes gender format -Rename events: Maps verbose event names to IAAF-compatible short forms(e.g., "100 Meters" -\> "100m")
-
-```{r}
-athlete_bests_clean <- athlete_bests |> 
-  mutate(
-    gender = tolower(gender),
-    event = case_when(
-      event == "100 Metres" ~ "100m",
-      event == "200 Metres" ~ "200m",
-      event == "400 Metres" ~ "400m",
-      event == "800 Metres" ~ "800m",
-      event == "1500 Metres" ~ "1500m",
-      event == "5000 Metres" ~ "5000m",
-      event == "10,000 Metres" ~ "10000m",
-      event == "Marathon" ~ "Road Marathon",
-      event == "Triple Jump" ~ "TJ",
-      event == "Long Jump" ~ "LJ",
-      event == "High Jump" ~ "HJ",
-      event == "Shot Put" ~ "SP",
-      event == "Discus Throw" ~ "DT",
-      event == "Hammer Throw" ~ "HT",
-      event == "Javelin Throw" ~ "JT",
-      event == "Decathlon" ~ "Dec.",
-      event == "Heptathlon" ~ "Hept.",
-      event == "Pole Vault" ~ "PV",
-      event == "10 Kilometres Race Walk" ~ "10,000mW",
-      event == "50 Kilometres Race Walk" ~ "50,000mW",
-      event == "20 Kilometres Race Walk" ~ "20,000mW",
-      event == "100 Metres Hurdles" ~ "100mH",
-      event == "110 Metres Hurdles" ~ "110mH",
-      event == "400 Metres Hurdles" ~ "400mH",
-      event == "3000 Metres Steeplechase" ~ "3000m SC",
-      TRUE ~ event
-    )
-  )
-```
-
-We then join athlete_bests_clean to iaaf_table, match athlete performances to IAAF scoring table using gender, event, and cluset mark less than or equal to athlete's mark. And we fill missing points, replaces `NA` with 0 for unmatched entries.
-
-```{r}
-# join iaaf_table with athlete_bests_clean and get full dataset with result points
-round_decimals <- function(x, digits = 2) {
-  round(x * 10^digits) / 10^digits}
-
-
-athlete_bests_points <- 
-  athlete_bests_clean |>
-    left_join(iaaf_table, join_by(gender, event, closest(mark <= mark))) |> 
-  replace_na(list(points = 0))
-```
-
-## Notes on join Behaviour
-
-Your join uses closest on a condition with mark on both sides. That requires a recent dplyr and depends on how the IAAF reference orders marks. If you ever observe mismatched points at event boundaries, consider switching to an explicit directional rule that treats track and field differently, where track uses the largest IAAF mark that is less than or equal to the observed time and field uses the smallest IAAF mark that is greater than or equal to the observed distance or height.
-
-The closest() join on mark requires a recent version of dplyr. If mismatches occur near event boundaries, consider refining the logic:
-
-Track events: Use the largest IAAF mark ≤ observed time
-
-Field events: Use the smallest IAAF mark ≥ observed distance
-
-This directional rule ensures accurate scoring near performance thresholds.
+This unified tidy dataset forms the foundation for all subsequent modeling.
+By integrating performance records, event metadata, and standardized scoring into a consistent structure, it supports accurate estimation of aging curves through Functional Principal Component Analysis (FPCA) and enables effective clustering of performance trajectories.
+The standardized format also ensures reproducibility and makes predictions directly interpretable across athletes, events, and time periods.

@@ -1,61 +1,125 @@
 ---
 title: "Communicate"
+editor: 
+  markdown: 
+    wrap: 72
 ---
+
+*Translating modeling results into actionable insights through
+interactive dashboards*
+
+## Delivery Format
+
+The findings from this analysis will be delivered through an
+**interactive Shiny dashboard**, which integrates:
+
+-   Dynamic aging curve exploration for individual athletes and
+    population-level trends
+
+-   Trelliscope panel plots for side-by-side comparison across multiple
+    athletes and events
 
 ## Overview
 
-The results are delivered through:
+The final insights will be provided to key stakeholders, including
+coaches, performance analysts, sports scientists, and sports development
+directors. The Shiny dashboard will serve as a centralized platform for
+exploring aging curves, identifying cluster patterns, and comparing
+event-specific performance trends.
 
--   Predicted curves with confidence intervals
--   Cluster-specific visualizations
--   A reproducible pipeline for annual updating
+Because aging curves evolve over time and are tied to an athlete’s age,
+the dashboard will be updated annually to maintain accuracy and
+relevance. This will allow stakeholders to track changes in
+trajectories, compare against historical benchmarks, and adjust training
+or selection strategies accordingly.
 
--   A Trelliscope dashboard (interactive panel plots)
-- shiny app
+By providing accessible, data-driven insights, the dashboard will
+support evidence-based decision-making in training program design,
+athlete selection, and long-term talent development planning.
 
-## How to read the visuals(for stakeholders)
-Stakeholders: Coaches, Performance analysts, Sports scientists
--Aging curve panels (Section 05): blue dots are observed IAAF scores vs performance age; the red line is the model’s predicted trajectory for that athlete; dashed red lines are the 95% interval; the black line is the population mean; dashed horizontal lines are WAC mean references for men/women.
+## Clusters interpretation
 
--Eigenfunctions (Section 05 & 06): PC1 usually shifts curves up/down (overall level); PC2 often tilts early vs. late ages (peak timing); PC3 can capture shape nuances (e.g., mid-career bumps).
+Three primary aging curve patterns are identified through clustering:
 
--Percent-change clusters (Section 05): each thin line is a subject’s predicted percent change curves across age; black thick lines are cluster centers, the typical pattern for each group.
+-   **Early risers:** Rapid gains early in a career, reaching a plateau
+    sooner
 
-## Clusters interpretation (example—update labels after seeing shapes)
+-   **Steady performers:** Consistent year-over-year improvements,
+    leading to a smooth peak
 
--   **Cluster 1 — Early risers:** Rapid early gains, earlier plateau.
--   **Cluster 2 — Steady performers:** Consistent year-over-year gains, smoother peak.
--   **Cluster 3 — Late bloomers:** Slower early growth, pronounced improvement later.
+-   **Late bloomers:** Gradual early progress followed by substantial
+    improvement later in the career
 
-By event type: 
-See different cluster patterns across different event types. Most of the event types' clustering pattern are the same as the population(overall) clustering pattern. However, a few such as "Middle Distance, Road Marathon......" differs much from population level clustering.
+When clustering is performed by event type, most disciplines show
+patterns similar to the overall population clusters. However, certain
+events, such as Middle Distance and Road Marathon(??? double check),
+display noticeably different cluster structures.
 
-## Example: predict an athlete's aging curve, and see his cluster (screenshot from shiny app, and interpret the plot)
+(Plot of a sample cluster)
 
+## Application Example:
 
+A new athlete’s aging curve can be predicted using the `face.sparse`
+method and matched to one of the existing clusters. This allows
+stakeholders to immediately identify the athlete’s most likely
+performance trajectory and monitor changes over time.
 
-## What this means (plain English)
--Performance evolves with age: on average, athletes follow the population mean curve, but individuals deviate in systematic ways captured by the PCs.
+(screenshot from shiny app, and interpret the plot)
 
--Cluster shapes are actionable: early improvers vs. late bloomers vs. steady decliners suggest different training emphasis and competition scheduling.
+(shiny app plot for a athlete, and related cluster plot by event-type,
+and interpret the plot)
 
--WAC context matters: the share of records at/above the WAC mean (men/women) anchors how “world-class” the panel is at different ages/events.
+## Key insights for Stakeholders
 
-## Caveats & guardrails
--Data sparsity: predictions rely on smoothing; very sparse career histories yield wider uncertainty.
+**Performance evolves with age:** Although the population mean curve
+shows the general trend, each athlete’s performance path is unique.
+Principal components highlight these differences, revealing whether an
+athlete peaks early, improves steadily, or peaks later in their career.
 
--Join granularity: scoring uses a closest ≤ rule; edge cases near table knots can shift points slightly.
+**Cluster shapes are actionable:** Knowing whether an athlete is an
+early improver, steady performer, or late bloomer can guide training
+focus and competition scheduling.
 
--Causality: curves describe association with age, not causal effects of age or training.
+**World Athlete Championships (WAC) context is informative:** Comparing
+an athlete’s performance to world-class benchmarks (WAC mean) helps put
+their achievements into perspective across different ages and events.
+
+## Limitations and Considerations
+
+**Data sparsity**: Predictions depend on smoothing methods. Athletes
+with very limited career data will have wider uncertainty bands around
+their estimated curves.
+
+**Join granularity:** Scoring uses a “closest less-than-or-equal-to”
+rule for matching performances to reference tables. For athletes whose
+results are close to table knots, small shifts can occur in assigned
+point values.
+
+**Causality:** Aging curves describe associations between performance
+and age. They do not imply causal effects of age, training, or other
+factors on performance changes.
 
 ## Next steps
--Add event-type stratified FACE fits to see if population means differ meaningfully by discipline.
 
--Surface individual uncertainty (CIs) inside a Shiny compare-view so coaches can weigh risk.
+**Event-type stratification:** Fit separate FACE models for each event
+type (for example, sprints, middle distance, throws) and compare their
+mean aging curves to determine whether different disciplines follow
+distinct performance trajectories.
 
--Track within-athlete shifts year-over-year (e.g., early peak → stabilizing) and alert when a trajectory changes cluster.
+**Uncertainty visualization:** Incorporate visualizations of individual
+confidence intervals within the Shiny dashboard’s comparison view so
+that coaches can weigh the reliability of predicted trajectories.
 
--Consider robust clustering (e.g., trimmed k-means) for stability with outliers.
-- number of clusters can be refined with SSE methods....(from the paper)
-- address right tail selection bias(better athletes stay longer in the list)
+**Trajectory monitoring:** Implement year-over-year tracking of
+within-athlete shifts in curve shape (for example, an early peak
+evolving into a stable phase) and generate alerts when an athlete moves
+to a different cluster.
 
+**Robust clustering:** Evaluate robust clustering methods such as
+trimmed k-means to improve stability in the presence of outliers, and
+refine the number of clusters using within-cluster sum of squares (SSE)
+methods as described in the reference paper.
+
+**Selection bias adjustment:** Address potential right-tail selection
+bias, as higher-performing athletes tend to remain in competition
+longer, which may skew the observed distribution of aging curves.

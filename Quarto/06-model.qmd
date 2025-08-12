@@ -12,17 +12,53 @@ The methodology presented here is based on *Functional Data Analysis with R* by 
 
 ## Functional Data Analysis (FDA)
 
-Functional Data Analysis (FDA) models an athlete’s performance over age as a smooth, continuous function called an aging curve. In practice, we only observe discrete values at certain ages, so we fit a smooth curve to these points.
+Functional Data Analysis (FDA) models an athlete’s performance over age as a smooth, continuous function called an aging curve. In practice, we only observe discrete values at certain ages, so we fit a smooth curve to these points. Formally, for athlete $i$ at age $t_{ij}$ we write: $$ y_{ij} = f_i(t_{ij}) + \epsilon_{ij}$$
 
-We use B-spline basis functions to approximate each curve. B-splines are piecewise polynomials joined at knots and are flexible enough to represent complex shapes. The coefficients of these basis functions uniquely describe the curve’s shape.
+where $y_{ij}$ is the observed performance, $f_i(t)$ is the smooth aging curve, and $\epsilon_{ij}$ is the measurement error.
 
-To avoid overfitting, a roughness penalty is added, with the smoothing level chosen by generalized cross-validation (GCV). Once fitted, we can compute the mean and variance functions of aging curves, and represent each curve by its basis coefficients.
+We approximate $f_i(t)$ using **B-spline basis functions**:
 
-This representation enables the use of multivariate tools like functional principal component analysis (FPCA), which summarizes the main patterns of variation, and provides scores that can be used for visualization, comparison, and clustering.
+$$f_i(t) \approx \sum_{k=1}^K \beta_{ik} B_k(t)$$
+
+Here $B_k(t)$ are spline basis functions and $\beta_{ik}$ are coefficients that determine the curve’s shape. B-splines are piecewise polynomials joined at knots, allowing flexibility to capture complex patterns in performance trajectories.
+
+To avoid overfitting, a **roughness penalty** is added:
+
+$$
+\hat{\beta}_i = \arg\min_{\beta_i} \sum_j \left( y_{ij} - \sum_{k=1}^K \beta_{ik} B_k(t_{ij}) \right)^2 + \lambda \int \left( f''_i(t) \right)^2 dt
+$$
+
+The penalty term $\lambda \int (f''_i(t))^2 dt$ discourages excessive curvature, and $\lambda$ is selected via generalized cross-validation (GCV).
+
+Once fitted, we can compute the **mean aging curve**:
+
+$$
+\hat{\mu}(t) = \frac{1}{N} \sum_{i=1}^N f_i(t)
+$$
+
+and the **variance function**:
+
+$$
+\widehat{\text{Var}}(f(t)) = \frac{1}{N-1} \sum_{i=1}^N \left( f_i(t) - \hat{\mu}(t) \right)^2
+$$
+
+Representing curves via their spline coefficients allows us to use multivariate tools like **Functional Principal Component Analysis (FPCA)** to summarize patterns of variation and generate scores for visualization, comparison, and clustering.
 
 ## Functional Principal Component Analysis(FPCA)
 
-Functional Principal Component Analysis (FPCA) summarizes variation across aging curves by decomposing each curve into a mean function plus a weighted sum of functional principal components (basis curves). The first component captures the largest mode of variation, the second captures the next largest variation orthogonal to the first, and so on. Each athlete has scores for these components, indicating how their curve differs from the mean. Retaining only the leading components gives a compact representation for visualization, comparison, or clustering.
+Functional Principal Component Analysis (FPCA) summarizes variation across aging curves by decomposing each curve into a mean function plus a weighted sum of functional principal components (FPCs). $$f_i​(t)=\mu(t)+\sum^K_{k = 1}\xi_{ik}\psi_k(t)$$
+
+Here:
+
+\- $\mu(t)$ is the mean curve
+
+\- $\psi_k(t)$ are orthogonal basis functions (FPCs)
+
+\- $\xi_{ik}$ are the FPC scores for athlete (i) on component (k)
+
+The first component $\psi_k(t)$ explains the largest proportion of variation in the data, the second explains the most variation orthogonal to the first, and so on. The scores $\xi_{ik}$ indicate how much each athlete’s curve deviates from the mean along each component.
+
+By retaining only the leading components that explain most of the variation, FPCA provides a **compact low-dimensional representation** of each curve. This allows efficient visualization, statistical testing, and clustering while preserving the main features of the original functional data.
 
 ## Sparse and Irregular FPCA
 
@@ -157,17 +193,12 @@ for(i in 1:3){
 legend("topright", c("PC1", "PC2", "PC3"), 
        col = col_me, lty = 1, bty = "n", lwd = 3)
 ```
+
 plot of predicted aging curves:
-
-
-
-
-
-
 
 ## Clustering on FPCA predictive function
 
-Clustering of Functional Data groups athletes with similar aging curve shapes into distinct categories. In this project, the clustering is based on the percent change of the IAAF-points of their aging curves, which reflects the relative progression of performance over time rather than absolute performance levels. After applying sparse FPCA, each percent change curve is summarized by a small set of principal component scores, reducing the infinite-dimensional curve to a low-dimensional representation. These score vectors are then clustered using k-means, with the number of clusters set to three. This method partitions the population into distinct aging patterns, such as early peak, late peak, or sustained performance, enabling clearer comparisons between athletes with similar career trajectories. After clustering the entire population's performance trajectories, we can assign new athlete to an existing cluster. This allows us to immediately place the athlete within a known progression pattern and monitor their trajectory over time.
+Clustering of FPCA groups athletes with similar aging curve shapes into distinct categories. In this project, the clustering is based on the percent change of the IAAF-points of their aging curves, which reflects the relative progression of performance over time rather than absolute performance levels. After applying sparse FPCA, each percent change curve is summarized by a small set of principal component scores, reducing the infinite-dimensional curve to a low-dimensional representation. These score vectors are then clustered using k-means, with the number of clusters set to three. This method partitions the population into distinct aging patterns, such as early peak, late peak, or sustained performance, enabling clearer comparisons between athletes with similar career trajectories. After clustering the entire population's performance trajectories, we can assign new athlete to an existing cluster. This allows us to immediately place the athlete within a known progression pattern and monitor their trajectory over time.
 
 Here is code for clustering the whole population based on the athletes' percent change of IAAF-points.
 
@@ -238,5 +269,22 @@ legend("topright", legend = paste("Cluster", 1:3),
        col = colset, lty = 1, lwd = 2, bty = "n")
 ```
 
+And here is the plot of clustering the whole population based on the percent change of IAAf-points of
 
-And here is the plot of clustering the whole population based on the 
+Here is an example of an aging curve for a sample athlete. This athlete can be assigned to one of the existing clusters, which allows us to predict and monitor the athlete’s performance trajectory over time.(shiny app screenshot)
+
+I also cluster the entire population by event type to compare patterns across different disciplines. The population is divided into seven event types: Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, and Road Races. For most event types, the resulting clusters are similar to those of the overall population, while a few categories such as Middle Distance and Road Marathon(???double check) show noticeable differences.
+
+```{r,echo=TRUE}
+event_type = case_match(
+       event,
+      c("100m", "200m", "400 Metres", "400m", "400mH", "100mH", "110mH") ~ "Sprints",
+      c("800m", "1500m", "3000m SC") ~ "Middle Distance",
+      c("5000m", "10000m") ~ "Long Distance",
+      c("Hept.", "Dec.") ~ "Combined Events",
+      c("HJ", "LJ", "TJ", "PV") ~ "Jumps",
+      c("SP", "DT", "HT", "JT") ~ "Throws",
+      c("10,000mW", "20,000mW", "50,000mW", "Road Marathon") ~ "Road Races")
+```
+
+Here are a few examples of the clustering by event type(be specific): Show plot screenshot of cluster by event-type
