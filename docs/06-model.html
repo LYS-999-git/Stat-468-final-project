@@ -7,7 +7,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
 
 
-<title>Model</title>
+<title>Stat 468 final project - 6&nbsp; Model</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -58,11 +58,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 
 <script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
 <script src="site_libs/clipboard/clipboard.min.js"></script>
 <script src="site_libs/quarto-search/autocomplete.umd.js"></script>
 <script src="site_libs/quarto-search/fuse.min.js"></script>
 <script src="site_libs/quarto-search/quarto-search.js"></script>
 <meta name="quarto:offset" content="./">
+<link href="./07-communicate.html" rel="next">
+<link href="./05-visualize.html" rel="prev">
 <script src="site_libs/quarto-html/quarto.js"></script>
 <script src="site_libs/quarto-html/popper.min.js"></script>
 <script src="site_libs/quarto-html/tippy.umd.min.js"></script>
@@ -100,23 +103,150 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   }
 }</script>
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<script type="text/javascript">
+const typesetMath = (el) => {
+  if (window.MathJax) {
+    // MathJax Typeset
+    window.MathJax.typeset([el]);
+  } else if (window.katex) {
+    // KaTeX Render
+    var mathElements = el.getElementsByClassName("math");
+    var macros = [];
+    for (var i = 0; i < mathElements.length; i++) {
+      var texText = mathElements[i].firstChild;
+      if (mathElements[i].tagName == "SPAN") {
+        window.katex.render(texText.data, mathElements[i], {
+          displayMode: mathElements[i].classList.contains('display'),
+          throwOnError: false,
+          macros: macros,
+          fleqn: false
+        });
+      }
+    }
+  }
+}
+window.Quarto = {
+  typesetMath
+};
+</script>
 
 </head>
 
-<body class="fullcontent">
+<body class="nav-sidebar floating">
 
 <div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./06-model.html"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
 <!-- content -->
 <div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
 <!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Stat 468 final project</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">STAT 468 Final Project — Clustering Athlete Aging Curves</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-question.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Question of Interest &amp; Relevance</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-import.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Import</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-tidy.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Tidy</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-transform.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transform</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-visualize.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Visualize</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-model.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-communicate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Communicate</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Appendix</span></span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
 <!-- margin-sidebar -->
-    
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">6.1</span> Introduction</a></li>
+  <li><a href="#functional-data-analysis-fda" id="toc-functional-data-analysis-fda" class="nav-link" data-scroll-target="#functional-data-analysis-fda"><span class="header-section-number">6.2</span> Functional Data Analysis (FDA)</a></li>
+  <li><a href="#functional-principal-component-analysisfpca" id="toc-functional-principal-component-analysisfpca" class="nav-link" data-scroll-target="#functional-principal-component-analysisfpca"><span class="header-section-number">6.3</span> Functional Principal Component Analysis(FPCA)</a></li>
+  <li><a href="#sparse-and-irregular-fpca" id="toc-sparse-and-irregular-fpca" class="nav-link" data-scroll-target="#sparse-and-irregular-fpca"><span class="header-section-number">6.4</span> Sparse and Irregular FPCA</a></li>
+  <li><a href="#clustering-on-fpca-predictive-function" id="toc-clustering-on-fpca-predictive-function" class="nav-link" data-scroll-target="#clustering-on-fpca-predictive-function"><span class="header-section-number">6.5</span> Clustering on FPCA predictive function</a></li>
+  </ul>
+</nav>
+    </div>
 <!-- main -->
 <main class="content" id="quarto-document-content">
 
 <header id="title-block-header" class="quarto-title-block default">
 <div class="quarto-title">
-<div class="quarto-title-block"><div><h1 class="title">Model</h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+<div class="quarto-title-block"><div><h1 class="title"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model</span></h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
 </div>
 
 
@@ -133,25 +263,46 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </header>
 
 
-<section id="introduction" class="level2">
-<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<section id="introduction" class="level2" data-number="6.1">
+<h2 data-number="6.1" class="anchored" data-anchor-id="introduction"><span class="header-section-number">6.1</span> Introduction</h2>
 <p>Athletic performance evolves with age, and understanding this progression — often represented as an <em>aging curve</em> — is of considerable interest in sports analytics. Aging curves plot an athlete’s performance level as a function of age, offering valuable insight for coaches, roster management,analysts, and player development strategies.</p>
 <p>Traditional approaches to modeling aging curves, such as multiple regression with spline interpolation, provide limited flexibility and often fail to capture the full complexity of career trajectories. <strong>Functional Data Analysis (FDA)</strong> provides a more powerful and flexible framework for modeling aging curves by treating each athlete’s career trajectory as a continuous function over time. This approach allows for richer statistical analyses, including hypothesis testing, dimensionality reduction, and clustering. methodology is based on Functional Data Analysis in R and inspired by the paper Functional Data Analysis of Aging Curves in Sports by Alexander Wakim and Jimmy Jin (2014).</p>
 <p>The methodology presented here is based on <em>Functional Data Analysis with R</em> by Crainiceanu, Goldsmith, Leroux, and Cui (2021) and is inspired by the paper <em>Functional Data Analysis of Aging Curves in Sports</em> by Wakim and Jin (2014). In this section, we begin with FDA fundamentals, then introduce Functional Principal Component Analysis (FPCA) to summarize variation across curves, address sparse and irregular data via sparse FPCA, and conclude with clustering of functional data.</p>
 </section>
-<section id="functional-data-analysis-fda" class="level2">
-<h2 class="anchored" data-anchor-id="functional-data-analysis-fda">Functional Data Analysis (FDA)</h2>
-<p>Functional Data Analysis (FDA) models an athlete’s performance over age as a smooth, continuous function called an aging curve. In practice, we only observe discrete values at certain ages, so we fit a smooth curve to these points.</p>
-<p>We use B-spline basis functions to approximate each curve. B-splines are piecewise polynomials joined at knots and are flexible enough to represent complex shapes. The coefficients of these basis functions uniquely describe the curve’s shape.</p>
-<p>To avoid overfitting, a roughness penalty is added, with the smoothing level chosen by generalized cross-validation (GCV). Once fitted, we can compute the mean and variance functions of aging curves, and represent each curve by its basis coefficients.</p>
-<p>This representation enables the use of multivariate tools like functional principal component analysis (FPCA), which summarizes the main patterns of variation, and provides scores that can be used for visualization, comparison, and clustering.</p>
+<section id="functional-data-analysis-fda" class="level2" data-number="6.2">
+<h2 data-number="6.2" class="anchored" data-anchor-id="functional-data-analysis-fda"><span class="header-section-number">6.2</span> Functional Data Analysis (FDA)</h2>
+<p>Functional Data Analysis (FDA) models an athlete’s performance over age as a smooth, continuous function called an aging curve. In practice, we only observe discrete values at certain ages, so we fit a smooth curve to these points. Formally, for athlete <span class="math inline">\(i\)</span> at age <span class="math inline">\(t_{ij}\)</span> we write: <span class="math display">\[ y_{ij} = f_i(t_{ij}) + \epsilon_{ij}\]</span></p>
+<p>where <span class="math inline">\(y_{ij}\)</span> is the observed performance, <span class="math inline">\(f_i(t)\)</span> is the smooth aging curve, and <span class="math inline">\(\epsilon_{ij}\)</span> is the measurement error.</p>
+<p>We approximate <span class="math inline">\(f_i(t)\)</span> using <strong>B-spline basis functions</strong>:</p>
+<p><span class="math display">\[f_i(t) \approx \sum_{k=1}^K \beta_{ik} B_k(t)\]</span></p>
+<p>Here <span class="math inline">\(B_k(t)\)</span> are spline basis functions and <span class="math inline">\(\beta_{ik}\)</span> are coefficients that determine the curve’s shape. B-splines are piecewise polynomials joined at knots, allowing flexibility to capture complex patterns in performance trajectories.</p>
+<p>To avoid overfitting, a <strong>roughness penalty</strong> is added:</p>
+<p><span class="math display">\[
+\hat{\beta}_i = \arg\min_{\beta_i} \sum_j \left( y_{ij} - \sum_{k=1}^K \beta_{ik} B_k(t_{ij}) \right)^2 + \lambda \int \left( f''_i(t) \right)^2 dt
+\]</span></p>
+<p>The penalty term <span class="math inline">\(\lambda \int (f''_i(t))^2 dt\)</span> discourages excessive curvature, and <span class="math inline">\(\lambda\)</span> is selected via generalized cross-validation (GCV).</p>
+<p>Once fitted, we can compute the <strong>mean aging curve</strong>:</p>
+<p><span class="math display">\[
+\hat{\mu}(t) = \frac{1}{N} \sum_{i=1}^N f_i(t)
+\]</span></p>
+<p>and the <strong>variance function</strong>:</p>
+<p><span class="math display">\[
+\widehat{\text{Var}}(f(t)) = \frac{1}{N-1} \sum_{i=1}^N \left( f_i(t) - \hat{\mu}(t) \right)^2
+\]</span></p>
+<p>Representing curves via their spline coefficients allows us to use multivariate tools like <strong>Functional Principal Component Analysis (FPCA)</strong> to summarize patterns of variation and generate scores for visualization, comparison, and clustering.</p>
 </section>
-<section id="functional-principal-component-analysisfpca" class="level2">
-<h2 class="anchored" data-anchor-id="functional-principal-component-analysisfpca">Functional Principal Component Analysis(FPCA)</h2>
-<p>Functional Principal Component Analysis (FPCA) summarizes variation across aging curves by decomposing each curve into a mean function plus a weighted sum of functional principal components (basis curves). The first component captures the largest mode of variation, the second captures the next largest variation orthogonal to the first, and so on. Each athlete has scores for these components, indicating how their curve differs from the mean. Retaining only the leading components gives a compact representation for visualization, comparison, or clustering.</p>
+<section id="functional-principal-component-analysisfpca" class="level2" data-number="6.3">
+<h2 data-number="6.3" class="anchored" data-anchor-id="functional-principal-component-analysisfpca"><span class="header-section-number">6.3</span> Functional Principal Component Analysis(FPCA)</h2>
+<p>Functional Principal Component Analysis (FPCA) summarizes variation across aging curves by decomposing each curve into a mean function plus a weighted sum of functional principal components (FPCs). <span class="math display">\[f_i​(t)=\mu(t)+\sum^K_{k = 1}\xi_{ik}\psi_k(t)\]</span></p>
+<p>Here:</p>
+<p>- <span class="math inline">\(\mu(t)\)</span> is the mean curve</p>
+<p>- <span class="math inline">\(\psi_k(t)\)</span> are orthogonal basis functions (FPCs)</p>
+<p>- <span class="math inline">\(\xi_{ik}\)</span> are the FPC scores for athlete (i) on component (k)</p>
+<p>The first component <span class="math inline">\(\psi_k(t)\)</span> explains the largest proportion of variation in the data, the second explains the most variation orthogonal to the first, and so on. The scores <span class="math inline">\(\xi_{ik}\)</span> indicate how much each athlete’s curve deviates from the mean along each component.</p>
+<p>By retaining only the leading components that explain most of the variation, FPCA provides a <strong>compact low-dimensional representation</strong> of each curve. This allows efficient visualization, statistical testing, and clustering while preserving the main features of the original functional data.</p>
 </section>
-<section id="sparse-and-irregular-fpca" class="level2">
-<h2 class="anchored" data-anchor-id="sparse-and-irregular-fpca">Sparse and Irregular FPCA</h2>
+<section id="sparse-and-irregular-fpca" class="level2" data-number="6.4">
+<h2 data-number="6.4" class="anchored" data-anchor-id="sparse-and-irregular-fpca"><span class="header-section-number">6.4</span> Sparse and Irregular FPCA</h2>
 <p>Sports performance data are often <strong>sparse</strong> (few observations per athlete) and <strong>irregular</strong> (different measurement ages across athletes). Traditional FDA and FPCA assume regular, dense observations, making them unsuitable for such data. In this project, many athletes have limited recorded performance points, so I use <strong>Sparse FPCA</strong>, implemented via the <code>face.sparse()</code> method in R. This approach follows the example from <em>Functional Data Analysis with R</em> (Crainiceanu et al., 2021), where sparse and irregular data are smoothed, principal components are extracted, and clustering is performed on the reconstructed curves.</p>
 <p>Sparse FPCA can</p>
 <ul>
@@ -278,9 +429,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 <p>plot of predicted aging curves:</p>
 </section>
-<section id="clustering-on-fpca-predictive-function" class="level2">
-<h2 class="anchored" data-anchor-id="clustering-on-fpca-predictive-function">Clustering on FPCA predictive function</h2>
-<p>Clustering of Functional Data groups athletes with similar aging curve shapes into distinct categories. In this project, the clustering is based on the percent change of the IAAF-points of their aging curves, which reflects the relative progression of performance over time rather than absolute performance levels. After applying sparse FPCA, each percent change curve is summarized by a small set of principal component scores, reducing the infinite-dimensional curve to a low-dimensional representation. These score vectors are then clustered using k-means, with the number of clusters set to three. This method partitions the population into distinct aging patterns, such as early peak, late peak, or sustained performance, enabling clearer comparisons between athletes with similar career trajectories. After clustering the entire population’s performance trajectories, we can assign new athlete to an existing cluster. This allows us to immediately place the athlete within a known progression pattern and monitor their trajectory over time.</p>
+<section id="clustering-on-fpca-predictive-function" class="level2" data-number="6.5">
+<h2 data-number="6.5" class="anchored" data-anchor-id="clustering-on-fpca-predictive-function"><span class="header-section-number">6.5</span> Clustering on FPCA predictive function</h2>
+<p>Clustering of FPCA groups athletes with similar aging curve shapes into distinct categories. In this project, the clustering is based on the percent change of the IAAF-points of their aging curves, which reflects the relative progression of performance over time rather than absolute performance levels. After applying sparse FPCA, each percent change curve is summarized by a small set of principal component scores, reducing the infinite-dimensional curve to a low-dimensional representation. These score vectors are then clustered using k-means, with the number of clusters set to three. This method partitions the population into distinct aging patterns, such as early peak, late peak, or sustained performance, enabling clearer comparisons between athletes with similar career trajectories. After clustering the entire population’s performance trajectories, we can assign new athlete to an existing cluster. This allows us to immediately place the athlete within a known progression pattern and monitor their trajectory over time.</p>
 <p>Here is code for clustering the whole population based on the athletes’ percent change of IAAF-points.</p>
 <div class="cell">
 <details class="code-fold">
@@ -351,7 +502,24 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a>       <span class="at">col =</span> colset, <span class="at">lty =</span> <span class="dv">1</span>, <span class="at">lwd =</span> <span class="dv">2</span>, <span class="at">bty =</span> <span class="st">"n"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </details>
 </div>
-<p>And here is the plot of clustering the whole population based on the</p>
+<p>And here is the plot of clustering the whole population based on the percent change of IAAf-points of</p>
+<p>Here is an example of an aging curve for a sample athlete. This athlete can be assigned to one of the existing clusters, which allows us to predict and monitor the athlete’s performance trajectory over time.(shiny app screenshot)</p>
+<p>I also cluster the entire population by event type to compare patterns across different disciplines. The population is divided into seven event types: Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, and Road Races. For most event types, the resulting clusters are similar to those of the overall population, while a few categories such as Middle Distance and Road Marathon(???double check) show noticeable differences.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>event_type <span class="ot">=</span> <span class="fu">case_match</span>(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>       event,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"100m"</span>, <span class="st">"200m"</span>, <span class="st">"400 Metres"</span>, <span class="st">"400m"</span>, <span class="st">"400mH"</span>, <span class="st">"100mH"</span>, <span class="st">"110mH"</span>) <span class="sc">~</span> <span class="st">"Sprints"</span>,</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"800m"</span>, <span class="st">"1500m"</span>, <span class="st">"3000m SC"</span>) <span class="sc">~</span> <span class="st">"Middle Distance"</span>,</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"5000m"</span>, <span class="st">"10000m"</span>) <span class="sc">~</span> <span class="st">"Long Distance"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"Hept."</span>, <span class="st">"Dec."</span>) <span class="sc">~</span> <span class="st">"Combined Events"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"HJ"</span>, <span class="st">"LJ"</span>, <span class="st">"TJ"</span>, <span class="st">"PV"</span>) <span class="sc">~</span> <span class="st">"Jumps"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"SP"</span>, <span class="st">"DT"</span>, <span class="st">"HT"</span>, <span class="st">"JT"</span>) <span class="sc">~</span> <span class="st">"Throws"</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"10,000mW"</span>, <span class="st">"20,000mW"</span>, <span class="st">"50,000mW"</span>, <span class="st">"Road Marathon"</span>) <span class="sc">~</span> <span class="st">"Road Races"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>Here are a few examples of the clustering by event type(be specific): Show plot screenshot of cluster by event-type</p>
 
 
 <!-- -->
@@ -818,249 +986,309 @@ window.document.addEventListener("DOMContentLoaded", function (event) {
     }
   }
 });
-</script><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
-<div class="sourceCode" id="cb3" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Model"</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introduction</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>Athletic performance evolves with age, and understanding this progression — often represented as an *aging curve* — is of considerable interest in sports analytics. Aging curves plot an athlete’s performance level as a function of age, offering valuable insight for coaches, roster management,analysts, and player development strategies.</span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>Traditional approaches to modeling aging curves, such as multiple regression with spline interpolation, provide limited flexibility and often fail to capture the full complexity of career trajectories. **Functional Data Analysis (FDA)** provides a more powerful and flexible framework for modeling aging curves by treating each athlete’s career trajectory as a continuous function over time. This approach allows for richer statistical analyses, including hypothesis testing, dimensionality reduction, and clustering. methodology is based on Functional Data Analysis in R and inspired by the paper Functional Data Analysis of Aging Curves in Sports by Alexander Wakim and Jimmy Jin (2014).</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>The methodology presented here is based on *Functional Data Analysis with R* by Crainiceanu, Goldsmith, Leroux, and Cui (2021) and is inspired by the paper *Functional Data Analysis of Aging Curves in Sports* by Wakim and Jin (2014). In this section, we begin with FDA fundamentals, then introduce Functional Principal Component Analysis (FPCA) to summarize variation across curves, address sparse and irregular data via sparse FPCA, and conclude with clustering of functional data.</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="fu">## Functional Data Analysis (FDA)</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>Functional Data Analysis (FDA) models an athlete’s performance over age as a smooth, continuous function called an aging curve. In practice, we only observe discrete values at certain ages, so we fit a smooth curve to these points.</span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>We use B-spline basis functions to approximate each curve. B-splines are piecewise polynomials joined at knots and are flexible enough to represent complex shapes. The coefficients of these basis functions uniquely describe the curve’s shape.</span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>To avoid overfitting, a roughness penalty is added, with the smoothing level chosen by generalized cross-validation (GCV). Once fitted, we can compute the mean and variance functions of aging curves, and represent each curve by its basis coefficients.</span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>This representation enables the use of multivariate tools like functional principal component analysis (FPCA), which summarizes the main patterns of variation, and provides scores that can be used for visualization, comparison, and clustering.</span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="fu">## Functional Principal Component Analysis(FPCA)</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>Functional Principal Component Analysis (FPCA) summarizes variation across aging curves by decomposing each curve into a mean function plus a weighted sum of functional principal components (basis curves). The first component captures the largest mode of variation, the second captures the next largest variation orthogonal to the first, and so on. Each athlete has scores for these components, indicating how their curve differs from the mean. Retaining only the leading components gives a compact representation for visualization, comparison, or clustering.</span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sparse and Irregular FPCA</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>Sports performance data are often **sparse** (few observations per athlete) and **irregular** (different measurement ages across athletes). Traditional FDA and FPCA assume regular, dense observations, making them unsuitable for such data. In this project, many athletes have limited recorded performance points, so I use **Sparse FPCA**, implemented via the <span class="in">`face.sparse()`</span> method in R. This approach follows the example from *Functional Data Analysis with R* (Crainiceanu et al., 2021), where sparse and irregular data are smoothed, principal components are extracted, and clustering is performed on the reconstructed curves.</span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>Sparse FPCA can</span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Identify eigenfunctions that explain most of the variation in the data</span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Predict full aging curves even when data are sparse and irregular</span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Provide principal component scores for downstream analysis, such as clustering</span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>In my project, Sparse FPCA estimates the mean function and covariance structure from incomplete data, recovers the principal component curves, and predicts scores for each athlete. This enables full-curve reconstruction and clustering of aging patterns even when the raw observations are too limited for traditional FDA or FPCA.</span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a>Here is an example of applying sparse FPCA to an athlete named *Svein-inge-valvik*. We first filter the dataset to remove missing values and format it so that each row contains the athlete’s ID, performance age, and IAAF score. The data is then structured into the input format required by <span class="in">`face.sparse()`</span> which contains the observed scores <span class="in">`y`</span>, the corresponding performance ages <span class="in">`argvals`</span>, and a subject identifier <span class="in">`subj`</span>.</span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>The <span class="in">`face.sparse()`</span> function is applied to estimate the mean aging curve, covariance function, correlation function, eigenfunctions, and eigenvalues from the sparse and irregular data. This step smooths the observed data, extracts the principal component curves, and allows us to reconstruct the athlete’s entire aging trajectory even when only a few observations are available.</span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>For *Svein-inge-valvik* we use the fitted model to generate predictions of the aging curve over a grid of ages from 11 to 58 years along with 95 percent prediction intervals. The predicted curve is plotted in red with the original observed points in blue and the overall mean curve in black.</span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>We also extract the first three eigenfunctions which represent the main modes of variation in the population’s aging curves. These eigenfunctions are key to understanding how athletes’ trajectories differ in shape such as an early peak or gradual improvement and are later used for clustering analysis.</span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>Additionally we compute the world class standards for both men and women in the same event. This allows us to determine the performance age at which *Svein-inge-valvik* reaches world class performance providing a meaningful benchmark in the context of elite athletics.</span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>Codes are here:</span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,echo=TRUE}</span></span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a><span class="in"># Filter out missing points athletes and rename for clarity</span></span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a><span class="in">fd_data &lt;- athlete_bests_points |&gt; </span></span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(!is.na(points), !is.na(age_years)) |&gt; </span></span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(id = paste(athlete_link, event)) |&gt; </span></span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a><span class="in">  select(athlete_id = id,</span></span>
-<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a><span class="in">         performance_age = age_years,</span></span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a><span class="in">         iaaf_score = points)</span></span>
-<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a><span class="in">fd_data_shiny &lt;- athlete_bests_points |&gt; </span></span>
-<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(!is.na(points), !is.na(age_years))</span></span>
-<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a><span class="in">#use face to conduct sparse FDA</span></span>
-<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a><span class="in">top_10_ids &lt;- fd_data |&gt;</span></span>
-<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a><span class="in">  count(athlete_id, sort = TRUE) |&gt;</span></span>
-<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a><span class="in">slice_head(n = 10) |&gt;</span></span>
-<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a><span class="in"> pull(athlete_id)</span></span>
-<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a><span class="in">fd_data_top10 &lt;- fd_data |&gt;</span></span>
-<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(athlete_id %in% top_10_ids)</span></span>
-<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a><span class="in">id &lt;- fd_data_top10$athlete_id</span></span>
-<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a><span class="in">uid &lt;- unique(id)</span></span>
-<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a><span class="in">face_input &lt;- data.frame(</span></span>
-<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a><span class="in">  y = fd_data_top10$iaaf_score,</span></span>
-<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a><span class="in">  argvals = fd_data_top10$performance_age,</span></span>
-<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a><span class="in">  subj = id)</span></span>
-<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a><span class="in">Sample &lt;- which(uid == "https://worldathletics.org/athletes/norway/svein-inge-valvik-014215542 DT")</span></span>
-<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a><span class="in">fit_face &lt;- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))</span></span>
-<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a><span class="in">#create a data double</span></span>
-<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a><span class="in">data.h &lt;- face_input</span></span>
-<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a><span class="in">tnew &lt;- fit_face$argvals.new</span></span>
-<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a><span class="in">#prepare data for prediction</span></span>
-<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a><span class="in">seq &lt;- seq(11, 58, by = 1)</span></span>
-<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a><span class="in">k &lt;- length(seq)</span></span>
-<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a><span class="in">for(i in Sample){</span></span>
-<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a><span class="in">  sel &lt;- which(id == uid[i])</span></span>
-<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a><span class="in">  #dati &lt;- fd_data_top10[sel,] </span></span>
-<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a><span class="in">  </span></span>
-<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a><span class="in">dati &lt;- fd_data_top10[sel, ] |&gt; </span></span>
-<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a><span class="in">  dplyr::transmute(y = iaaf_score,</span></span>
-<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a><span class="in">         argvals = performance_age,</span></span>
-<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a><span class="in">         subj = athlete_id)</span></span>
-<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a><span class="in"># Create the prediction dataframe</span></span>
-<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a><span class="in">dati_pred &lt;- data.frame(</span></span>
-<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a><span class="in">  y       = rep(NA, nrow(dati) + k),</span></span>
-<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a><span class="in">  argvals = c(rep(NA, nrow(dati)), seq),</span></span>
-<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a><span class="in">  subj    = rep(dati$subj[1], nrow(dati) + k)</span></span>
-<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a><span class="in">)</span></span>
-<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a><span class="in">dati_pred[1:nrow(dati), ] &lt;- dati</span></span>
-<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a><span class="in">yhat &lt;- predict(fit_face, dati_pred)</span></span>
-<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a><span class="in">Ord  &lt;- (nrow(dati) + 1):(nrow(dati) + k)</span></span>
-<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a><span class="in">#Plot</span></span>
-<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a><span class="in">plot(dati$argvals, dati$y,</span></span>
-<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a><span class="in">     xlab = "Performance Age (years)",</span></span>
-<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a><span class="in">     ylab = "IAAF score",</span></span>
-<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a><span class="in">     pch = 19, col = "blue",</span></span>
-<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a><span class="in">     xlim = range(seq),</span></span>
-<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a><span class="in">     ylim = range(c(dati$y, yhat$y.pred[Ord]), na.rm = TRUE),</span></span>
-<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a><span class="in">     bty = "n")</span></span>
-<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-122"><a href="#cb3-122" aria-hidden="true" tabindex="-1"></a><span class="in">lines(seq, yhat$y.pred[Ord], col = "red",  lwd = 2)</span></span>
-<span id="cb3-123"><a href="#cb3-123" aria-hidden="true" tabindex="-1"></a><span class="in">lines(seq, yhat$y.pred[Ord] + 1.96 * yhat$se.pred[Ord], col = "red", lty = 2)</span></span>
-<span id="cb3-124"><a href="#cb3-124" aria-hidden="true" tabindex="-1"></a><span class="in">lines(seq, yhat$y.pred[Ord] - 1.96 * yhat$se.pred[Ord], col = "red", lty = 2)</span></span>
-<span id="cb3-125"><a href="#cb3-125" aria-hidden="true" tabindex="-1"></a><span class="in">lines(seq, fit_face$mu.new, col = "black", lwd = 2)</span></span>
-<span id="cb3-126"><a href="#cb3-126" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-127"><a href="#cb3-127" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
-<span id="cb3-128"><a href="#cb3-128" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-129"><a href="#cb3-129" aria-hidden="true" tabindex="-1"></a><span class="in">#extract mean, covariance, variance, correlation function, and eigenfunctions</span></span>
-<span id="cb3-130"><a href="#cb3-130" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth marginal mean</span></span>
-<span id="cb3-131"><a href="#cb3-131" aria-hidden="true" tabindex="-1"></a><span class="in">m &lt;- fit_face$mu.new</span></span>
-<span id="cb3-132"><a href="#cb3-132" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth covariance</span></span>
-<span id="cb3-133"><a href="#cb3-133" aria-hidden="true" tabindex="-1"></a><span class="in">Cov &lt;- fit_face$Chat.new</span></span>
-<span id="cb3-134"><a href="#cb3-134" aria-hidden="true" tabindex="-1"></a><span class="in">#Pointwise covariance</span></span>
-<span id="cb3-135"><a href="#cb3-135" aria-hidden="true" tabindex="-1"></a><span class="in">Cov_diag &lt;- diag(Cov)</span></span>
-<span id="cb3-136"><a href="#cb3-136" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth correlation </span></span>
-<span id="cb3-137"><a href="#cb3-137" aria-hidden="true" tabindex="-1"></a><span class="in">Cor &lt;- fit_face$Cor.new</span></span>
-<span id="cb3-138"><a href="#cb3-138" aria-hidden="true" tabindex="-1"></a><span class="in">#Pointwise prediction intervals</span></span>
-<span id="cb3-139"><a href="#cb3-139" aria-hidden="true" tabindex="-1"></a><span class="in">m_p_2sd &lt;- m + 2 * sqrt(Cov_diag)</span></span>
-<span id="cb3-140"><a href="#cb3-140" aria-hidden="true" tabindex="-1"></a><span class="in">m_m_2sd &lt;- m - 2 * sqrt(Cov_diag)</span></span>
-<span id="cb3-141"><a href="#cb3-141" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth eigenfunctions </span></span>
-<span id="cb3-142"><a href="#cb3-142" aria-hidden="true" tabindex="-1"></a><span class="in">eigenf &lt;- fit_face$eigenfunctions</span></span>
-<span id="cb3-143"><a href="#cb3-143" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth eigenvalues </span></span>
-<span id="cb3-144"><a href="#cb3-144" aria-hidden="true" tabindex="-1"></a><span class="in">eigenv &lt;- fit_face$eigenvalues</span></span>
-<span id="cb3-145"><a href="#cb3-145" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-146"><a href="#cb3-146" aria-hidden="true" tabindex="-1"></a><span class="in">#first 3 eigenfunctions</span></span>
-<span id="cb3-147"><a href="#cb3-147" aria-hidden="true" tabindex="-1"></a><span class="in">par(mar = c(4.5, 4.5, 0, 2))</span></span>
-<span id="cb3-148"><a href="#cb3-148" aria-hidden="true" tabindex="-1"></a><span class="in">col_me &lt;- c("cornflowerblue", "aquamarine3", "coral1")</span></span>
-<span id="cb3-149"><a href="#cb3-149" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-150"><a href="#cb3-150" aria-hidden="true" tabindex="-1"></a><span class="in">plot(1, type = "n", xlab = "Performance Age (years)", ylab = "",</span></span>
-<span id="cb3-151"><a href="#cb3-151" aria-hidden="true" tabindex="-1"></a><span class="in">     xlim = range(tnew), ylim = range(eigenf), bty = "n")</span></span>
-<span id="cb3-152"><a href="#cb3-152" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-153"><a href="#cb3-153" aria-hidden="true" tabindex="-1"></a><span class="in">for(i in 1:3){</span></span>
-<span id="cb3-154"><a href="#cb3-154" aria-hidden="true" tabindex="-1"></a><span class="in">  lines(tnew, eigenf[,i], col = col_me[i], lwd = 3)</span></span>
-<span id="cb3-155"><a href="#cb3-155" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
-<span id="cb3-156"><a href="#cb3-156" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-157"><a href="#cb3-157" aria-hidden="true" tabindex="-1"></a><span class="in">legend("topright", c("PC1", "PC2", "PC3"), </span></span>
-<span id="cb3-158"><a href="#cb3-158" aria-hidden="true" tabindex="-1"></a><span class="in">       col = col_me, lty = 1, bty = "n", lwd = 3)</span></span>
-<span id="cb3-159"><a href="#cb3-159" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb3-160"><a href="#cb3-160" aria-hidden="true" tabindex="-1"></a>plot of predicted aging curves:</span>
-<span id="cb3-161"><a href="#cb3-161" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-162"><a href="#cb3-162" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-163"><a href="#cb3-163" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-164"><a href="#cb3-164" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-165"><a href="#cb3-165" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-166"><a href="#cb3-166" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-167"><a href="#cb3-167" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-168"><a href="#cb3-168" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clustering on FPCA predictive function</span></span>
-<span id="cb3-169"><a href="#cb3-169" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-170"><a href="#cb3-170" aria-hidden="true" tabindex="-1"></a>Clustering of Functional Data groups athletes with similar aging curve shapes into distinct categories. In this project, the clustering is based on the percent change of the IAAF-points of their aging curves, which reflects the relative progression of performance over time rather than absolute performance levels. After applying sparse FPCA, each percent change curve is summarized by a small set of principal component scores, reducing the infinite-dimensional curve to a low-dimensional representation. These score vectors are then clustered using k-means, with the number of clusters set to three. This method partitions the population into distinct aging patterns, such as early peak, late peak, or sustained performance, enabling clearer comparisons between athletes with similar career trajectories. After clustering the entire population's performance trajectories, we can assign new athlete to an existing cluster. This allows us to immediately place the athlete within a known progression pattern and monitor their trajectory over time.</span>
-<span id="cb3-171"><a href="#cb3-171" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-172"><a href="#cb3-172" aria-hidden="true" tabindex="-1"></a>Here is code for clustering the whole population based on the athletes' percent change of IAAF-points.</span>
-<span id="cb3-173"><a href="#cb3-173" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-174"><a href="#cb3-174" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,echo=TRUE}</span></span>
-<span id="cb3-175"><a href="#cb3-175" aria-hidden="true" tabindex="-1"></a><span class="in">#cluster the whole population based on percent change</span></span>
-<span id="cb3-176"><a href="#cb3-176" aria-hidden="true" tabindex="-1"></a><span class="in"># set up</span></span>
-<span id="cb3-177"><a href="#cb3-177" aria-hidden="true" tabindex="-1"></a><span class="in">id &lt;- fd_data$athlete_id</span></span>
-<span id="cb3-178"><a href="#cb3-178" aria-hidden="true" tabindex="-1"></a><span class="in">uid &lt;- unique(id)</span></span>
-<span id="cb3-179"><a href="#cb3-179" aria-hidden="true" tabindex="-1"></a><span class="in">#set the grid where to predict</span></span>
-<span id="cb3-180"><a href="#cb3-180" aria-hidden="true" tabindex="-1"></a><span class="in">seq &lt;- seq(11, 58, by = 1)</span></span>
-<span id="cb3-181"><a href="#cb3-181" aria-hidden="true" tabindex="-1"></a><span class="in">k &lt;- length(seq)</span></span>
-<span id="cb3-182"><a href="#cb3-182" aria-hidden="true" tabindex="-1"></a><span class="in">n &lt;- length(uid)</span></span>
-<span id="cb3-183"><a href="#cb3-183" aria-hidden="true" tabindex="-1"></a><span class="in"># Set the predicted percent change in IAAF points matrix: one fewer column since we lose first value</span></span>
-<span id="cb3-184"><a href="#cb3-184" aria-hidden="true" tabindex="-1"></a><span class="in">PercentChange_mat &lt;- matrix(NA, nrow = n, ncol = k - 1)</span></span>
-<span id="cb3-185"><a href="#cb3-185" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-186"><a href="#cb3-186" aria-hidden="true" tabindex="-1"></a><span class="in"># loop over each athlete, predict every curve</span></span>
-<span id="cb3-187"><a href="#cb3-187" aria-hidden="true" tabindex="-1"></a><span class="in">for(i in 1:n){</span></span>
-<span id="cb3-188"><a href="#cb3-188" aria-hidden="true" tabindex="-1"></a><span class="in">  sel &lt;- which(id == uid[i])</span></span>
-<span id="cb3-189"><a href="#cb3-189" aria-hidden="true" tabindex="-1"></a><span class="in">  dati &lt;- fd_data[sel, ] |&gt;</span></span>
-<span id="cb3-190"><a href="#cb3-190" aria-hidden="true" tabindex="-1"></a><span class="in">    mutate(y = iaaf_score,</span></span>
-<span id="cb3-191"><a href="#cb3-191" aria-hidden="true" tabindex="-1"></a><span class="in">              argvals = performance_age,</span></span>
-<span id="cb3-192"><a href="#cb3-192" aria-hidden="true" tabindex="-1"></a><span class="in">              subj = athlete_id) |&gt; </span></span>
-<span id="cb3-193"><a href="#cb3-193" aria-hidden="true" tabindex="-1"></a><span class="in">    select(y, argvals,subj)</span></span>
-<span id="cb3-194"><a href="#cb3-194" aria-hidden="true" tabindex="-1"></a><span class="in"> </span></span>
-<span id="cb3-195"><a href="#cb3-195" aria-hidden="true" tabindex="-1"></a><span class="in">#if (nrow(dati) == 0) next</span></span>
-<span id="cb3-196"><a href="#cb3-196" aria-hidden="true" tabindex="-1"></a><span class="in">  </span></span>
-<span id="cb3-197"><a href="#cb3-197" aria-hidden="true" tabindex="-1"></a><span class="in">dati_pred &lt;- data.frame(y = rep(NA, nrow(dati) + k),</span></span>
-<span id="cb3-198"><a href="#cb3-198" aria-hidden="true" tabindex="-1"></a><span class="in">                          argvals = c(rep(NA, nrow(dati)), seq),</span></span>
-<span id="cb3-199"><a href="#cb3-199" aria-hidden="true" tabindex="-1"></a><span class="in">                          subj = rep(dati$subj[1], nrow(dati) + k)</span></span>
-<span id="cb3-200"><a href="#cb3-200" aria-hidden="true" tabindex="-1"></a><span class="in">  )</span></span>
-<span id="cb3-201"><a href="#cb3-201" aria-hidden="true" tabindex="-1"></a><span class="in">  </span></span>
-<span id="cb3-202"><a href="#cb3-202" aria-hidden="true" tabindex="-1"></a><span class="in">  dati_pred[1:nrow(dati), ] &lt;- dati</span></span>
-<span id="cb3-203"><a href="#cb3-203" aria-hidden="true" tabindex="-1"></a><span class="in">  yhat &lt;- predict(fit_face, dati_pred)</span></span>
-<span id="cb3-204"><a href="#cb3-204" aria-hidden="true" tabindex="-1"></a><span class="in">#Extract just the predictions on the grid  </span></span>
-<span id="cb3-205"><a href="#cb3-205" aria-hidden="true" tabindex="-1"></a><span class="in">  Ord &lt;- (nrow(dati) + 1):(nrow(dati) + k)</span></span>
-<span id="cb3-206"><a href="#cb3-206" aria-hidden="true" tabindex="-1"></a><span class="in">  raw &lt;- yhat$y.pred[Ord]</span></span>
-<span id="cb3-207"><a href="#cb3-207" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-208"><a href="#cb3-208" aria-hidden="true" tabindex="-1"></a><span class="in"># Check if prediction is valid</span></span>
-<span id="cb3-209"><a href="#cb3-209" aria-hidden="true" tabindex="-1"></a><span class="in">if (all(is.na(raw)) || any(raw[-1] == 0, na.rm = TRUE)) next</span></span>
-<span id="cb3-210"><a href="#cb3-210" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-211"><a href="#cb3-211" aria-hidden="true" tabindex="-1"></a><span class="in"># Compute percent change: (current - previous)/previous * 100</span></span>
-<span id="cb3-212"><a href="#cb3-212" aria-hidden="true" tabindex="-1"></a><span class="in">pc &lt;- c(NA, diff(raw) / head(raw, -1)) * 100</span></span>
-<span id="cb3-213"><a href="#cb3-213" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-214"><a href="#cb3-214" aria-hidden="true" tabindex="-1"></a><span class="in"># Save to matrix, dropping the initial NA</span></span>
-<span id="cb3-215"><a href="#cb3-215" aria-hidden="true" tabindex="-1"></a><span class="in">PercentChange_mat[i, ] &lt;- pc[-1]</span></span>
-<span id="cb3-216"><a href="#cb3-216" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
-<span id="cb3-217"><a href="#cb3-217" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-218"><a href="#cb3-218" aria-hidden="true" tabindex="-1"></a><span class="in"># conduct clustering of predicted functions from fpca sparse(k-means clustering)</span></span>
-<span id="cb3-219"><a href="#cb3-219" aria-hidden="true" tabindex="-1"></a><span class="in">set.seed(20240805)</span></span>
-<span id="cb3-220"><a href="#cb3-220" aria-hidden="true" tabindex="-1"></a><span class="in">cl_kmeans &lt;- kmeans(PercentChange_mat, centers = 3, nstart = 25)</span></span>
-<span id="cb3-221"><a href="#cb3-221" aria-hidden="true" tabindex="-1"></a><span class="in">cl_ind &lt;- cl_kmeans$cluster</span></span>
-<span id="cb3-222"><a href="#cb3-222" aria-hidden="true" tabindex="-1"></a><span class="in">cl_cen &lt;- cl_kmeans$centers</span></span>
-<span id="cb3-223"><a href="#cb3-223" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-224"><a href="#cb3-224" aria-hidden="true" tabindex="-1"></a><span class="in"># plot the predicted aging curves together with the estimated clustering as well as centers of the clusters</span></span>
-<span id="cb3-225"><a href="#cb3-225" aria-hidden="true" tabindex="-1"></a><span class="in">par(mar = c(4, 4, 1, 1))</span></span>
-<span id="cb3-226"><a href="#cb3-226" aria-hidden="true" tabindex="-1"></a><span class="in">colset &lt;- c("#E69A8DFF", "#F6D55C", "#2A9D8F", "#5F4B8BFF")</span></span>
-<span id="cb3-227"><a href="#cb3-227" aria-hidden="true" tabindex="-1"></a><span class="in">plot(NULL, xlim = range(seq), ylim = c(-20, 20),</span></span>
-<span id="cb3-228"><a href="#cb3-228" aria-hidden="true" tabindex="-1"></a><span class="in">     xlab = "Performance Age (years)", ylab = "Percent Change in IAAF Score", bty = "n")</span></span>
-<span id="cb3-229"><a href="#cb3-229" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-230"><a href="#cb3-230" aria-hidden="true" tabindex="-1"></a><span class="in">for(i in 1:n){</span></span>
-<span id="cb3-231"><a href="#cb3-231" aria-hidden="true" tabindex="-1"></a><span class="in">  lines(seq[-1], PercentChange_mat[i,], col = colset[cl_ind[i]])</span></span>
-<span id="cb3-232"><a href="#cb3-232" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
-<span id="cb3-233"><a href="#cb3-233" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-234"><a href="#cb3-234" aria-hidden="true" tabindex="-1"></a><span class="in">for(j in 1:3){</span></span>
-<span id="cb3-235"><a href="#cb3-235" aria-hidden="true" tabindex="-1"></a><span class="in">  lines(seq[-1], cl_cen[j,], col = "black", lwd = 3)</span></span>
-<span id="cb3-236"><a href="#cb3-236" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
-<span id="cb3-237"><a href="#cb3-237" aria-hidden="true" tabindex="-1"></a><span class="in">legend("topright", legend = paste("Cluster", 1:3),</span></span>
-<span id="cb3-238"><a href="#cb3-238" aria-hidden="true" tabindex="-1"></a><span class="in">       col = colset, lty = 1, lwd = 2, bty = "n")</span></span>
-<span id="cb3-239"><a href="#cb3-239" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
-<span id="cb3-240"><a href="#cb3-240" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-241"><a href="#cb3-241" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-242"><a href="#cb3-242" aria-hidden="true" tabindex="-1"></a>And here is the plot of clustering the whole population based on the </span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./05-visualize.html" class="pagination-link" aria-label="Visualize">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Visualize</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./07-communicate.html" class="pagination-link" aria-label="Communicate">
+        <span class="nav-page-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Communicate</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb4" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Model"</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="fu">## Introduction</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>Athletic performance evolves with age, and understanding this progression — often represented as an *aging curve* — is of considerable interest in sports analytics. Aging curves plot an athlete’s performance level as a function of age, offering valuable insight for coaches, roster management,analysts, and player development strategies.</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>Traditional approaches to modeling aging curves, such as multiple regression with spline interpolation, provide limited flexibility and often fail to capture the full complexity of career trajectories. **Functional Data Analysis (FDA)** provides a more powerful and flexible framework for modeling aging curves by treating each athlete’s career trajectory as a continuous function over time. This approach allows for richer statistical analyses, including hypothesis testing, dimensionality reduction, and clustering. methodology is based on Functional Data Analysis in R and inspired by the paper Functional Data Analysis of Aging Curves in Sports by Alexander Wakim and Jimmy Jin (2014).</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>The methodology presented here is based on *Functional Data Analysis with R* by Crainiceanu, Goldsmith, Leroux, and Cui (2021) and is inspired by the paper *Functional Data Analysis of Aging Curves in Sports* by Wakim and Jin (2014). In this section, we begin with FDA fundamentals, then introduce Functional Principal Component Analysis (FPCA) to summarize variation across curves, address sparse and irregular data via sparse FPCA, and conclude with clustering of functional data.</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="fu">## Functional Data Analysis (FDA)</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>Functional Data Analysis (FDA) models an athlete’s performance over age as a smooth, continuous function called an aging curve. In practice, we only observe discrete values at certain ages, so we fit a smooth curve to these points. Formally, for athlete $i$ at age $t_{ij}$ we write: $$ y_{ij} = f_i(t_{ij}) + \epsilon_{ij}$$</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>where $y_{ij}$ is the observed performance, $f_i(t)$ is the smooth aging curve, and $\epsilon_{ij}$ is the measurement error.</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>We approximate $f_i(t)$ using **B-spline basis functions**:</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>$$f_i(t) \approx \sum_{k=1}^K \beta_{ik} B_k(t)$$</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>Here $B_k(t)$ are spline basis functions and $\beta_{ik}$ are coefficients that determine the curve’s shape. B-splines are piecewise polynomials joined at knots, allowing flexibility to capture complex patterns in performance trajectories.</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>To avoid overfitting, a **roughness penalty** is added:</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>\hat{\beta}_i = \arg\min_{\beta_i} \sum_j \left( y_{ij} - \sum_{k=1}^K \beta_{ik} B_k(t_{ij}) \right)^2 + \lambda \int \left( f''_i(t) \right)^2 dt</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>The penalty term $\lambda \int (f''_i(t))^2 dt$ discourages excessive curvature, and $\lambda$ is selected via generalized cross-validation (GCV).</span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>Once fitted, we can compute the **mean aging curve**:</span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>\hat{\mu}(t) = \frac{1}{N} \sum_{i=1}^N f_i(t)</span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>and the **variance function**:</span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>\widehat{\text{Var}}(f(t)) = \frac{1}{N-1} \sum_{i=1}^N \left( f_i(t) - \hat{\mu}(t) \right)^2</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>$$</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>Representing curves via their spline coefficients allows us to use multivariate tools like **Functional Principal Component Analysis (FPCA)** to summarize patterns of variation and generate scores for visualization, comparison, and clustering.</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a><span class="fu">## Functional Principal Component Analysis(FPCA)</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>Functional Principal Component Analysis (FPCA) summarizes variation across aging curves by decomposing each curve into a mean function plus a weighted sum of functional principal components (FPCs). $$f_i​(t)=\mu(t)+\sum^K_{k = 1}\xi_{ik}\psi_k(t)$$</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a>Here:</span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a><span class="sc">\-</span> $\mu(t)$ is the mean curve</span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a><span class="sc">\-</span> $\psi_k(t)$ are orthogonal basis functions (FPCs)</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a><span class="sc">\-</span> $\xi_{ik}$ are the FPC scores for athlete (i) on component (k)</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>The first component $\psi_k(t)$ explains the largest proportion of variation in the data, the second explains the most variation orthogonal to the first, and so on. The scores $\xi_{ik}$ indicate how much each athlete’s curve deviates from the mean along each component.</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>By retaining only the leading components that explain most of the variation, FPCA provides a **compact low-dimensional representation** of each curve. This allows efficient visualization, statistical testing, and clustering while preserving the main features of the original functional data.</span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a><span class="fu">## Sparse and Irregular FPCA</span></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>Sports performance data are often **sparse** (few observations per athlete) and **irregular** (different measurement ages across athletes). Traditional FDA and FPCA assume regular, dense observations, making them unsuitable for such data. In this project, many athletes have limited recorded performance points, so I use **Sparse FPCA**, implemented via the <span class="in">`face.sparse()`</span> method in R. This approach follows the example from *Functional Data Analysis with R* (Crainiceanu et al., 2021), where sparse and irregular data are smoothed, principal components are extracted, and clustering is performed on the reconstructed curves.</span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>Sparse FPCA can</span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-69"><a href="#cb4-69" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Identify eigenfunctions that explain most of the variation in the data</span>
+<span id="cb4-70"><a href="#cb4-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-71"><a href="#cb4-71" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Predict full aging curves even when data are sparse and irregular</span>
+<span id="cb4-72"><a href="#cb4-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-73"><a href="#cb4-73" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Provide principal component scores for downstream analysis, such as clustering</span>
+<span id="cb4-74"><a href="#cb4-74" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-75"><a href="#cb4-75" aria-hidden="true" tabindex="-1"></a>In my project, Sparse FPCA estimates the mean function and covariance structure from incomplete data, recovers the principal component curves, and predicts scores for each athlete. This enables full-curve reconstruction and clustering of aging patterns even when the raw observations are too limited for traditional FDA or FPCA.</span>
+<span id="cb4-76"><a href="#cb4-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-77"><a href="#cb4-77" aria-hidden="true" tabindex="-1"></a>Here is an example of applying sparse FPCA to an athlete named *Svein-inge-valvik*. We first filter the dataset to remove missing values and format it so that each row contains the athlete’s ID, performance age, and IAAF score. The data is then structured into the input format required by <span class="in">`face.sparse()`</span> which contains the observed scores <span class="in">`y`</span>, the corresponding performance ages <span class="in">`argvals`</span>, and a subject identifier <span class="in">`subj`</span>.</span>
+<span id="cb4-78"><a href="#cb4-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-79"><a href="#cb4-79" aria-hidden="true" tabindex="-1"></a>The <span class="in">`face.sparse()`</span> function is applied to estimate the mean aging curve, covariance function, correlation function, eigenfunctions, and eigenvalues from the sparse and irregular data. This step smooths the observed data, extracts the principal component curves, and allows us to reconstruct the athlete’s entire aging trajectory even when only a few observations are available.</span>
+<span id="cb4-80"><a href="#cb4-80" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-81"><a href="#cb4-81" aria-hidden="true" tabindex="-1"></a>For *Svein-inge-valvik* we use the fitted model to generate predictions of the aging curve over a grid of ages from 11 to 58 years along with 95 percent prediction intervals. The predicted curve is plotted in red with the original observed points in blue and the overall mean curve in black.</span>
+<span id="cb4-82"><a href="#cb4-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-83"><a href="#cb4-83" aria-hidden="true" tabindex="-1"></a>We also extract the first three eigenfunctions which represent the main modes of variation in the population’s aging curves. These eigenfunctions are key to understanding how athletes’ trajectories differ in shape such as an early peak or gradual improvement and are later used for clustering analysis.</span>
+<span id="cb4-84"><a href="#cb4-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-85"><a href="#cb4-85" aria-hidden="true" tabindex="-1"></a>Additionally we compute the world class standards for both men and women in the same event. This allows us to determine the performance age at which *Svein-inge-valvik* reaches world class performance providing a meaningful benchmark in the context of elite athletics.</span>
+<span id="cb4-86"><a href="#cb4-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-87"><a href="#cb4-87" aria-hidden="true" tabindex="-1"></a>Codes are here:</span>
+<span id="cb4-88"><a href="#cb4-88" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-89"><a href="#cb4-89" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,echo=TRUE}</span></span>
+<span id="cb4-90"><a href="#cb4-90" aria-hidden="true" tabindex="-1"></a><span class="in"># Filter out missing points athletes and rename for clarity</span></span>
+<span id="cb4-91"><a href="#cb4-91" aria-hidden="true" tabindex="-1"></a><span class="in">fd_data &lt;- athlete_bests_points |&gt; </span></span>
+<span id="cb4-92"><a href="#cb4-92" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(!is.na(points), !is.na(age_years)) |&gt; </span></span>
+<span id="cb4-93"><a href="#cb4-93" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(id = paste(athlete_link, event)) |&gt; </span></span>
+<span id="cb4-94"><a href="#cb4-94" aria-hidden="true" tabindex="-1"></a><span class="in">  select(athlete_id = id,</span></span>
+<span id="cb4-95"><a href="#cb4-95" aria-hidden="true" tabindex="-1"></a><span class="in">         performance_age = age_years,</span></span>
+<span id="cb4-96"><a href="#cb4-96" aria-hidden="true" tabindex="-1"></a><span class="in">         iaaf_score = points)</span></span>
+<span id="cb4-97"><a href="#cb4-97" aria-hidden="true" tabindex="-1"></a><span class="in">fd_data_shiny &lt;- athlete_bests_points |&gt; </span></span>
+<span id="cb4-98"><a href="#cb4-98" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(!is.na(points), !is.na(age_years))</span></span>
+<span id="cb4-99"><a href="#cb4-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-100"><a href="#cb4-100" aria-hidden="true" tabindex="-1"></a><span class="in">#use face to conduct sparse FDA</span></span>
+<span id="cb4-101"><a href="#cb4-101" aria-hidden="true" tabindex="-1"></a><span class="in">top_10_ids &lt;- fd_data |&gt;</span></span>
+<span id="cb4-102"><a href="#cb4-102" aria-hidden="true" tabindex="-1"></a><span class="in">  count(athlete_id, sort = TRUE) |&gt;</span></span>
+<span id="cb4-103"><a href="#cb4-103" aria-hidden="true" tabindex="-1"></a><span class="in">slice_head(n = 10) |&gt;</span></span>
+<span id="cb4-104"><a href="#cb4-104" aria-hidden="true" tabindex="-1"></a><span class="in"> pull(athlete_id)</span></span>
+<span id="cb4-105"><a href="#cb4-105" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-106"><a href="#cb4-106" aria-hidden="true" tabindex="-1"></a><span class="in">fd_data_top10 &lt;- fd_data |&gt;</span></span>
+<span id="cb4-107"><a href="#cb4-107" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(athlete_id %in% top_10_ids)</span></span>
+<span id="cb4-108"><a href="#cb4-108" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-109"><a href="#cb4-109" aria-hidden="true" tabindex="-1"></a><span class="in">id &lt;- fd_data_top10$athlete_id</span></span>
+<span id="cb4-110"><a href="#cb4-110" aria-hidden="true" tabindex="-1"></a><span class="in">uid &lt;- unique(id)</span></span>
+<span id="cb4-111"><a href="#cb4-111" aria-hidden="true" tabindex="-1"></a><span class="in">face_input &lt;- data.frame(</span></span>
+<span id="cb4-112"><a href="#cb4-112" aria-hidden="true" tabindex="-1"></a><span class="in">  y = fd_data_top10$iaaf_score,</span></span>
+<span id="cb4-113"><a href="#cb4-113" aria-hidden="true" tabindex="-1"></a><span class="in">  argvals = fd_data_top10$performance_age,</span></span>
+<span id="cb4-114"><a href="#cb4-114" aria-hidden="true" tabindex="-1"></a><span class="in">  subj = id)</span></span>
+<span id="cb4-115"><a href="#cb4-115" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-116"><a href="#cb4-116" aria-hidden="true" tabindex="-1"></a><span class="in">Sample &lt;- which(uid == "https://worldathletics.org/athletes/norway/svein-inge-valvik-014215542 DT")</span></span>
+<span id="cb4-117"><a href="#cb4-117" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-118"><a href="#cb4-118" aria-hidden="true" tabindex="-1"></a><span class="in">fit_face &lt;- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))</span></span>
+<span id="cb4-119"><a href="#cb4-119" aria-hidden="true" tabindex="-1"></a><span class="in">#create a data double</span></span>
+<span id="cb4-120"><a href="#cb4-120" aria-hidden="true" tabindex="-1"></a><span class="in">data.h &lt;- face_input</span></span>
+<span id="cb4-121"><a href="#cb4-121" aria-hidden="true" tabindex="-1"></a><span class="in">tnew &lt;- fit_face$argvals.new</span></span>
+<span id="cb4-122"><a href="#cb4-122" aria-hidden="true" tabindex="-1"></a><span class="in">#prepare data for prediction</span></span>
+<span id="cb4-123"><a href="#cb4-123" aria-hidden="true" tabindex="-1"></a><span class="in">seq &lt;- seq(11, 58, by = 1)</span></span>
+<span id="cb4-124"><a href="#cb4-124" aria-hidden="true" tabindex="-1"></a><span class="in">k &lt;- length(seq)</span></span>
+<span id="cb4-125"><a href="#cb4-125" aria-hidden="true" tabindex="-1"></a><span class="in">for(i in Sample){</span></span>
+<span id="cb4-126"><a href="#cb4-126" aria-hidden="true" tabindex="-1"></a><span class="in">  sel &lt;- which(id == uid[i])</span></span>
+<span id="cb4-127"><a href="#cb4-127" aria-hidden="true" tabindex="-1"></a><span class="in">  #dati &lt;- fd_data_top10[sel,] </span></span>
+<span id="cb4-128"><a href="#cb4-128" aria-hidden="true" tabindex="-1"></a><span class="in">  </span></span>
+<span id="cb4-129"><a href="#cb4-129" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-130"><a href="#cb4-130" aria-hidden="true" tabindex="-1"></a><span class="in">dati &lt;- fd_data_top10[sel, ] |&gt; </span></span>
+<span id="cb4-131"><a href="#cb4-131" aria-hidden="true" tabindex="-1"></a><span class="in">  dplyr::transmute(y = iaaf_score,</span></span>
+<span id="cb4-132"><a href="#cb4-132" aria-hidden="true" tabindex="-1"></a><span class="in">         argvals = performance_age,</span></span>
+<span id="cb4-133"><a href="#cb4-133" aria-hidden="true" tabindex="-1"></a><span class="in">         subj = athlete_id)</span></span>
+<span id="cb4-134"><a href="#cb4-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-135"><a href="#cb4-135" aria-hidden="true" tabindex="-1"></a><span class="in"># Create the prediction dataframe</span></span>
+<span id="cb4-136"><a href="#cb4-136" aria-hidden="true" tabindex="-1"></a><span class="in">dati_pred &lt;- data.frame(</span></span>
+<span id="cb4-137"><a href="#cb4-137" aria-hidden="true" tabindex="-1"></a><span class="in">  y       = rep(NA, nrow(dati) + k),</span></span>
+<span id="cb4-138"><a href="#cb4-138" aria-hidden="true" tabindex="-1"></a><span class="in">  argvals = c(rep(NA, nrow(dati)), seq),</span></span>
+<span id="cb4-139"><a href="#cb4-139" aria-hidden="true" tabindex="-1"></a><span class="in">  subj    = rep(dati$subj[1], nrow(dati) + k)</span></span>
+<span id="cb4-140"><a href="#cb4-140" aria-hidden="true" tabindex="-1"></a><span class="in">)</span></span>
+<span id="cb4-141"><a href="#cb4-141" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-142"><a href="#cb4-142" aria-hidden="true" tabindex="-1"></a><span class="in">dati_pred[1:nrow(dati), ] &lt;- dati</span></span>
+<span id="cb4-143"><a href="#cb4-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-144"><a href="#cb4-144" aria-hidden="true" tabindex="-1"></a><span class="in">yhat &lt;- predict(fit_face, dati_pred)</span></span>
+<span id="cb4-145"><a href="#cb4-145" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-146"><a href="#cb4-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-147"><a href="#cb4-147" aria-hidden="true" tabindex="-1"></a><span class="in">Ord  &lt;- (nrow(dati) + 1):(nrow(dati) + k)</span></span>
+<span id="cb4-148"><a href="#cb4-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-149"><a href="#cb4-149" aria-hidden="true" tabindex="-1"></a><span class="in">#Plot</span></span>
+<span id="cb4-150"><a href="#cb4-150" aria-hidden="true" tabindex="-1"></a><span class="in">plot(dati$argvals, dati$y,</span></span>
+<span id="cb4-151"><a href="#cb4-151" aria-hidden="true" tabindex="-1"></a><span class="in">     xlab = "Performance Age (years)",</span></span>
+<span id="cb4-152"><a href="#cb4-152" aria-hidden="true" tabindex="-1"></a><span class="in">     ylab = "IAAF score",</span></span>
+<span id="cb4-153"><a href="#cb4-153" aria-hidden="true" tabindex="-1"></a><span class="in">     pch = 19, col = "blue",</span></span>
+<span id="cb4-154"><a href="#cb4-154" aria-hidden="true" tabindex="-1"></a><span class="in">     xlim = range(seq),</span></span>
+<span id="cb4-155"><a href="#cb4-155" aria-hidden="true" tabindex="-1"></a><span class="in">     ylim = range(c(dati$y, yhat$y.pred[Ord]), na.rm = TRUE),</span></span>
+<span id="cb4-156"><a href="#cb4-156" aria-hidden="true" tabindex="-1"></a><span class="in">     bty = "n")</span></span>
+<span id="cb4-157"><a href="#cb4-157" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-158"><a href="#cb4-158" aria-hidden="true" tabindex="-1"></a><span class="in">lines(seq, yhat$y.pred[Ord], col = "red",  lwd = 2)</span></span>
+<span id="cb4-159"><a href="#cb4-159" aria-hidden="true" tabindex="-1"></a><span class="in">lines(seq, yhat$y.pred[Ord] + 1.96 * yhat$se.pred[Ord], col = "red", lty = 2)</span></span>
+<span id="cb4-160"><a href="#cb4-160" aria-hidden="true" tabindex="-1"></a><span class="in">lines(seq, yhat$y.pred[Ord] - 1.96 * yhat$se.pred[Ord], col = "red", lty = 2)</span></span>
+<span id="cb4-161"><a href="#cb4-161" aria-hidden="true" tabindex="-1"></a><span class="in">lines(seq, fit_face$mu.new, col = "black", lwd = 2)</span></span>
+<span id="cb4-162"><a href="#cb4-162" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-163"><a href="#cb4-163" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
+<span id="cb4-164"><a href="#cb4-164" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-165"><a href="#cb4-165" aria-hidden="true" tabindex="-1"></a><span class="in">#extract mean, covariance, variance, correlation function, and eigenfunctions</span></span>
+<span id="cb4-166"><a href="#cb4-166" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth marginal mean</span></span>
+<span id="cb4-167"><a href="#cb4-167" aria-hidden="true" tabindex="-1"></a><span class="in">m &lt;- fit_face$mu.new</span></span>
+<span id="cb4-168"><a href="#cb4-168" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth covariance</span></span>
+<span id="cb4-169"><a href="#cb4-169" aria-hidden="true" tabindex="-1"></a><span class="in">Cov &lt;- fit_face$Chat.new</span></span>
+<span id="cb4-170"><a href="#cb4-170" aria-hidden="true" tabindex="-1"></a><span class="in">#Pointwise covariance</span></span>
+<span id="cb4-171"><a href="#cb4-171" aria-hidden="true" tabindex="-1"></a><span class="in">Cov_diag &lt;- diag(Cov)</span></span>
+<span id="cb4-172"><a href="#cb4-172" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth correlation </span></span>
+<span id="cb4-173"><a href="#cb4-173" aria-hidden="true" tabindex="-1"></a><span class="in">Cor &lt;- fit_face$Cor.new</span></span>
+<span id="cb4-174"><a href="#cb4-174" aria-hidden="true" tabindex="-1"></a><span class="in">#Pointwise prediction intervals</span></span>
+<span id="cb4-175"><a href="#cb4-175" aria-hidden="true" tabindex="-1"></a><span class="in">m_p_2sd &lt;- m + 2 * sqrt(Cov_diag)</span></span>
+<span id="cb4-176"><a href="#cb4-176" aria-hidden="true" tabindex="-1"></a><span class="in">m_m_2sd &lt;- m - 2 * sqrt(Cov_diag)</span></span>
+<span id="cb4-177"><a href="#cb4-177" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth eigenfunctions </span></span>
+<span id="cb4-178"><a href="#cb4-178" aria-hidden="true" tabindex="-1"></a><span class="in">eigenf &lt;- fit_face$eigenfunctions</span></span>
+<span id="cb4-179"><a href="#cb4-179" aria-hidden="true" tabindex="-1"></a><span class="in">#Smooth eigenvalues </span></span>
+<span id="cb4-180"><a href="#cb4-180" aria-hidden="true" tabindex="-1"></a><span class="in">eigenv &lt;- fit_face$eigenvalues</span></span>
+<span id="cb4-181"><a href="#cb4-181" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-182"><a href="#cb4-182" aria-hidden="true" tabindex="-1"></a><span class="in">#first 3 eigenfunctions</span></span>
+<span id="cb4-183"><a href="#cb4-183" aria-hidden="true" tabindex="-1"></a><span class="in">par(mar = c(4.5, 4.5, 0, 2))</span></span>
+<span id="cb4-184"><a href="#cb4-184" aria-hidden="true" tabindex="-1"></a><span class="in">col_me &lt;- c("cornflowerblue", "aquamarine3", "coral1")</span></span>
+<span id="cb4-185"><a href="#cb4-185" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-186"><a href="#cb4-186" aria-hidden="true" tabindex="-1"></a><span class="in">plot(1, type = "n", xlab = "Performance Age (years)", ylab = "",</span></span>
+<span id="cb4-187"><a href="#cb4-187" aria-hidden="true" tabindex="-1"></a><span class="in">     xlim = range(tnew), ylim = range(eigenf), bty = "n")</span></span>
+<span id="cb4-188"><a href="#cb4-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-189"><a href="#cb4-189" aria-hidden="true" tabindex="-1"></a><span class="in">for(i in 1:3){</span></span>
+<span id="cb4-190"><a href="#cb4-190" aria-hidden="true" tabindex="-1"></a><span class="in">  lines(tnew, eigenf[,i], col = col_me[i], lwd = 3)</span></span>
+<span id="cb4-191"><a href="#cb4-191" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
+<span id="cb4-192"><a href="#cb4-192" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-193"><a href="#cb4-193" aria-hidden="true" tabindex="-1"></a><span class="in">legend("topright", c("PC1", "PC2", "PC3"), </span></span>
+<span id="cb4-194"><a href="#cb4-194" aria-hidden="true" tabindex="-1"></a><span class="in">       col = col_me, lty = 1, bty = "n", lwd = 3)</span></span>
+<span id="cb4-195"><a href="#cb4-195" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-196"><a href="#cb4-196" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-197"><a href="#cb4-197" aria-hidden="true" tabindex="-1"></a>plot of predicted aging curves:</span>
+<span id="cb4-198"><a href="#cb4-198" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-199"><a href="#cb4-199" aria-hidden="true" tabindex="-1"></a><span class="fu">## Clustering on FPCA predictive function</span></span>
+<span id="cb4-200"><a href="#cb4-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-201"><a href="#cb4-201" aria-hidden="true" tabindex="-1"></a>Clustering of FPCA groups athletes with similar aging curve shapes into distinct categories. In this project, the clustering is based on the percent change of the IAAF-points of their aging curves, which reflects the relative progression of performance over time rather than absolute performance levels. After applying sparse FPCA, each percent change curve is summarized by a small set of principal component scores, reducing the infinite-dimensional curve to a low-dimensional representation. These score vectors are then clustered using k-means, with the number of clusters set to three. This method partitions the population into distinct aging patterns, such as early peak, late peak, or sustained performance, enabling clearer comparisons between athletes with similar career trajectories. After clustering the entire population's performance trajectories, we can assign new athlete to an existing cluster. This allows us to immediately place the athlete within a known progression pattern and monitor their trajectory over time.</span>
+<span id="cb4-202"><a href="#cb4-202" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-203"><a href="#cb4-203" aria-hidden="true" tabindex="-1"></a>Here is code for clustering the whole population based on the athletes' percent change of IAAF-points.</span>
+<span id="cb4-204"><a href="#cb4-204" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-205"><a href="#cb4-205" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,echo=TRUE}</span></span>
+<span id="cb4-206"><a href="#cb4-206" aria-hidden="true" tabindex="-1"></a><span class="in">#cluster the whole population based on percent change</span></span>
+<span id="cb4-207"><a href="#cb4-207" aria-hidden="true" tabindex="-1"></a><span class="in"># set up</span></span>
+<span id="cb4-208"><a href="#cb4-208" aria-hidden="true" tabindex="-1"></a><span class="in">id &lt;- fd_data$athlete_id</span></span>
+<span id="cb4-209"><a href="#cb4-209" aria-hidden="true" tabindex="-1"></a><span class="in">uid &lt;- unique(id)</span></span>
+<span id="cb4-210"><a href="#cb4-210" aria-hidden="true" tabindex="-1"></a><span class="in">#set the grid where to predict</span></span>
+<span id="cb4-211"><a href="#cb4-211" aria-hidden="true" tabindex="-1"></a><span class="in">seq &lt;- seq(11, 58, by = 1)</span></span>
+<span id="cb4-212"><a href="#cb4-212" aria-hidden="true" tabindex="-1"></a><span class="in">k &lt;- length(seq)</span></span>
+<span id="cb4-213"><a href="#cb4-213" aria-hidden="true" tabindex="-1"></a><span class="in">n &lt;- length(uid)</span></span>
+<span id="cb4-214"><a href="#cb4-214" aria-hidden="true" tabindex="-1"></a><span class="in"># Set the predicted percent change in IAAF points matrix: one fewer column since we lose first value</span></span>
+<span id="cb4-215"><a href="#cb4-215" aria-hidden="true" tabindex="-1"></a><span class="in">PercentChange_mat &lt;- matrix(NA, nrow = n, ncol = k - 1)</span></span>
+<span id="cb4-216"><a href="#cb4-216" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-217"><a href="#cb4-217" aria-hidden="true" tabindex="-1"></a><span class="in"># loop over each athlete, predict every curve</span></span>
+<span id="cb4-218"><a href="#cb4-218" aria-hidden="true" tabindex="-1"></a><span class="in">for(i in 1:n){</span></span>
+<span id="cb4-219"><a href="#cb4-219" aria-hidden="true" tabindex="-1"></a><span class="in">  sel &lt;- which(id == uid[i])</span></span>
+<span id="cb4-220"><a href="#cb4-220" aria-hidden="true" tabindex="-1"></a><span class="in">  dati &lt;- fd_data[sel, ] |&gt;</span></span>
+<span id="cb4-221"><a href="#cb4-221" aria-hidden="true" tabindex="-1"></a><span class="in">    mutate(y = iaaf_score,</span></span>
+<span id="cb4-222"><a href="#cb4-222" aria-hidden="true" tabindex="-1"></a><span class="in">              argvals = performance_age,</span></span>
+<span id="cb4-223"><a href="#cb4-223" aria-hidden="true" tabindex="-1"></a><span class="in">              subj = athlete_id) |&gt; </span></span>
+<span id="cb4-224"><a href="#cb4-224" aria-hidden="true" tabindex="-1"></a><span class="in">    select(y, argvals,subj)</span></span>
+<span id="cb4-225"><a href="#cb4-225" aria-hidden="true" tabindex="-1"></a><span class="in"> </span></span>
+<span id="cb4-226"><a href="#cb4-226" aria-hidden="true" tabindex="-1"></a><span class="in">#if (nrow(dati) == 0) next</span></span>
+<span id="cb4-227"><a href="#cb4-227" aria-hidden="true" tabindex="-1"></a><span class="in">  </span></span>
+<span id="cb4-228"><a href="#cb4-228" aria-hidden="true" tabindex="-1"></a><span class="in">dati_pred &lt;- data.frame(y = rep(NA, nrow(dati) + k),</span></span>
+<span id="cb4-229"><a href="#cb4-229" aria-hidden="true" tabindex="-1"></a><span class="in">                          argvals = c(rep(NA, nrow(dati)), seq),</span></span>
+<span id="cb4-230"><a href="#cb4-230" aria-hidden="true" tabindex="-1"></a><span class="in">                          subj = rep(dati$subj[1], nrow(dati) + k)</span></span>
+<span id="cb4-231"><a href="#cb4-231" aria-hidden="true" tabindex="-1"></a><span class="in">  )</span></span>
+<span id="cb4-232"><a href="#cb4-232" aria-hidden="true" tabindex="-1"></a><span class="in">  </span></span>
+<span id="cb4-233"><a href="#cb4-233" aria-hidden="true" tabindex="-1"></a><span class="in">  dati_pred[1:nrow(dati), ] &lt;- dati</span></span>
+<span id="cb4-234"><a href="#cb4-234" aria-hidden="true" tabindex="-1"></a><span class="in">  yhat &lt;- predict(fit_face, dati_pred)</span></span>
+<span id="cb4-235"><a href="#cb4-235" aria-hidden="true" tabindex="-1"></a><span class="in">#Extract just the predictions on the grid  </span></span>
+<span id="cb4-236"><a href="#cb4-236" aria-hidden="true" tabindex="-1"></a><span class="in">  Ord &lt;- (nrow(dati) + 1):(nrow(dati) + k)</span></span>
+<span id="cb4-237"><a href="#cb4-237" aria-hidden="true" tabindex="-1"></a><span class="in">  raw &lt;- yhat$y.pred[Ord]</span></span>
+<span id="cb4-238"><a href="#cb4-238" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-239"><a href="#cb4-239" aria-hidden="true" tabindex="-1"></a><span class="in"># Check if prediction is valid</span></span>
+<span id="cb4-240"><a href="#cb4-240" aria-hidden="true" tabindex="-1"></a><span class="in">if (all(is.na(raw)) || any(raw[-1] == 0, na.rm = TRUE)) next</span></span>
+<span id="cb4-241"><a href="#cb4-241" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-242"><a href="#cb4-242" aria-hidden="true" tabindex="-1"></a><span class="in"># Compute percent change: (current - previous)/previous * 100</span></span>
+<span id="cb4-243"><a href="#cb4-243" aria-hidden="true" tabindex="-1"></a><span class="in">pc &lt;- c(NA, diff(raw) / head(raw, -1)) * 100</span></span>
+<span id="cb4-244"><a href="#cb4-244" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-245"><a href="#cb4-245" aria-hidden="true" tabindex="-1"></a><span class="in"># Save to matrix, dropping the initial NA</span></span>
+<span id="cb4-246"><a href="#cb4-246" aria-hidden="true" tabindex="-1"></a><span class="in">PercentChange_mat[i, ] &lt;- pc[-1]</span></span>
+<span id="cb4-247"><a href="#cb4-247" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
+<span id="cb4-248"><a href="#cb4-248" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-249"><a href="#cb4-249" aria-hidden="true" tabindex="-1"></a><span class="in"># conduct clustering of predicted functions from fpca sparse(k-means clustering)</span></span>
+<span id="cb4-250"><a href="#cb4-250" aria-hidden="true" tabindex="-1"></a><span class="in">set.seed(20240805)</span></span>
+<span id="cb4-251"><a href="#cb4-251" aria-hidden="true" tabindex="-1"></a><span class="in">cl_kmeans &lt;- kmeans(PercentChange_mat, centers = 3, nstart = 25)</span></span>
+<span id="cb4-252"><a href="#cb4-252" aria-hidden="true" tabindex="-1"></a><span class="in">cl_ind &lt;- cl_kmeans$cluster</span></span>
+<span id="cb4-253"><a href="#cb4-253" aria-hidden="true" tabindex="-1"></a><span class="in">cl_cen &lt;- cl_kmeans$centers</span></span>
+<span id="cb4-254"><a href="#cb4-254" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-255"><a href="#cb4-255" aria-hidden="true" tabindex="-1"></a><span class="in"># plot the predicted aging curves together with the estimated clustering as well as centers of the clusters</span></span>
+<span id="cb4-256"><a href="#cb4-256" aria-hidden="true" tabindex="-1"></a><span class="in">par(mar = c(4, 4, 1, 1))</span></span>
+<span id="cb4-257"><a href="#cb4-257" aria-hidden="true" tabindex="-1"></a><span class="in">colset &lt;- c("#E69A8DFF", "#F6D55C", "#2A9D8F", "#5F4B8BFF")</span></span>
+<span id="cb4-258"><a href="#cb4-258" aria-hidden="true" tabindex="-1"></a><span class="in">plot(NULL, xlim = range(seq), ylim = c(-20, 20),</span></span>
+<span id="cb4-259"><a href="#cb4-259" aria-hidden="true" tabindex="-1"></a><span class="in">     xlab = "Performance Age (years)", ylab = "Percent Change in IAAF Score", bty = "n")</span></span>
+<span id="cb4-260"><a href="#cb4-260" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-261"><a href="#cb4-261" aria-hidden="true" tabindex="-1"></a><span class="in">for(i in 1:n){</span></span>
+<span id="cb4-262"><a href="#cb4-262" aria-hidden="true" tabindex="-1"></a><span class="in">  lines(seq[-1], PercentChange_mat[i,], col = colset[cl_ind[i]])</span></span>
+<span id="cb4-263"><a href="#cb4-263" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
+<span id="cb4-264"><a href="#cb4-264" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-265"><a href="#cb4-265" aria-hidden="true" tabindex="-1"></a><span class="in">for(j in 1:3){</span></span>
+<span id="cb4-266"><a href="#cb4-266" aria-hidden="true" tabindex="-1"></a><span class="in">  lines(seq[-1], cl_cen[j,], col = "black", lwd = 3)</span></span>
+<span id="cb4-267"><a href="#cb4-267" aria-hidden="true" tabindex="-1"></a><span class="in">}</span></span>
+<span id="cb4-268"><a href="#cb4-268" aria-hidden="true" tabindex="-1"></a><span class="in">legend("topright", legend = paste("Cluster", 1:3),</span></span>
+<span id="cb4-269"><a href="#cb4-269" aria-hidden="true" tabindex="-1"></a><span class="in">       col = colset, lty = 1, lwd = 2, bty = "n")</span></span>
+<span id="cb4-270"><a href="#cb4-270" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-271"><a href="#cb4-271" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-272"><a href="#cb4-272" aria-hidden="true" tabindex="-1"></a>And here is the plot of clustering the whole population based on the percent change of IAAf-points of</span>
+<span id="cb4-273"><a href="#cb4-273" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-274"><a href="#cb4-274" aria-hidden="true" tabindex="-1"></a>Here is an example of an aging curve for a sample athlete. This athlete can be assigned to one of the existing clusters, which allows us to predict and monitor the athlete’s performance trajectory over time.(shiny app screenshot)</span>
+<span id="cb4-275"><a href="#cb4-275" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-276"><a href="#cb4-276" aria-hidden="true" tabindex="-1"></a>I also cluster the entire population by event type to compare patterns across different disciplines. The population is divided into seven event types: Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, and Road Races. For most event types, the resulting clusters are similar to those of the overall population, while a few categories such as Middle Distance and Road Marathon(???double check) show noticeable differences.</span>
+<span id="cb4-277"><a href="#cb4-277" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-278"><a href="#cb4-278" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,echo=TRUE}</span></span>
+<span id="cb4-279"><a href="#cb4-279" aria-hidden="true" tabindex="-1"></a><span class="in">event_type = case_match(</span></span>
+<span id="cb4-280"><a href="#cb4-280" aria-hidden="true" tabindex="-1"></a><span class="in">       event,</span></span>
+<span id="cb4-281"><a href="#cb4-281" aria-hidden="true" tabindex="-1"></a><span class="in">      c("100m", "200m", "400 Metres", "400m", "400mH", "100mH", "110mH") ~ "Sprints",</span></span>
+<span id="cb4-282"><a href="#cb4-282" aria-hidden="true" tabindex="-1"></a><span class="in">      c("800m", "1500m", "3000m SC") ~ "Middle Distance",</span></span>
+<span id="cb4-283"><a href="#cb4-283" aria-hidden="true" tabindex="-1"></a><span class="in">      c("5000m", "10000m") ~ "Long Distance",</span></span>
+<span id="cb4-284"><a href="#cb4-284" aria-hidden="true" tabindex="-1"></a><span class="in">      c("Hept.", "Dec.") ~ "Combined Events",</span></span>
+<span id="cb4-285"><a href="#cb4-285" aria-hidden="true" tabindex="-1"></a><span class="in">      c("HJ", "LJ", "TJ", "PV") ~ "Jumps",</span></span>
+<span id="cb4-286"><a href="#cb4-286" aria-hidden="true" tabindex="-1"></a><span class="in">      c("SP", "DT", "HT", "JT") ~ "Throws",</span></span>
+<span id="cb4-287"><a href="#cb4-287" aria-hidden="true" tabindex="-1"></a><span class="in">      c("10,000mW", "20,000mW", "50,000mW", "Road Marathon") ~ "Road Races")</span></span>
+<span id="cb4-288"><a href="#cb4-288" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb4-289"><a href="#cb4-289" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-290"><a href="#cb4-290" aria-hidden="true" tabindex="-1"></a>Here are a few examples of the clustering by event type(be specific): Show plot screenshot of cluster by event-type</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div></div></div></div></div>
 </div> <!-- /content -->
 
