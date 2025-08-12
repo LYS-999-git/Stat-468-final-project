@@ -254,7 +254,7 @@
     "href": "05-visualize.html",
     "title": "5  Visualize",
     "section": "",
-    "text": "5.1",
+    "text": "In this section, we visualize the observed data points for each athlete to better understand their performance trends before applying modeling techniques.\nThe plots display the raw IAAF scores against the athlete’s performance age, allowing us to see patterns such as peak performance periods, variability, and possible outliers.",
     "crumbs": [
       "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
     ]
