@@ -55,7 +55,7 @@ patterns similar to the overall population clusters. However, certain
 events, such as Middle Distance and Road Races, display noticeably
 different cluster structures.
 
-![![](images/Screen Shot 2025-08-11 at 23.23.17-01.png)](images/Screen Shot 2025-08-11 at 23.23.29-01.png)
+![![](images/Screen%20Shot%202025-08-11%20at%2023.23.17-01.png)](images/Screen%20Shot%202025-08-11%20at%2023.23.29-01.png)
 
 ## Application Example:
 
@@ -71,9 +71,9 @@ class standards for men(1147.174) . The athlete is called
 to event type(Long Distance), and compare his aging curves to the
 clustering plot, we can assign him to the third cluster (green).
 
-![](images/Screen Shot 2025-08-11 at 23.17.18.png)
+![](images/Screen%20Shot%202025-08-11%20at%2023.17.18.png)
 
-![](images/Screen Shot 2025-08-11 at 23.25.37.png)
+![](images/Screen%20Shot%202025-08-11%20at%2023.25.37.png)
 
 ## Key insights for Stakeholders
 
