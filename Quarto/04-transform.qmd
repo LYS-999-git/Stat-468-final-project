@@ -1,0 +1,177 @@
+---
+title: "Transform"
+---
+
+Once the Olympic and career progression datasets were cleaned and standardized, the next step was to generate derived analytical variables required for modeling. This section derives analysis features by enriching the tidy tables:
+
+-   Link records to Olympic metadata.
+-   Engineer age features and training age.
+-   Classify event type/category.
+-   Convert performances to a numeric `mark` (seconds for track; numeric for field).
+-   Identify season-bests and distance from peak.
+-   Map marks to IAAF points (rolling/closest join).
+-   Convert WAC standards to points and compute the mean reference by gender.
+
+Tidy section produced: `Olympics_data_tidy`, `Career_progression_tidy`, `iaaf_table_tidy`, `wac_standards_tidy`.
+
+## Link Career Progression to Olympics metadata
+
+Join each performance record to athlete/event metadata, compute age at performance (age_years, age_days), and strip the “h” hand-timed suffix from performance.
+
+```{r, echo=TRUE}
+athlete_bests <-
+  Career_progression %>%  inner_join(
+    Olympics_data %>%  filter(!is.na(birth_date)) %>%
+      distinct(birth_date, athlete_links, event, event_type, .keep_all = T) %>%
+      select(name, birth_date, athlete_links, event, nationality, event_type, 
+             event_category, gender, games_year),
+    by = c("athlete_link" = "athlete_links", "event")
+  ) %>%  
+  mutate(age_years = year(date) - year(birth_date), 
+         age_days = as.double(
+           difftime(
+             date, birth_date,units = "days"
+           )
+         ),
+         performance = str_remove_all(performance, "h")
+```
+
+## Classify events, compute performance_age, and convert performance to a numeric 'mark'
+
+```{r, echo=TRUE}
+# Classify events
+event_type = case_match(
+      event,
+      c("100 Metres", "200 Metres", "400 Metres", "400 Metres Hurdles", "100 Metres Hurdles", "110 Metres Hurdles") ~ "Sprints",
+      c("800 Metres", "1500 Metres", "3000 Metres Steeplechase") ~ "Middle Distance",
+      c("5000 Metres", "10,000 Metres") ~ "Long Distance",
+      c("Heptathlon", "Decathlon") ~ "Combined Events",
+      c("High Jump", "Long Jump", "Triple Jump", "Pole Vault") ~ "Jumps",
+      c("Shot Put", "Discus Throw", "Hammer Throw", "Javelin Throw", "Javelin Throw (old)") ~ "Throws",
+      c("10 Kilometres Race Walk", "20 Kilometres Race Walk", "50 Kilometres Race Walk", "Marathon") ~ "Road Races",
+      .default = "Other"
+    ),
+         event_category = if_else(str_detect(event, "Metres|Walk|Wheelchair") |event %in% c("Marathon"), "Track", "Field")
+```
+
+The following code computes `performance_age`, and convert performance to a numeric 'mark'
+
+```{r, echo=TRUE}
+mutate(age_years = year(date) - year(birth_date), 
+         age_days = as.double(
+           difftime(
+             date, birth_date,units = "days"
+           )
+         ),
+         performance = str_remove_all(performance, "h") # I will count hand timed results as legitimate
+         ) %>%
+    mutate(mark = if_else(
+      event_category == "Track",
+      as.numeric(
+        difftime(
+          lubridate::parse_date_time2(performance, orders = c("%H:%M:%S", "%M:%S:00", "%M:%OS", "%OS"), exact = T),
+          lubridate::parse_date_time2("0", orders ="S"),
+          units = "secs"
+        )
+      ), parse_number(performance)))
+```
+
+## Normalize event labels to IAAF codes (for scoring join)
+
+Harmonize event names to the short codes used in the IAAF scoring reference and standardize gender to lowercase for matching.
+
+```{r,echo=TRUE}
+athlete_bests_clean <- athlete_bests |> 
+  mutate(
+    gender = tolower(gender),
+    event = case_when(
+      event == "100 Metres" ~ "100m",
+      event == "200 Metres" ~ "200m",
+      event == "400 Metres" ~ "400m",
+      event == "800 Metres" ~ "800m",
+      event == "1500 Metres" ~ "1500m",
+      event == "5000 Metres" ~ "5000m",
+      event == "10,000 Metres" ~ "10000m",
+      event == "Marathon" ~ "Road Marathon",
+      event == "Triple Jump" ~ "TJ",
+      event == "Long Jump" ~ "LJ",
+      event == "High Jump" ~ "HJ",
+      event == "Shot Put" ~ "SP",
+      event == "Discus Throw" ~ "DT",
+      event == "Hammer Throw" ~ "HT",
+      event == "Javelin Throw" ~ "JT",
+      event == "Decathlon" ~ "Dec.",
+      event == "Heptathlon" ~ "Hept.",
+      event == "Pole Vault" ~ "PV",
+      event == "10 Kilometres Race Walk" ~ "10,000mW",
+      event == "50 Kilometres Race Walk" ~ "50,000mW",
+      event == "20 Kilometres Race Walk" ~ "20,000mW",
+      event == "100 Metres Hurdles" ~ "100mH",
+      event == "110 Metres Hurdles" ~ "110mH",
+      event == "400 Metres Hurdles" ~ "400mH",
+      event == "3000 Metres Steeplechase" ~ "3000m SC",
+      TRUE ~ event
+    )
+  )
+```
+
+## Map athlete performance marks to IAAF points (rolling/closest join) and join athlete_bests_clean with iaaf-table to get full dataset
+
+For each record, find the IAAF row with the closest mark ≤ the observed mark within the same gender and event; set missing scores to 0.
+
+```{r,echo=TRUE}
+# join iaaf_table with athlete_bests_clean and get full dataset with result points
+round_decimals <- function(x, digits = 2) {
+  round(x * 10^digits) / 10^digits}
+
+
+athlete_bests_points <- 
+  athlete_bests_clean |>
+    left_join(iaaf_table, join_by(gender, event, closest(mark <= mark))) |> 
+  replace_na(list(points = 0))
+```
+
+## World class standard(WAC) -\> points and mean reference by gender
+
+We harmonize WAC event labels, convert times to seconds, roll-join to IAAF points, set combined-events anchors, and compute a simple men/women mean reference useful as horizontal guide lines in plots.
+
+```{r,echo=TRUE}
+wac_points <- wac_standards_tidy %>%
+  left_join(
+    iaaf_table_tidy,
+    dplyr::join_by(gender, Event == event, closest(mark <= mark))
+  ) %>%
+  tidyr::replace_na(list(points = 0)) %>%
+  mutate(points = dplyr::case_when(
+    Event == "Hept." & gender == "women" ~ 1174,
+    Event == "Dec."  & gender == "men"   ~ 1212,
+    TRUE ~ points
+  ))
+
+mean_points_by_gender <- wac_points %>%
+  group_by(gender) %>%
+  summarise(mean_points = mean(points, na.rm = TRUE), .groups = "drop") %>%
+  tibble::deframe()
+```
+
+## Model-preparation
+
+Prepare **face.sparse** inputs at the athlete–event level.
+
+```{r,echo=TRUE}
+# predict on full dataset(population)
+# Filter out missing points athletes and rename for clarity
+fd_data <- athlete_bests_points |> 
+  filter(!is.na(points), !is.na(age_years)) |> 
+  mutate(id = paste(athlete_link, event)) |> 
+  select(athlete_id = id,
+         performance_age = age_years,
+         iaaf_score = points)
+
+id <- fd_data$athlete_id
+uid <- unique(id)
+```
+
+Key outputs for modeling and Visualization:
+
+\-`athlete_bests_points`: one season-best row per athlete-event-year, with points. -`wac_points` and `mean_points_by_gender`:reference levels for plots.

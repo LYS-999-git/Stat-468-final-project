@@ -1,0 +1,61 @@
+---
+title: "Communicate"
+---
+
+## Overview
+
+The results are delivered through:
+
+-   Predicted curves with confidence intervals
+-   Cluster-specific visualizations
+-   A reproducible pipeline for annual updating
+
+-   A Trelliscope dashboard (interactive panel plots)
+- shiny app
+
+## How to read the visuals(for stakeholders)
+Stakeholders: Coaches, Performance analysts, Sports scientists
+-Aging curve panels (Section 05): blue dots are observed IAAF scores vs performance age; the red line is the model’s predicted trajectory for that athlete; dashed red lines are the 95% interval; the black line is the population mean; dashed horizontal lines are WAC mean references for men/women.
+
+-Eigenfunctions (Section 05 & 06): PC1 usually shifts curves up/down (overall level); PC2 often tilts early vs. late ages (peak timing); PC3 can capture shape nuances (e.g., mid-career bumps).
+
+-Percent-change clusters (Section 05): each thin line is a subject’s predicted percent change curves across age; black thick lines are cluster centers, the typical pattern for each group.
+
+## Clusters interpretation (example—update labels after seeing shapes)
+
+-   **Cluster 1 — Early risers:** Rapid early gains, earlier plateau.
+-   **Cluster 2 — Steady performers:** Consistent year-over-year gains, smoother peak.
+-   **Cluster 3 — Late bloomers:** Slower early growth, pronounced improvement later.
+
+By event type: 
+See different cluster patterns across different event types. Most of the event types' clustering pattern are the same as the population(overall) clustering pattern. However, a few such as "Middle Distance, Road Marathon......" differs much from population level clustering.
+
+## Example: predict an athlete's aging curve, and see his cluster (screenshot from shiny app, and interpret the plot)
+
+
+
+## What this means (plain English)
+-Performance evolves with age: on average, athletes follow the population mean curve, but individuals deviate in systematic ways captured by the PCs.
+
+-Cluster shapes are actionable: early improvers vs. late bloomers vs. steady decliners suggest different training emphasis and competition scheduling.
+
+-WAC context matters: the share of records at/above the WAC mean (men/women) anchors how “world-class” the panel is at different ages/events.
+
+## Caveats & guardrails
+-Data sparsity: predictions rely on smoothing; very sparse career histories yield wider uncertainty.
+
+-Join granularity: scoring uses a closest ≤ rule; edge cases near table knots can shift points slightly.
+
+-Causality: curves describe association with age, not causal effects of age or training.
+
+## Next steps
+-Add event-type stratified FACE fits to see if population means differ meaningfully by discipline.
+
+-Surface individual uncertainty (CIs) inside a Shiny compare-view so coaches can weigh risk.
+
+-Track within-athlete shifts year-over-year (e.g., early peak → stabilizing) and alert when a trajectory changes cluster.
+
+-Consider robust clustering (e.g., trimmed k-means) for stability with outliers.
+- number of clusters can be refined with SSE methods....(from the paper)
+- address right tail selection bias(better athletes stay longer in the list)
+

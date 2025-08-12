@@ -1,0 +1,402 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "STAT 468 Final Project — Clustering Athlete Aging Curves",
+    "section": "",
+    "text": "Preface",
+    "crumbs": [
+      "STAT 468 Final Project — Clustering Athlete Aging Curves"
+    ]
+  },
+  {
+    "objectID": "index.html#abstract",
+    "href": "index.html#abstract",
+    "title": "STAT 468 Final Project — Clustering Athlete Aging Curves",
+    "section": "Abstract",
+    "text": "Abstract\nAthletes reach elite performance at highly variable rates. Some progress rapidly, while others develop more gradually over time. In this project, we model and cluster the rate of progression of Olympic track and field athletes using their aging curves. Unlike team sports, individual sports such as athletics allow for precise comparison through standardized scoring, as individual results are more easily measured in objective terms. To compare athletes across different event disciplines such as jumps and throws, we convert raw performances to a unified scale using the scoring system designed by World Athletics, the world governing body for athletics. \nWe apply functional data analysis to smooth each athlete’s aging curve and extract dominant patterns using Functional Principal Component Analysis (FPCA). Because competition frequency varies by athlete and event, we address irregular and sparse observations using FPCA methods suited for unevenly spaced data.\nClustering the resulting FPCA scores percent change allows us to group athletes based on how fast they improve with age, identifying profiles such as early risers, steady performers, and late bloomers. These clusters provide both descriptive insights into developmental patterns and predictive tools for forecasting when rising athletes might reach elite standards based on early-career data.\nThis focus on the rate of progression enables a more adaptable and predictive framework allowing coaches, performance analysts, and high performance directors to analyze athletic development.",
+    "crumbs": [
+      "STAT 468 Final Project — Clustering Athlete Aging Curves"
+    ]
+  },
+  {
+    "objectID": "02-import.html",
+    "href": "02-import.html",
+    "title": "2  Import",
+    "section": "",
+    "text": "2.1 Information Required\nThe analysis requires the following information for each athlete and event observation.\n- Athlete identifier which includes name and athlete link.\n- Performance which is time for races and distance.\n- Event type which comes from the event field.\n- Date of performance which comes from the “date” field.\n- Birthdate which comes from the “Birth.Date” field.\n- Athlete age at the time of performance which will be derived from “Birthdate” and “Date of performance”.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import</span>"
+    ]
+  },
+  {
+    "objectID": "04-transform.html",
+    "href": "04-transform.html",
+    "title": "4  Transform",
+    "section": "",
+    "text": "We transform raw marks into standardized points using IAAF point tables, and compute variables for modeling:\n\nJoin event metadata\nCompute mark (seconds/meters) based on event type\nDerive IAAF points using iaaf_table\nLabel best performance by event type (Track = min, Field = max)\nCreate percent_off_peak and flags like olympic_year\n\nathlete_bests_points &lt;- athlete_bests_clean |&gt; left_join(iaaf_table, join_by(gender, event, closest(mark &lt;= mark))) |&gt; replace_na(list(points = 0))\nCompute age, IAAF points, and percent change.\nPrepare face.sparse inputs at the athlete–event level.",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
+    ]
+  },
+  {
+    "objectID": "01-question.html",
+    "href": "01-question.html",
+    "title": "1  Question of Interest & Relevance",
+    "section": "",
+    "text": "1.1 Introduction\nAthlete performance trajectories vary greatly. Some athletes achieve elite standards at a young age while others progress steadily over many years before reaching their peak. Traditional aging curve analyses often focus on the average progression or peak age. This approach obscures the diversity in how individuals develop and limits the ability of coaches, scouts, and performance analysts to tailor training and identify untapped potential.\nThis project addresses that gap by applying functional data analysis and clustering to classify athletes based on the rate and pattern of their performance progression. Rather than examining only final outcomes or single peak performances, the analysis will capture the complete shape of each athlete’s career trajectory from early improvement to peak and subsequent decline.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Question of Interest & Relevance</span>"
+    ]
+  },
+  {
+    "objectID": "06-model.html",
+    "href": "06-model.html",
+    "title": "6  Model",
+    "section": "",
+    "text": "6.1 Smoothing + FPCA",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html",
+    "href": "07-communicate.html",
+    "title": "7  Communicate",
+    "section": "",
+    "text": "7.1 Overview\nThe results are delivered through:\nStakeholders: - Coaches - Performance analysts - Sports scientists\nThis solution helps monitor emerging talent and anticipate career trajectories.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html",
+    "href": "03-tidy.html",
+    "title": "3  Tidy",
+    "section": "",
+    "text": "3.1 Data Integration\nThis section describes the full process of integrating and tidying the datasets used in the analysis. The goal is to build a unified dataset that links athlete metadata, performance records, and standardized IAAF scoring.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "05-visualize.html",
+    "href": "05-visualize.html",
+    "title": "5  Visualize",
+    "section": "",
+    "text": "We use several forms of visualization to explore aging curves:\n\nPredicted aging curves from sparse FPCA\nTrelliscope panels for individual trajectories\nCluster visualizations of percent change patterns",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#overview",
+    "href": "07-communicate.html#overview",
+    "title": "7  Communicate",
+    "section": "",
+    "text": "A Trelliscope dashboard (interactive panel plots)\nPredicted curves with confidence intervals\nCluster-specific visualizations\nA reproducible pipeline for annual updating",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "appendix.html",
+    "href": "appendix.html",
+    "title": "8  Appendix",
+    "section": "",
+    "text": "The Shiny dashboard visualizes:\n\nPredicted aging curves\nCluster assignments\nEvent-type-based comparisons\n\nTo navigate:\n\nUse dropdown to select athlete/event\nHover for confidence bands\nClusters are color-coded",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Appendix</span>"
+    ]
+  },
+  {
+    "objectID": "06-model.html#clustering-on-fpca-predictive-function",
+    "href": "06-model.html#clustering-on-fpca-predictive-function",
+    "title": "6  Model",
+    "section": "6.2 Clustering on FPCA predictive function",
+    "text": "6.2 Clustering on FPCA predictive function",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
+    ]
+  },
+  {
+    "objectID": "06-model.html#cluster-mean-curves",
+    "href": "06-model.html#cluster-mean-curves",
+    "title": "6  Model",
+    "section": "6.3 Cluster mean curves",
+    "text": "6.3 Cluster mean curves",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#interpretation-exampleupdate-labels-after-seeing-shapes",
+    "href": "07-communicate.html#interpretation-exampleupdate-labels-after-seeing-shapes",
+    "title": "7  Communicate",
+    "section": "7.2 Interpretation (example—update labels after seeing shapes)",
+    "text": "7.2 Interpretation (example—update labels after seeing shapes)\n\nCluster 1 — Early risers: Rapid early gains, earlier plateau.\n\nCluster 2 — Steady performers: Consistent year-over-year gains, smoother peak.\n\nCluster 3 — Late bloomers: Slower early growth, pronounced improvement later.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#mapping-a-new-athlete-illustrative",
+    "href": "07-communicate.html#mapping-a-new-athlete-illustrative",
+    "title": "7  Communicate",
+    "section": "7.3 Mapping a new athlete (illustrative)",
+    "text": "7.3 Mapping a new athlete (illustrative)\n```{r} #| label: communicate-predict # Use same grid and PCA basis to map a new/partial curve (demo with sample_df) new_curve &lt;- sample_df %&gt;% select(performance_age, iaaf_score)",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "01-question.html#introduction",
+    "href": "01-question.html#introduction",
+    "title": "1  Question",
+    "section": "2.1 Introduction",
+    "text": "2.1 Introduction\nAthlete performance trajectories vary greatly — some athletes achieve elite standards at a young age, while others progress steadily over many years before reaching their peak. Traditional aging curve analyses often focus on the average progression or peak age, which obscures the rich diversity in how individuals develop. This limits the ability of coaches, scouts, and performance analysts to tailor training and identify untapped potential.\nThis project addresses that gap by applying functional data analysis and clustering to classify athletes based on the rate and pattern of their performance progression. Instead of examining only final outcomes or single peak performances, we aim to capture the shape of each athlete’s career trajectory — from initial improvement to peak and beyond.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Question</span>"
+    ]
+  },
+  {
+    "objectID": "01-question.html#motivation",
+    "href": "01-question.html#motivation",
+    "title": "1  Question of Interest & Relevance",
+    "section": "1.2 Motivation",
+    "text": "1.2 Motivation\nUnderstanding the rate of progression provides actionable insights for:\n- Coaching: tailoring training loads and peaking strategies to an athlete’s likely development path.\n- Talent identification: distinguishing between “late bloomers” who may require patience and “early risers” who peak quickly.\n- Long-term planning: projecting when athletes are likely to achieve qualifying standards for major competitions.\nBy identifying these patterns, organizations can better allocate resources, set realistic performance targets, and make informed selection decisions.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Question of Interest & Relevance</span>"
+    ]
+  },
+  {
+    "objectID": "01-question.html#project-objectives",
+    "href": "01-question.html#project-objectives",
+    "title": "1  Question of Interest & Relevance",
+    "section": "1.3 Project Objectives",
+    "text": "1.3 Project Objectives\nThe main objectives of this project are:\n\nDevelop predictive aging curves for individual athletes using observed data points fit with Sparse Functional Principal Component Analysis(FPCA).\nCluster the entire population’s aging curves into three groups based on the rate and shape of progression curve, using the percent change of their IAAF points as the measure of progression dynamics.\nClassify existing athletes into meaningful development profiles by matching them to the most representative cluster. Use this classification to estimate when an athlete will achieve a world class standard and to predict their likely development path.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Question of Interest & Relevance</span>"
+    ]
+  },
+  {
+    "objectID": "01-question.html#planned-approach",
+    "href": "01-question.html#planned-approach",
+    "title": "1  Question of Interest & Relevance",
+    "section": "1.4 Planned Approach",
+    "text": "1.4 Planned Approach\nTo achieve these objectives, we will:\n- Merge competition results with athlete metadata to create a longitudinal dataset for each athlete and event combination.\n- Standardize performance measures (e.g., convert performance results to IAAF points) to allow cross-event comparison.\n- Use refund package in R, face.sparse funcion to predict individual’s aging curves.\n- Use Sparse Functional Principal Component Analysis (FPCA) to extract dominant patterns in trajectory shapes.\n- Apply k-means on sparse FPCA clustering(predicted functions) to group similar progression patterns through the whole population and 7 different event types.\n- Interpret and label cluster patterns, and explore predictive assignment for athletes with incomplete career data.\nThis approach emphasizes progression rate and development patterns rather than absolute performance levels alone. It aims to provide a more dynamic and forward looking view of athlete development that can support practical decision making in competitive sport.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Question of Interest & Relevance</span>"
+    ]
+  },
+  {
+    "objectID": "01-question.html#research-questions",
+    "href": "01-question.html#research-questions",
+    "title": "1  Question of Interest & Relevance",
+    "section": "2.1 1. Research Questions",
+    "text": "2.1 1. Research Questions\nPrimary question.\nHow can clustering of functional data classify athletes by the rate and shape of their performance progression across age?\nSub-questions.\n1. Can we recover interpretable clusters—e.g., early risers, steady performers, late bloomers—from smoothed age–performance functions?\n2. Do clusters meaningfully differ in when and how quickly performance improves, independent of absolute level?\n3. Can a partially observed athlete trajectory be mapped to a cluster as an early indicator of future development?\nHypotheses.\n- H1: A small number (≈3–5) of functional components explain most between-athlete variability in progression shape.\n- H2: Clustering FPCA scores yields profiles with distinct growth-rate signatures.\n- H3: Early-career partial curves contain enough shape information to predict profile membership.\nPlan.\nWe will:\n\nImport and tidy historical results and metadata,\n\nTransform to age + standardized performance (IAAF points),\n\nVisualize to check structure and outliers,\n\nModel using Sparse FPCA (face.sparse) and k-means on FPCA scores,\n\nCommunicate cluster patterns and a simple mapping of new athletes to clusters.",
+    "crumbs": [
+      "<span class='chapter-number'>1</span>  <span class='chapter-title'>Question of Interest & Relevance</span>"
+    ]
+  },
+  {
+    "objectID": "02-import.html#data-sources",
+    "href": "02-import.html#data-sources",
+    "title": "2  Import",
+    "section": "2.2 Data Sources",
+    "text": "2.2 Data Sources\nThis project requires three datasets in total. Two datasets will be obtained from WorldAthelete.org and imported with read_csv(). These two datasets contains only the best performance per year for each athlete in each event. That means if an athlete participates in the same event multiple times in a year, only their top result is included. If the same athlete competes in multiple events in the same year, they will have one record for each event. And another iaaf-2005.json dataset is obtained from xxxx’s github and imported with read_json() .\n\nThe file career_progression.csv contains performance data, year, date, event, and athlete-link(identifiers).\nThe file olympics_data.csv provides athlete level metadata including name, birthdate, gender, event, game, game-link, athlete-link, nationality, and Olympic appearances(for example: performance mark and their rank)\nThe file iaaf-2005.json provides iaaf-points, mark and gender per event",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import</span>"
+    ]
+  },
+  {
+    "objectID": "02-import.html#collection-method",
+    "href": "02-import.html#collection-method",
+    "title": "2  Import",
+    "section": "2.3 Collection Method",
+    "text": "2.3 Collection Method\nThe two athlete related datasets have already been downloaded and imported manually using the standard read-csv() procedure. From “Birthdate” and “Performance date” we will compute the athlete age in years at the time of performance. Age is essential because aging curves are indexed by age rather than by calendar date. Additionally, the iaaf-2005.json dataset is also downloaded and imported manually. We need to convert individual athlete’s performance marks to a standard IAAF-points, so that we can compare their aging curves based on the IAAF-points across different events.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import</span>"
+    ]
+  },
+  {
+    "objectID": "02-import.html#frequency-of-collection",
+    "href": "02-import.html#frequency-of-collection",
+    "title": "2  Import",
+    "section": "2.4 Frequency of Collection",
+    "text": "2.4 Frequency of Collection\nA single collection is sufficient for this study because the focus is historical performance progression. The analysis is not designed for live or streaming updates. Any future extensions that add seasons or events can append to these files and rerun the same pipeline.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import</span>"
+    ]
+  },
+  {
+    "objectID": "02-import.html#assumptions-and-data-preparation-notes",
+    "href": "02-import.html#assumptions-and-data-preparation-notes",
+    "title": "2  Import",
+    "section": "2.5 Assumptions and Data Preparation Notes",
+    "text": "2.5 Assumptions and Data Preparation Notes\n- Athlete age is measured in years using the difference between performance date and birthdate.\n- Performance is standardized for cross event comparison using IAAF points.\n- Each row in the linked dataset (linked career_progression.csv and olympics_data.csv ) represents one athlete performance on one date for one event. (details in tidy chapter)\n- Athlete identifier fields must be consistent across files to enable a reliable merge.\n- Basic integrity checks such as duplicate detection and valid date parsing will be performed in the tidy chapter.",
+    "crumbs": [
+      "<span class='chapter-number'>2</span>  <span class='chapter-title'>Import</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#implementation-details",
+    "href": "03-tidy.html#implementation-details",
+    "title": "3  Tidy",
+    "section": "",
+    "text": "3.1.1 Justification of Methods\nThe join is necessary to ensure all performance marks are converted to a standardized IAAF points scale, enabling meaningful comparison of athletes across different events. Using only records with valid birthdate and performance date ensures that the computed age is accurate, which is essential for aligning performances on the aging curve.\nParsing dates and calculating age at this stage simplifies downstream analysis, because all modeling steps can use a consistent age variable without re-computation.\nRestricting each athlete to their best performance per year per event eliminates multiple highly correlated entries for the same individual, reducing redundancy and ensuring that the aging curve reflects peak ability in each season.\n\n\n3.1.2 Relevant Unit Tests\n\nTest 1: Check that the join produces no duplicate athlete-event-year records.\n\nTest 2: Verify that every record has a valid non-missing IAAF points value after the join.\n\nTest 3: Confirm that all age_years values are positive and fall within a reasonable range (e.g., 10 to 60).\n\nTest 4: Check that the number of unique athlete IDs matches across the original and linked datasets.\n\nExample unit test code:\n```r # No duplicates stopifnot(nrow(linked_data) == nrow(distinct(linked_data, athlete_link, event, year)))",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#data-filtering",
+    "href": "03-tidy.html#data-filtering",
+    "title": "3  Tidy",
+    "section": "3.2 Data Filtering",
+    "text": "3.2 Data Filtering\nRecords lacking a valid birthdate or performance date were removed, as these fields are essential for calculating the athlete’s age at performance. Both dates were parsed into date objects, and age in years and in days was computed. The dataset preserves only one row per athlete per event per year, consistent with the fact that the source files already contain only the single best performance per year for each athlete–event combination. If an athlete competed in multiple events in the same year, each event is treated as a separate aging curve.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#rationale",
+    "href": "03-tidy.html#rationale",
+    "title": "3  Tidy",
+    "section": "3.3 Rationale",
+    "text": "3.3 Rationale\nMerging the datasets at this stage ensures that all records are standardized to IAAF points before modeling. Removing incomplete records avoids downstream errors in age calculation. Using only season-best performances reduces redundancy, limits within-year correlation, and focuses the analysis on peak capability for each season.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#data-quality-checks",
+    "href": "03-tidy.html#data-quality-checks",
+    "title": "3  Tidy",
+    "section": "3.4 Data Quality Checks",
+    "text": "3.4 Data Quality Checks",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#justification-of-methods",
+    "href": "03-tidy.html#justification-of-methods",
+    "title": "3  Tidy",
+    "section": "7.1 Justification of Methods",
+    "text": "7.1 Justification of Methods\nThe join is necessary to ensure all performance marks are converted to a standardized IAAF points scale, enabling meaningful comparison of athletes across different events. Using only records with valid birthdate and performance date ensures that the computed age is accurate, which is essential for aligning performances on the aging curve.\nParsing dates and calculating age at this stage simplifies downstream analysis, because all modeling steps can use a consistent age variable without re-computation.\nRestricting each athlete to their best performance per year per event eliminates multiple highly correlated entries for the same individual, reducing redundancy and ensuring that the aging curve reflects peak ability in each season.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#relevant-unit-tests",
+    "href": "03-tidy.html#relevant-unit-tests",
+    "title": "3  Tidy",
+    "section": "3.3 Relevant Unit Tests",
+    "text": "3.3 Relevant Unit Tests\n\nTest 1: Check that the join produces no duplicate athlete-event-year records.\nTest 2: Verify that every record has a valid non-missing IAAF points value after the join.\nTest 3: Confirm that all age_years values are positive and fall within a reasonable range (e.g., 10 to 60).\nTest 4: Check that the number of unique athlete IDs matches across the original and linked datasets. To ensure data integrity:\n\nNo duplicate athlete-event-year records after the join\nAll records have valid IAAF points (non-missing, non-zero)\nAge values are reasonable, e.g., between 10 and 60 years\nAthlete ID consistency across original and merged datasets",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#data-integration",
+    "href": "03-tidy.html#data-integration",
+    "title": "3  Tidy",
+    "section": "",
+    "text": "3.1.1 Step 1: Clean Olympics_data.csv Data\nThe Olympic dataset is imported and cleaned to provide athlete-level metadata. Key transformations include:\nStandardized column names using janitor::clean_names()\nParsed competition dates into start and end\nSeparated gender from event name\nRemoved wheelchair events\nManually corrected birthdate for Aminata CAMARA\nStandardized gender labels (“Men’s” → “Men”, etc.)\nConverted date strings to Date objects\nCalculated athlete age at the time of competition\nCreated ordered factor for Olympic Games\nClassified events into types (e.g., Sprints, Throws) and categories (Track vs. Field)\nStandardized event names (e.g., merged “Javelin Throw (old)” with “Javelin Throw”)\nExtracted competition year from the end date Code shows below:\n\nOlympics_data &lt;- read_csv(\"/Users/yushiliu/Stat 468 final project/data/track and field data/olympics_data.csv\", show_col_types = F) %&gt;%\n  janitor::clean_names() %&gt;% \n  separate_wider_delim(date, delim = \"–\", names = c(\"start\", \"end\")) %&gt;%\n  separate_wider_delim(cols = event, names = c(\"gender\", \"event\"), delim = \" \",\n                           too_many = \"merge\") %&gt;%\n  filter(str_detect(event, \"Wheelchair\", negate = T)) %&gt;% \n  mutate(\n        # Manually fixed Aminata CAMARA's age\n    birth_date = if_else(name == \"Aminata CAMARA\", \"06 DEC 1973\", birth_date),\n    gender = if_else(gender == \"Men's\", \"Men\", \"Women\"),\n    across(c(birth_date, end),  ~as.Date(format(\n    as.Date(., format = \"%d %b %Y\"), \"%Y-%m-%d\"))),\n    age = year(end) - year(birth_date),\n         games = factor(games, ordered = T,\n                        levels = c(\"The XXXII Olympic Games\",\n                                   \"The XXXI Olympic Games\",\n                                   \"The XXX Olympic Games\",\n                                   \"The XXIX Olympic Games\",\n                                   \"The XXVIII Olympic Games\",\n                                   \"The XXVII Olympic Games\",\n                                   \"The XXVI Olympic Games\"\n                        ),\n                        labels = c(\"Tokyo '20\", \"Rio '16\", \"London '12\", \n                                   \"Beijing '08\", \"Athens '04\", \"Sydney '00\",\n                                   \"Atlanta '96\")),\n    event_type = case_match(\n      event,\n      c(\"100 Metres\", \"200 Metres\", \"400 Metres\", \"400 Metres Hurdles\", \"100 Metres Hurdles\", \"110 Metres Hurdles\") ~ \"Sprints\",\n      c(\"800 Metres\", \"1500 Metres\", \"3000 Metres Steeplechase\") ~ \"Middle Distance\",\n      c(\"5000 Metres\", \"10,000 Metres\") ~ \"Long Distance\",\n      c(\"Heptathlon\", \"Decathlon\") ~ \"Combined Events\",\n      c(\"High Jump\", \"Long Jump\", \"Triple Jump\", \"Pole Vault\") ~ \"Jumps\",\n      c(\"Shot Put\", \"Discus Throw\", \"Hammer Throw\", \"Javelin Throw\", \"Javelin Throw (old)\") ~ \"Throws\",\n      c(\"10 Kilometres Race Walk\", \"20 Kilometres Race Walk\", \"50 Kilometres Race Walk\", \"Marathon\") ~ \"Road Races\",\n      .default = \"Other\"\n    ),\n         event_category = if_else(str_detect(event, \"Metres|Walk|Wheelchair\") |event %in% c(\"Marathon\"), \"Track\", \"Field\")\n         ) %&gt;% \n  mutate(event = if_else(event == \"Javelin Throw (old)\", \"Javelin Throw\", event),\n         games_year = year(end)) %&gt;% rename(\"nationality\" = nat)\n\nThe result is a clean metadata table named Olympics_data.\n\n\n3.1.2 Step 2: Clean Career Progression Data and merge with Olympic dataset\nThe career progression dataset is imported and cleaned to provide yearly performance records. Key steps include:\n\nRemoved duplicate rows\nParsed performance dates\nFlagged retired athletes based on last recorded year\nCalculated training age as years since first appearance, grouped by athlete and event\n\nThis produces a clean performance table named Career_progression. We then merge Career_progression with Olympics_data using athlete_link and event. This creates a unified dataset containing both performance records and athlete metadata. After the join, we compute:\n-Age at performance:\nage_years: Year of performance minus year of birth\nage_days: Exact age in days using difftime(date, birth_date)\n-Cleaned performance string: Removed hand-timing flags\n-Numeric mark:\nTrack events: Time in seconds\nField events: Distance or height\n-Season best indicator:\nTrack: Minimum time\nField: Maximum distance/height\n-Percent off peak: Deviation from season best within athlete and event\n-Olympic year flag: Based on season year\n-Tie resolution: Within each athlete-event-year group, keep the record with the largest age in days\nThis final cleaned dataset is saved as athlete_bests.\n\n# load career progression data and identify athletes who are still active\nCareer_progression &lt;- read_csv(\"/Users/yushiliu/Stat 468 final project/data/track and field data/career_progression (2).csv\", show_col_types = F) %&gt;% \n  distinct() |&gt; \n  mutate(date = parse_date_time(date, orders = c(\"%d %b %Y\", \"%d-%b-%y\"))) %&gt;%\n  mutate(retired = if_else(max(year) &lt;= 2022, T, F),\n         training_age = year - min(year) + 1,\n         .by = c(\"athlete_link\", \"event\")) \n\n# find the seasons best performances of each athlete\nathlete_bests &lt;-\n  Career_progression %&gt;%  inner_join(\n    Olympics_data %&gt;%  filter(!is.na(birth_date)) %&gt;%\n      distinct(birth_date, athlete_links, event, event_type, .keep_all = T) %&gt;%\n      select(name, birth_date, athlete_links, event, nationality, event_type, \n             event_category, gender, games_year),\n    by = c(\"athlete_link\" = \"athlete_links\", \"event\")\n  ) %&gt;%  \n  mutate(age_years = year(date) - year(birth_date), \n         age_days = as.double(\n           difftime(\n             date, birth_date,units = \"days\"\n           )\n         ),\n         performance = str_remove_all(performance, \"h\") # I will count hand timed results as legitimate\n         ) %&gt;%\n    mutate(mark = if_else(\n      event_category == \"Track\",\n      as.numeric(\n        difftime(\n          lubridate::parse_date_time2(performance, orders = c(\"%H:%M:%S\", \"%M:%S:00\", \"%M:%OS\", \"%OS\"), exact = T),\n          lubridate::parse_date_time2(\"0\", orders =\"S\"),\n          units = \"secs\"\n        )\n      ), parse_number(performance)),\n      # the below accounts for edge cases that lubridate can't parse, like a 62s 400MH\n      mark = if_else(is.na(mark), parse_number(performance), mark)\n      ) %&gt;%\n    mutate(\n      best_performance = case_when(\n        event_category == \"Track\" & mark == min(mark, na.rm = T) ~ T, # we want the lowest time\n        event_category == \"Field\" & mark == max(mark, na.rm = T) ~ T, # we want the furthest/highest performance\n        .default = F\n      ),\n      percent_off_peak = if_else(event_category == \"Track\", abs((mark - min(mark, na.rm = T))/mark), \n                                 abs((mark - max(mark, na.rm = T))/mark)),\n      olympic_year = if_else(year %in% c(seq(1980, 2016, 4), 2021), T, F),\n      .by = c(\"athlete_link\", \"event\")\n    ) %&gt;% \n   # remove duplicate seasons bests\n  slice_max(with_ties = F, n = 1, order_by = age_days, by = c(\"event\", \"year\",  \"athlete_link\"))\n\n\n\n3.1.3 Step 3: Join with IAAF Points\nWe import the IAAF scoring table from iaaf-2025.json, flattening it into a tibble with: gender, event, mark and points.\nTo ensure compatibility, we create a copy of athlete_bests named athlete_bests_clean with:\n-gender converted to lowercase\n-event names standardized to match IAAF naming conventions (e.g., “100 Metres” → “100m”, “110 Metres Hurdles” → “110mH”)\nWe then join athlete_bests_clean to iaaf_table using a nearest match on mark, grouped by gender and event. This assigns an IAAF points value to each season-best record.\n-The join uses closest(mark &lt;= mark) to find the nearest valid score\n-Missing points are replaced with 0 to avoid downstream errors\n-The final dataset is stored as athlete_bests_points\nThe cleaned athlete bests dataset from the Import section was merged with the IAAF points table (iaaf-2005.json) to attach standardized scoring. Event names were harmonized between sources (e.g., \"100 Metres\" → \"100m\", \"110 Metres Hurdles\" → \"110mH\", \"Marathon\" → \"Road Marathon\").\nThe join was performed on gender and event using the nearest mark in the IAAF table, ensuring each record received the closest possible standardized points value. Merge to one row per athlete–event–date.\n\nathlete_bests &lt;- readRDS(\"data/athlete_bests.rds\")\nraw_json &lt;- read_json(\"data/track and field data/iaaf-2025.json\", simplifyVector = FALSE)\n\n# Convert list of lists to a flat tibble\niaaf_table &lt;- tibble::tibble(\n  gender = sapply(raw_json, `[[`, \"gender\"),\n  event = sapply(raw_json, `[[`, \"event\"),\n  mark = sapply(raw_json, `[[`, \"mark\"),\n  points = sapply(raw_json, `[[`, \"points\")\n)\nathlete_bests_clean &lt;- athlete_bests |&gt; \n  mutate(\n    gender = tolower(gender),\n    event = case_when(\n      event == \"100 Metres\" ~ \"100m\",\n      event == \"200 Metres\" ~ \"200m\",\n      event == \"400 Metres\" ~ \"400m\",\n      event == \"800 Metres\" ~ \"800m\",\n      event == \"1500 Metres\" ~ \"1500m\",\n      event == \"5000 Metres\" ~ \"5000m\",\n      event == \"10,000 Metres\" ~ \"10000m\",\n      event == \"Marathon\" ~ \"Road Marathon\",\n      event == \"Triple Jump\" ~ \"TJ\",\n      event == \"Long Jump\" ~ \"LJ\",\n      event == \"High Jump\" ~ \"HJ\",\n      event == \"Shot Put\" ~ \"SP\",\n      event == \"Discus Throw\" ~ \"DT\",\n      event == \"Hammer Throw\" ~ \"HT\",\n      event == \"Javelin Throw\" ~ \"JT\",\n      event == \"Decathlon\" ~ \"Dec.\",\n      event == \"Heptathlon\" ~ \"Hept.\",\n      event == \"Pole Vault\" ~ \"PV\",\n      event == \"10 Kilometres Race Walk\" ~ \"10,000mW\",\n      event == \"50 Kilometres Race Walk\" ~ \"50,000mW\",\n      event == \"20 Kilometres Race Walk\" ~ \"20,000mW\",\n      event == \"100 Metres Hurdles\" ~ \"100mH\",\n      event == \"110 Metres Hurdles\" ~ \"110mH\",\n      event == \"400 Metres Hurdles\" ~ \"400mH\",\n      event == \"3000 Metres Steeplechase\" ~ \"3000m SC\",\n      TRUE ~ event\n    )\n  )\n\n# join iaaf_table with athlete_bests and get full dataset with result points\nround_decimals &lt;- function(x, digits = 2) {\n  round(x * 10^digits) / 10^digits}\n\nathlete_bests_points &lt;- \n  athlete_bests_clean |&gt;\n    left_join(iaaf_table, join_by(gender, event, closest(mark &lt;= mark))) |&gt; \n  replace_na(list(points = 0))",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#what-is-taken-in-from-import",
+    "href": "03-tidy.html#what-is-taken-in-from-import",
+    "title": "3  Tidy",
+    "section": "3.4 What is taken in from Import",
+    "text": "3.4 What is taken in from Import\nOne dataset named Olympics_data that already has clean names, parsed dates, gender and event split, wheelchair records removed, one manual birth date fix, standardized gender text, an ordered factor for Games, derived event type and a track or field category, a unified javelin name, and the Games year.\n\nOne table named Career_progression that already has duplicates removed, parsed performance dates, a retired flag by athlete and event, and training age by athlete and event.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#merge-to-build-season-bests-with-ages-and-numeric-marks",
+    "href": "03-tidy.html#merge-to-build-season-bests-with-ages-and-numeric-marks",
+    "title": "3  Tidy",
+    "section": "3.5 Merge to build season bests with ages and numeric marks",
+    "text": "3.5 Merge to build season bests with ages and numeric marks\nCareer_progression is inner joined to Olympics_data using athlete link and event.\n\nAfter the join the following variables are created.\n\nAge in years at performance from the year of performance minus the year of birth.\n\nAge in days at performance from the difference between performance date and birth date.\n\nA cleaned performance string with hand timing flag removed.\n\nA numeric mark that is time in seconds for track and a numeric distance or height for field.\n\nA season best indicator that selects the minimum time for track and the maximum distance or height for field within each athlete and event.\n\nPercent off peak computed within each athlete and event using the record specific mark relative to the best mark.\n\nAn Olympic year indicator based on the season year.\n\nWithin each athlete, event, and year grouping, a single record is kept by taking the row with the largest age in days to resolve ties.\n\nThe result is saved as athlete_bests and written to disk as an rds file.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#ingest-the-iaaf-points-reference-and-harmonize-event-names",
+    "href": "03-tidy.html#ingest-the-iaaf-points-reference-and-harmonize-event-names",
+    "title": "3  Tidy",
+    "section": "3.6 Ingest the IAAF points reference and harmonize event names",
+    "text": "3.6 Ingest the IAAF points reference and harmonize event names\nThe file iaaf-2025.json is read, flattened, and turned into a tibble with four columns: gender, event, mark, and points.\n\nA copy of athlete_bests named athlete_bests_clean is created with gender forced to lower case and with event names standardized to match the IAAF naming used in the json. For example 100 Metres becomes 100m, 110 Metres Hurdles becomes 110mH.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#attach-standardized-points-to-season-bests",
+    "href": "03-tidy.html#attach-standardized-points-to-season-bests",
+    "title": "3  Tidy",
+    "section": "3.7 Attach standardized points to season bests",
+    "text": "3.7 Attach standardized points to season bests\nThe table athlete_bests_clean is left joined to iaaf_table by gender and event using a nearest rule on mark via the closest helper. This assigns an IAAF points value to each season best record. Any missing points produced by the join are replaced with zero so that downstream code does not error on missing values. The result is stored as athlete_bests_points.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#why-these-choices-are-appropriate",
+    "href": "03-tidy.html#why-these-choices-are-appropriate",
+    "title": "3  Tidy",
+    "section": "3.3 Why these choices are appropriate",
+    "text": "3.3 Why these choices are appropriate\nJoining before modeling ensures that every observation is on a common comparable scale.\n\nStandardizing event names before the join prevents many to one and failed matches.\n\nKeeping one season best per athlete and event per year preserves the longitudinal shape while avoiding within season duplication.\n\nNumeric mark construction respects the measurement scale of track and field. Times are in seconds while field marks remain in their numeric distance or height.\n\nThe nearest rule attaches the appropriate IAAF score for the observed mark with minimal interpolation.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#data-sources",
+    "href": "03-tidy.html#data-sources",
+    "title": "3  Tidy",
+    "section": "",
+    "text": "olympics_data.csv: Athlete-level metadata including name, birthdate, gender, event, nationality, and Olympic appearances.\ncareer_progression.csv: Yearly performance data for each athlete and event.\niaaf-2025.json: IAAF scoring table with standardized points for each mark, event, and gender.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#iaaf-points-integration",
+    "href": "03-tidy.html#iaaf-points-integration",
+    "title": "3  Tidy",
+    "section": "3.2 IAAF Points Integration:",
+    "text": "3.2 IAAF Points Integration:\nThe cleaned athlete bests dataset from the Import section was merged with the IAAF points table (iaaf-2005.json) to attach standardized scoring. Event names were harmonized between sources (e.g., \"100 Metres\" → \"100m\", \"110 Metres Hurdles\" → \"110mH\", \"Marathon\" → \"Road Marathon\").\nThe join was performed on gender and event using the nearest mark in the IAAF table, ensuring each record received the closest possible standardized points value. Merge to one row per athlete–event–date.\n\nathlete_bests &lt;- readRDS(\"data/athlete_bests.rds\")\nraw_json &lt;- read_json(\"data/track and field data/iaaf-2025.json\", simplifyVector = FALSE)\n\n# Convert list of lists to a flat tibble\niaaf_table &lt;- tibble::tibble(\n  gender = sapply(raw_json, `[[`, \"gender\"),\n  event = sapply(raw_json, `[[`, \"event\"),\n  mark = sapply(raw_json, `[[`, \"mark\"),\n  points = sapply(raw_json, `[[`, \"points\")\n)\nathlete_bests_clean &lt;- athlete_bests |&gt; \n  mutate(\n    gender = tolower(gender),\n    event = case_when(\n      event == \"100 Metres\" ~ \"100m\",\n      event == \"200 Metres\" ~ \"200m\",\n      event == \"400 Metres\" ~ \"400m\",\n      event == \"800 Metres\" ~ \"800m\",\n      event == \"1500 Metres\" ~ \"1500m\",\n      event == \"5000 Metres\" ~ \"5000m\",\n      event == \"10,000 Metres\" ~ \"10000m\",\n      event == \"Marathon\" ~ \"Road Marathon\",\n      event == \"Triple Jump\" ~ \"TJ\",\n      event == \"Long Jump\" ~ \"LJ\",\n      event == \"High Jump\" ~ \"HJ\",\n      event == \"Shot Put\" ~ \"SP\",\n      event == \"Discus Throw\" ~ \"DT\",\n      event == \"Hammer Throw\" ~ \"HT\",\n      event == \"Javelin Throw\" ~ \"JT\",\n      event == \"Decathlon\" ~ \"Dec.\",\n      event == \"Heptathlon\" ~ \"Hept.\",\n      event == \"Pole Vault\" ~ \"PV\",\n      event == \"10 Kilometres Race Walk\" ~ \"10,000mW\",\n      event == \"50 Kilometres Race Walk\" ~ \"50,000mW\",\n      event == \"20 Kilometres Race Walk\" ~ \"20,000mW\",\n      event == \"100 Metres Hurdles\" ~ \"100mH\",\n      event == \"110 Metres Hurdles\" ~ \"110mH\",\n      event == \"400 Metres Hurdles\" ~ \"400mH\",\n      event == \"3000 Metres Steeplechase\" ~ \"3000m SC\",\n      TRUE ~ event\n    )\n  )\n\n# join iaaf_table with athlete_bests and get full dataset with result points\nround_decimals &lt;- function(x, digits = 2) {\n  round(x * 10^digits) / 10^digits}\n\nathlete_bests_points &lt;- \n  athlete_bests_clean |&gt;\n    left_join(iaaf_table, join_by(gender, event, closest(mark &lt;= mark))) |&gt; \n  replace_na(list(points = 0))",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#why-this-pipeline-works",
+    "href": "03-tidy.html#why-this-pipeline-works",
+    "title": "3  Tidy",
+    "section": "3.2 Why This Pipeline Works",
+    "text": "3.2 Why This Pipeline Works\n-Sequential cleaning ensures each dataset is tidy before merging\n-Joining Olympic and career data first preserves athlete-event-year structure\n-Standardizing event names before scoring avoids mismatches\n-One season-best per athlete-event-year maintains longitudinal integrity\n-Numeric mark construction respects measurement scale:\nTrack: time in seconds\nField: distance or height\n-Nearest match rule minimizes interpolation error when assigning IAAF scores",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "03-tidy.html#notes-on-join-behaviour",
+    "href": "03-tidy.html#notes-on-join-behaviour",
+    "title": "3  Tidy",
+    "section": "3.4 Notes on join Behaviour",
+    "text": "3.4 Notes on join Behaviour\nYour join uses closest on a condition with mark on both sides. That requires a recent dplyr and depends on how the IAAF reference orders marks. If you ever observe mismatched points at event boundaries, consider switching to an explicit directional rule that treats track and field differently, where track uses the largest IAAF mark that is less than or equal to the observed time and field uses the smallest IAAF mark that is greater than or equal to the observed distance or height.\nThe closest() join on mark requires a recent version of dplyr. If mismatches occur near event boundaries, consider refining the logic:\nTrack events: Use the largest IAAF mark ≤ observed time\nField events: Use the smallest IAAF mark ≥ observed distance\nThis directional rule ensures accurate scoring near performance thresholds.",
+    "crumbs": [
+      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  }
+]

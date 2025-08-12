@@ -1,0 +1,242 @@
+---
+title: "Model"
+---
+
+## Introduction
+
+Athletic performance evolves with age, and understanding this progression — often represented as an *aging curve* — is of considerable interest in sports analytics. Aging curves plot an athlete’s performance level as a function of age, offering valuable insight for coaches, roster management,analysts, and player development strategies.
+
+Traditional approaches to modeling aging curves, such as multiple regression with spline interpolation, provide limited flexibility and often fail to capture the full complexity of career trajectories. **Functional Data Analysis (FDA)** provides a more powerful and flexible framework for modeling aging curves by treating each athlete’s career trajectory as a continuous function over time. This approach allows for richer statistical analyses, including hypothesis testing, dimensionality reduction, and clustering. methodology is based on Functional Data Analysis in R and inspired by the paper Functional Data Analysis of Aging Curves in Sports by Alexander Wakim and Jimmy Jin (2014).
+
+The methodology presented here is based on *Functional Data Analysis with R* by Crainiceanu, Goldsmith, Leroux, and Cui (2021) and is inspired by the paper *Functional Data Analysis of Aging Curves in Sports* by Wakim and Jin (2014). In this section, we begin with FDA fundamentals, then introduce Functional Principal Component Analysis (FPCA) to summarize variation across curves, address sparse and irregular data via sparse FPCA, and conclude with clustering of functional data.
+
+## Functional Data Analysis (FDA)
+
+Functional Data Analysis (FDA) models an athlete’s performance over age as a smooth, continuous function called an aging curve. In practice, we only observe discrete values at certain ages, so we fit a smooth curve to these points.
+
+We use B-spline basis functions to approximate each curve. B-splines are piecewise polynomials joined at knots and are flexible enough to represent complex shapes. The coefficients of these basis functions uniquely describe the curve’s shape.
+
+To avoid overfitting, a roughness penalty is added, with the smoothing level chosen by generalized cross-validation (GCV). Once fitted, we can compute the mean and variance functions of aging curves, and represent each curve by its basis coefficients.
+
+This representation enables the use of multivariate tools like functional principal component analysis (FPCA), which summarizes the main patterns of variation, and provides scores that can be used for visualization, comparison, and clustering.
+
+## Functional Principal Component Analysis(FPCA)
+
+Functional Principal Component Analysis (FPCA) summarizes variation across aging curves by decomposing each curve into a mean function plus a weighted sum of functional principal components (basis curves). The first component captures the largest mode of variation, the second captures the next largest variation orthogonal to the first, and so on. Each athlete has scores for these components, indicating how their curve differs from the mean. Retaining only the leading components gives a compact representation for visualization, comparison, or clustering.
+
+## Sparse and Irregular FPCA
+
+Sports performance data are often **sparse** (few observations per athlete) and **irregular** (different measurement ages across athletes). Traditional FDA and FPCA assume regular, dense observations, making them unsuitable for such data. In this project, many athletes have limited recorded performance points, so I use **Sparse FPCA**, implemented via the `face.sparse()` method in R. This approach follows the example from *Functional Data Analysis with R* (Crainiceanu et al., 2021), where sparse and irregular data are smoothed, principal components are extracted, and clustering is performed on the reconstructed curves.
+
+Sparse FPCA can
+
+-   Identify eigenfunctions that explain most of the variation in the data
+
+-   Predict full aging curves even when data are sparse and irregular
+
+-   Provide principal component scores for downstream analysis, such as clustering
+
+In my project, Sparse FPCA estimates the mean function and covariance structure from incomplete data, recovers the principal component curves, and predicts scores for each athlete. This enables full-curve reconstruction and clustering of aging patterns even when the raw observations are too limited for traditional FDA or FPCA.
+
+Here is an example of applying sparse FPCA to an athlete named *Svein-inge-valvik*. We first filter the dataset to remove missing values and format it so that each row contains the athlete’s ID, performance age, and IAAF score. The data is then structured into the input format required by `face.sparse()` which contains the observed scores `y`, the corresponding performance ages `argvals`, and a subject identifier `subj`.
+
+The `face.sparse()` function is applied to estimate the mean aging curve, covariance function, correlation function, eigenfunctions, and eigenvalues from the sparse and irregular data. This step smooths the observed data, extracts the principal component curves, and allows us to reconstruct the athlete’s entire aging trajectory even when only a few observations are available.
+
+For *Svein-inge-valvik* we use the fitted model to generate predictions of the aging curve over a grid of ages from 11 to 58 years along with 95 percent prediction intervals. The predicted curve is plotted in red with the original observed points in blue and the overall mean curve in black.
+
+We also extract the first three eigenfunctions which represent the main modes of variation in the population’s aging curves. These eigenfunctions are key to understanding how athletes’ trajectories differ in shape such as an early peak or gradual improvement and are later used for clustering analysis.
+
+Additionally we compute the world class standards for both men and women in the same event. This allows us to determine the performance age at which *Svein-inge-valvik* reaches world class performance providing a meaningful benchmark in the context of elite athletics.
+
+Codes are here:
+
+```{r,echo=TRUE}
+# Filter out missing points athletes and rename for clarity
+fd_data <- athlete_bests_points |> 
+  filter(!is.na(points), !is.na(age_years)) |> 
+  mutate(id = paste(athlete_link, event)) |> 
+  select(athlete_id = id,
+         performance_age = age_years,
+         iaaf_score = points)
+fd_data_shiny <- athlete_bests_points |> 
+  filter(!is.na(points), !is.na(age_years))
+
+#use face to conduct sparse FDA
+top_10_ids <- fd_data |>
+  count(athlete_id, sort = TRUE) |>
+slice_head(n = 10) |>
+ pull(athlete_id)
+
+fd_data_top10 <- fd_data |>
+  filter(athlete_id %in% top_10_ids)
+
+id <- fd_data_top10$athlete_id
+uid <- unique(id)
+face_input <- data.frame(
+  y = fd_data_top10$iaaf_score,
+  argvals = fd_data_top10$performance_age,
+  subj = id)
+
+Sample <- which(uid == "https://worldathletics.org/athletes/norway/svein-inge-valvik-014215542 DT")
+
+fit_face <- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))
+#create a data double
+data.h <- face_input
+tnew <- fit_face$argvals.new
+#prepare data for prediction
+seq <- seq(11, 58, by = 1)
+k <- length(seq)
+for(i in Sample){
+  sel <- which(id == uid[i])
+  #dati <- fd_data_top10[sel,] 
+  
+
+dati <- fd_data_top10[sel, ] |> 
+  dplyr::transmute(y = iaaf_score,
+         argvals = performance_age,
+         subj = athlete_id)
+
+# Create the prediction dataframe
+dati_pred <- data.frame(
+  y       = rep(NA, nrow(dati) + k),
+  argvals = c(rep(NA, nrow(dati)), seq),
+  subj    = rep(dati$subj[1], nrow(dati) + k)
+)
+
+dati_pred[1:nrow(dati), ] <- dati
+
+yhat <- predict(fit_face, dati_pred)
+
+
+Ord  <- (nrow(dati) + 1):(nrow(dati) + k)
+
+#Plot
+plot(dati$argvals, dati$y,
+     xlab = "Performance Age (years)",
+     ylab = "IAAF score",
+     pch = 19, col = "blue",
+     xlim = range(seq),
+     ylim = range(c(dati$y, yhat$y.pred[Ord]), na.rm = TRUE),
+     bty = "n")
+
+lines(seq, yhat$y.pred[Ord], col = "red",  lwd = 2)
+lines(seq, yhat$y.pred[Ord] + 1.96 * yhat$se.pred[Ord], col = "red", lty = 2)
+lines(seq, yhat$y.pred[Ord] - 1.96 * yhat$se.pred[Ord], col = "red", lty = 2)
+lines(seq, fit_face$mu.new, col = "black", lwd = 2)
+
+}
+
+#extract mean, covariance, variance, correlation function, and eigenfunctions
+#Smooth marginal mean
+m <- fit_face$mu.new
+#Smooth covariance
+Cov <- fit_face$Chat.new
+#Pointwise covariance
+Cov_diag <- diag(Cov)
+#Smooth correlation 
+Cor <- fit_face$Cor.new
+#Pointwise prediction intervals
+m_p_2sd <- m + 2 * sqrt(Cov_diag)
+m_m_2sd <- m - 2 * sqrt(Cov_diag)
+#Smooth eigenfunctions 
+eigenf <- fit_face$eigenfunctions
+#Smooth eigenvalues 
+eigenv <- fit_face$eigenvalues
+
+#first 3 eigenfunctions
+par(mar = c(4.5, 4.5, 0, 2))
+col_me <- c("cornflowerblue", "aquamarine3", "coral1")
+
+plot(1, type = "n", xlab = "Performance Age (years)", ylab = "",
+     xlim = range(tnew), ylim = range(eigenf), bty = "n")
+
+for(i in 1:3){
+  lines(tnew, eigenf[,i], col = col_me[i], lwd = 3)
+}
+
+legend("topright", c("PC1", "PC2", "PC3"), 
+       col = col_me, lty = 1, bty = "n", lwd = 3)
+```
+plot of predicted aging curves:
+
+
+
+
+
+
+
+## Clustering on FPCA predictive function
+
+Clustering of Functional Data groups athletes with similar aging curve shapes into distinct categories. In this project, the clustering is based on the percent change of the IAAF-points of their aging curves, which reflects the relative progression of performance over time rather than absolute performance levels. After applying sparse FPCA, each percent change curve is summarized by a small set of principal component scores, reducing the infinite-dimensional curve to a low-dimensional representation. These score vectors are then clustered using k-means, with the number of clusters set to three. This method partitions the population into distinct aging patterns, such as early peak, late peak, or sustained performance, enabling clearer comparisons between athletes with similar career trajectories. After clustering the entire population's performance trajectories, we can assign new athlete to an existing cluster. This allows us to immediately place the athlete within a known progression pattern and monitor their trajectory over time.
+
+Here is code for clustering the whole population based on the athletes' percent change of IAAF-points.
+
+```{r,echo=TRUE}
+#cluster the whole population based on percent change
+# set up
+id <- fd_data$athlete_id
+uid <- unique(id)
+#set the grid where to predict
+seq <- seq(11, 58, by = 1)
+k <- length(seq)
+n <- length(uid)
+# Set the predicted percent change in IAAF points matrix: one fewer column since we lose first value
+PercentChange_mat <- matrix(NA, nrow = n, ncol = k - 1)
+
+# loop over each athlete, predict every curve
+for(i in 1:n){
+  sel <- which(id == uid[i])
+  dati <- fd_data[sel, ] |>
+    mutate(y = iaaf_score,
+              argvals = performance_age,
+              subj = athlete_id) |> 
+    select(y, argvals,subj)
+ 
+#if (nrow(dati) == 0) next
+  
+dati_pred <- data.frame(y = rep(NA, nrow(dati) + k),
+                          argvals = c(rep(NA, nrow(dati)), seq),
+                          subj = rep(dati$subj[1], nrow(dati) + k)
+  )
+  
+  dati_pred[1:nrow(dati), ] <- dati
+  yhat <- predict(fit_face, dati_pred)
+#Extract just the predictions on the grid  
+  Ord <- (nrow(dati) + 1):(nrow(dati) + k)
+  raw <- yhat$y.pred[Ord]
+
+# Check if prediction is valid
+if (all(is.na(raw)) || any(raw[-1] == 0, na.rm = TRUE)) next
+
+# Compute percent change: (current - previous)/previous * 100
+pc <- c(NA, diff(raw) / head(raw, -1)) * 100
+
+# Save to matrix, dropping the initial NA
+PercentChange_mat[i, ] <- pc[-1]
+}
+
+# conduct clustering of predicted functions from fpca sparse(k-means clustering)
+set.seed(20240805)
+cl_kmeans <- kmeans(PercentChange_mat, centers = 3, nstart = 25)
+cl_ind <- cl_kmeans$cluster
+cl_cen <- cl_kmeans$centers
+
+# plot the predicted aging curves together with the estimated clustering as well as centers of the clusters
+par(mar = c(4, 4, 1, 1))
+colset <- c("#E69A8DFF", "#F6D55C", "#2A9D8F", "#5F4B8BFF")
+plot(NULL, xlim = range(seq), ylim = c(-20, 20),
+     xlab = "Performance Age (years)", ylab = "Percent Change in IAAF Score", bty = "n")
+
+for(i in 1:n){
+  lines(seq[-1], PercentChange_mat[i,], col = colset[cl_ind[i]])
+}
+
+for(j in 1:3){
+  lines(seq[-1], cl_cen[j,], col = "black", lwd = 3)
+}
+legend("topright", legend = paste("Cluster", 1:3),
+       col = colset, lty = 1, lwd = 2, bty = "n")
+```
+
+
+And here is the plot of clustering the whole population based on the 

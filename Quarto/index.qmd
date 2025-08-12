@@ -1,0 +1,35 @@
+# Preface {.unnumbered}
+
+---
+title: "STAT 468 Final Project — Clustering Athlete Aging Curves"
+subtitle: "Functional Data Analysis + Clustering"
+author: "Yushi Liu"
+date: "2025-08-07"
+format:
+  html:
+    toc: true
+    toc-depth: 3
+---
+
+```{r}
+#| label: setup
+#| include: false
+knitr::opts_chunk$set(fig.width = 7, fig.height = 4.5, fig.align = "center")
+suppressPackageStartupMessages({
+  library(dplyr); library(tidyr); library(readr); library(ggplot2)
+  library(lubridate); library(purrr); library(stringr)
+  library(face); library(refund)
+})
+source("R/helpers.R")
+
+```
+
+## Abstract
+
+Athletes reach elite performance at highly variable rates. Some progress rapidly, while others develop more gradually over time. In this project, we model and cluster the rate of progression of Olympic track and field athletes using their aging curves. Unlike team sports, individual sports such as athletics allow for precise comparison through standardized scoring, as individual results are more easily measured in objective terms. To compare athletes across different event disciplines such as jumps and throws, we convert raw performances to a unified scale using the scoring system designed by World Athletics, the world governing body for athletics. 
+
+We apply functional data analysis to smooth each athlete’s aging curve and extract dominant patterns using Functional Principal Component Analysis (FPCA). Because competition frequency varies by athlete and event, we address irregular and sparse observations using FPCA methods suited for unevenly spaced data.
+
+Clustering the resulting FPCA scores percent change allows us to group athletes based on how fast they improve with age, identifying profiles such as early risers, steady performers, and late bloomers. These clusters provide both descriptive insights into developmental patterns and predictive tools for forecasting when rising athletes might reach elite standards based on early-career data.
+
+This focus on the rate of progression enables a more adaptable and predictive framework allowing coaches, performance analysts, and high performance directors to analyze athletic development.

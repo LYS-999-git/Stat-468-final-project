@@ -1,0 +1,12 @@
+name: STAT468-Final-Project
+title: STAT468-Final-Project
+username: ysl-shinyapp
+account: ysl-shinyapp
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15184995
+bundleId: 10754229
+url: https://ysl-shinyapp.shinyapps.io/STAT468-Final-Project/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

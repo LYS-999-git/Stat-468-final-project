@@ -1,0 +1,8 @@
+Sys.setenv(
+  AWS_ACCESS_KEY_ID = "AKIA3IMG4BYSJMKLAJMU",
+  AWS_SECRET_ACCESS_KEY = "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",
+  AWS_DEFAULT_REGION = "us-east-1",
+  S3_BUCKET = "stat-468-model",
+  S3_PREFIX = "projects/stat468/models",
+  EC2_PUBLIC_IP = "3.86.47.56"
+)

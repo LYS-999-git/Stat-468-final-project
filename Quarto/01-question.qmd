@@ -1,0 +1,47 @@
+---
+title: "Question of Interest & Relevance"
+---
+
+## Introduction
+
+Athlete performance trajectories vary greatly. Some athletes achieve elite standards at a young age while others progress steadily over many years before reaching their peak. Traditional aging curve analyses often focus on the average progression or peak age. This approach obscures the diversity in how individuals develop and limits the ability of coaches, scouts, and performance analysts to tailor training and identify untapped potential.
+
+This project addresses that gap by applying functional data analysis and clustering to classify athletes based on the rate and pattern of their performance progression. Rather than examining only final outcomes or single peak performances, the analysis will capture the complete shape of each athlete’s career trajectory from early improvement to peak and subsequent decline.
+
+## Motivation
+
+Understanding the *rate of progression* provides actionable insights for:
+
+\- **Coaching**: tailoring training loads and peaking strategies to an athlete’s likely development path.
+
+\- **Talent identification**: distinguishing between “late bloomers” who may require patience and “early risers” who peak quickly.
+
+\- **Long-term planning**: projecting when athletes are likely to achieve qualifying standards for major competitions.
+
+By identifying these patterns, organizations can better allocate resources, set realistic performance targets, and make informed selection decisions.
+
+## Project Objectives
+
+The main objectives of this project are:
+
+1.  Develop predictive aging curves for individual athletes using observed data points fit with Sparse Functional Principal Component Analysis(FPCA).
+2.  Cluster the entire population’s aging curves into three groups based on the rate and shape of progression curve, using the percent change of their IAAF points as the measure of progression dynamics.
+3.  Classify existing athletes into meaningful development profiles by matching them to the most representative cluster. Use this classification to estimate when an athlete will achieve a world class standard and to predict their likely development path.
+
+## Planned Approach
+
+To achieve these objectives, we will:
+
+\- Merge competition results with athlete metadata to create a longitudinal dataset for each athlete and event combination.
+
+\- Standardize performance measures (e.g., convert performance results to IAAF points) to allow cross-event comparison.
+
+\- Use refund package in R, face.sparse funcion to predict individual's aging curves.
+
+\- Use **Sparse Functional Principal Component Analysis** (FPCA) to extract dominant patterns in trajectory shapes.
+
+\- Apply k-means on sparse FPCA clustering(predicted functions) to group similar progression patterns through the whole population and 7 different event types.
+
+\- Interpret and label cluster patterns, and explore predictive assignment for athletes with incomplete career data.
+
+This approach emphasizes *progression rate* and *development patterns* rather than absolute performance levels alone. It aims to provide a more dynamic and forward looking view of athlete development that can support practical decision making in competitive sport.

@@ -1,0 +1,12 @@
+name: STAT468-ShinyApp
+title: STAT468-ShinyApp
+username: ysl-shinyapp
+account: ysl-shinyapp
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15190618
+bundleId: 10759501
+url: https://ysl-shinyapp.shinyapps.io/STAT468-ShinyApp/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE

@@ -1,0 +1,12 @@
+name: ShinyApp
+title: ShinyApp
+username: ysl-shinyapp
+account: ysl-shinyapp
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 15190562
+bundleId: 10759460
+url: https://ysl-shinyapp.shinyapps.io/ShinyApp/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
