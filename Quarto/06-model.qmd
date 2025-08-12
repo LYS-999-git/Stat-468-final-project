@@ -196,7 +196,7 @@ legend("topright", c("PC1", "PC2", "PC3"),
 
 Plot of predicted aging curves:
 
-![](images/Screen Shot 2025-08-11 at 23.21.36.png)
+![](images/Screen%20Shot%202025-08-11%20at%2023.21.36.png)
 
 ## Clustering on FPCA predictive function
 
@@ -273,11 +273,11 @@ legend("topright", legend = paste("Cluster", 1:3),
 
 And here is the plot of clustering the whole population based on the percent change of IAAf-points of:
 
-![](images/Screen Shot 2025-08-11 at 23.22.30.png)
+![](images/Screen%20Shot%202025-08-11%20at%2023.22.30.png)
 
 Here is an example of an aging curve for a sample athlete. This athlete(Aadam-ismaeel-khamis) can be assigned to one of the existing clusters, which allows us to predict and monitor the athlete’s performance trajectory over time. This athlete's predicted aging curves is very align with the third cluster above(green cluster), so we can interpret this athlete as early risers.
 
-![](images/Screen Shot 2025-08-11 at 23.13.48.png)
+![](images/Screen%20Shot%202025-08-11%20at%2023.13.48.png)
 
 I also cluster the entire population by event type to compare patterns across different disciplines. The population is divided into seven event types: Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, and Road Races. For most event types, the resulting clusters are similar to those of the overall population, while a few categories such as Middle Distance and Road Races show noticeable differences.
 
@@ -295,10 +295,10 @@ event_type = case_match(
 
 Here are a few examples of the clustering by event type:
 
-![](images/Screen Shot 2025-08-11 at 23.23.38.png)
+![](images/Screen%20Shot%202025-08-11%20at%2023.23.38.png)
 
-![](images/Screen Shot 2025-08-11 at 23.23.29.png)
+![](images/Screen%20Shot%202025-08-11%20at%2023.23.29.png)
 
-![](images/Screen Shot 2025-08-11 at 23.23.17.png)
+![](images/Screen%20Shot%202025-08-11%20at%2023.23.17.png)
 
-![](images/Screen Shot 2025-08-11 at 23.23.10.png)
+![](images/Screen%20Shot%202025-08-11%20at%2023.23.10.png)

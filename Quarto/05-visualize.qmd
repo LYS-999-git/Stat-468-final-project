@@ -2,7 +2,6 @@
 title: "Visualize"
 ---
 
-
 In this section, we visualize the **observed data points** for each athlete to better understand their performance trends before applying modeling techniques.\
 The plots display the raw IAAF scores against the athlete's performance age, allowing us to see patterns such as peak performance periods, variability, and possible outliers.
 
