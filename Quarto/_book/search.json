@@ -120,181 +120,11 @@
     ]
   },
   {
-    "objectID": "03-tidy.html#data-integration",
-    "href": "03-tidy.html#data-integration",
+    "objectID": "03-tidy.html#clean-olympics_data.csv",
+    "href": "03-tidy.html#clean-olympics_data.csv",
     "title": "3  Tidy",
     "section": "",
-    "text": "3.1.1 Step 1: Clean Olympics_data.csv Data\nThe Olympic dataset is imported and cleaned to provide athlete-level metadata. Key transformations include:\nStandardized column names using janitor::clean_names()\nParsed competition dates into start and end\nSeparated gender from event name\nRemoved wheelchair events\nManually corrected birthdate for Aminata CAMARA\nStandardized gender labels (“Men’s” → “Men”, etc.)\nConverted date strings to Date objects\nCalculated athlete age at the time of competition\nCreated ordered factor for Olympic Games\nClassified events into types (e.g., Sprints, Throws) and categories (Track vs. Field)\nStandardized event names (e.g., merged “Javelin Throw (old)” with “Javelin Throw”)\nExtracted competition year from the end date Code shows below:\n\nOlympics_data &lt;- read_csv(\"/Users/yushiliu/Stat 468 final project/data/track and field data/olympics_data.csv\", show_col_types = F) %&gt;%\n  janitor::clean_names() %&gt;% \n  separate_wider_delim(date, delim = \"–\", names = c(\"start\", \"end\")) %&gt;%\n  separate_wider_delim(cols = event, names = c(\"gender\", \"event\"), delim = \" \",\n                           too_many = \"merge\") %&gt;%\n  filter(str_detect(event, \"Wheelchair\", negate = T)) %&gt;% \n  mutate(\n        # Manually fixed Aminata CAMARA's age\n    birth_date = if_else(name == \"Aminata CAMARA\", \"06 DEC 1973\", birth_date),\n    gender = if_else(gender == \"Men's\", \"Men\", \"Women\"),\n    across(c(birth_date, end),  ~as.Date(format(\n    as.Date(., format = \"%d %b %Y\"), \"%Y-%m-%d\"))),\n    age = year(end) - year(birth_date),\n         games = factor(games, ordered = T,\n                        levels = c(\"The XXXII Olympic Games\",\n                                   \"The XXXI Olympic Games\",\n                                   \"The XXX Olympic Games\",\n                                   \"The XXIX Olympic Games\",\n                                   \"The XXVIII Olympic Games\",\n                                   \"The XXVII Olympic Games\",\n                                   \"The XXVI Olympic Games\"\n                        ),\n                        labels = c(\"Tokyo '20\", \"Rio '16\", \"London '12\", \n                                   \"Beijing '08\", \"Athens '04\", \"Sydney '00\",\n                                   \"Atlanta '96\")),\n    event_type = case_match(\n      event,\n      c(\"100 Metres\", \"200 Metres\", \"400 Metres\", \"400 Metres Hurdles\", \"100 Metres Hurdles\", \"110 Metres Hurdles\") ~ \"Sprints\",\n      c(\"800 Metres\", \"1500 Metres\", \"3000 Metres Steeplechase\") ~ \"Middle Distance\",\n      c(\"5000 Metres\", \"10,000 Metres\") ~ \"Long Distance\",\n      c(\"Heptathlon\", \"Decathlon\") ~ \"Combined Events\",\n      c(\"High Jump\", \"Long Jump\", \"Triple Jump\", \"Pole Vault\") ~ \"Jumps\",\n      c(\"Shot Put\", \"Discus Throw\", \"Hammer Throw\", \"Javelin Throw\", \"Javelin Throw (old)\") ~ \"Throws\",\n      c(\"10 Kilometres Race Walk\", \"20 Kilometres Race Walk\", \"50 Kilometres Race Walk\", \"Marathon\") ~ \"Road Races\",\n      .default = \"Other\"\n    ),\n         event_category = if_else(str_detect(event, \"Metres|Walk|Wheelchair\") |event %in% c(\"Marathon\"), \"Track\", \"Field\")\n         ) %&gt;% \n  mutate(event = if_else(event == \"Javelin Throw (old)\", \"Javelin Throw\", event),\n         games_year = year(end)) %&gt;% rename(\"nationality\" = nat)\n\nThe result is a clean metadata table named Olympics_data.\n\n\n3.1.2 Step 2: Clean Career Progression Data and merge with Olympic dataset\nThe career progression dataset is imported and cleaned to provide yearly performance records. Key steps include:\n\nRemoved duplicate rows\nParsed performance dates\nFlagged retired athletes based on last recorded year\nCalculated training age as years since first appearance, grouped by athlete and event\n\nThis produces a clean performance table named Career_progression. We then merge Career_progression with Olympics_data using athlete_link and event. This creates a unified dataset containing both performance records and athlete metadata. After the join, we compute:\n-Age at performance:\nage_years: Year of performance minus year of birth\nage_days: Exact age in days using difftime(date, birth_date)\n-Cleaned performance string: Removed hand-timing flags\n-Numeric mark:\nTrack events: Time in seconds\nField events: Distance or height\n-Season best indicator:\nTrack: Minimum time\nField: Maximum distance/height\n-Percent off peak: Deviation from season best within athlete and event\n-Olympic year flag: Based on season year\n-Tie resolution: Within each athlete-event-year group, keep the record with the largest age in days\nThis final cleaned dataset is saved as athlete_bests.\n\n# load career progression data and identify athletes who are still active\nCareer_progression &lt;- read_csv(\"/Users/yushiliu/Stat 468 final project/data/track and field data/career_progression (2).csv\", show_col_types = F) %&gt;% \n  distinct() |&gt; \n  mutate(date = parse_date_time(date, orders = c(\"%d %b %Y\", \"%d-%b-%y\"))) %&gt;%\n  mutate(retired = if_else(max(year) &lt;= 2022, T, F),\n         training_age = year - min(year) + 1,\n         .by = c(\"athlete_link\", \"event\")) \n\n# find the seasons best performances of each athlete\nathlete_bests &lt;-\n  Career_progression %&gt;%  inner_join(\n    Olympics_data %&gt;%  filter(!is.na(birth_date)) %&gt;%\n      distinct(birth_date, athlete_links, event, event_type, .keep_all = T) %&gt;%\n      select(name, birth_date, athlete_links, event, nationality, event_type, \n             event_category, gender, games_year),\n    by = c(\"athlete_link\" = \"athlete_links\", \"event\")\n  ) %&gt;%  \n  mutate(age_years = year(date) - year(birth_date), \n         age_days = as.double(\n           difftime(\n             date, birth_date,units = \"days\"\n           )\n         ),\n         performance = str_remove_all(performance, \"h\") # I will count hand timed results as legitimate\n         ) %&gt;%\n    mutate(mark = if_else(\n      event_category == \"Track\",\n      as.numeric(\n        difftime(\n          lubridate::parse_date_time2(performance, orders = c(\"%H:%M:%S\", \"%M:%S:00\", \"%M:%OS\", \"%OS\"), exact = T),\n          lubridate::parse_date_time2(\"0\", orders =\"S\"),\n          units = \"secs\"\n        )\n      ), parse_number(performance)),\n      # the below accounts for edge cases that lubridate can't parse, like a 62s 400MH\n      mark = if_else(is.na(mark), parse_number(performance), mark)\n      ) %&gt;%\n    mutate(\n      best_performance = case_when(\n        event_category == \"Track\" & mark == min(mark, na.rm = T) ~ T, # we want the lowest time\n        event_category == \"Field\" & mark == max(mark, na.rm = T) ~ T, # we want the furthest/highest performance\n        .default = F\n      ),\n      percent_off_peak = if_else(event_category == \"Track\", abs((mark - min(mark, na.rm = T))/mark), \n                                 abs((mark - max(mark, na.rm = T))/mark)),\n      olympic_year = if_else(year %in% c(seq(1980, 2016, 4), 2021), T, F),\n      .by = c(\"athlete_link\", \"event\")\n    ) %&gt;% \n   # remove duplicate seasons bests\n  slice_max(with_ties = F, n = 1, order_by = age_days, by = c(\"event\", \"year\",  \"athlete_link\"))\n\n\n\n3.1.3 Step 3: Join with IAAF Points\nWe import the IAAF scoring table from iaaf-2025.json, flattening it into a tibble with: gender, event, mark and points.\nTo ensure compatibility, we create a copy of athlete_bests named athlete_bests_clean with:\n-gender converted to lowercase\n-event names standardized to match IAAF naming conventions (e.g., “100 Metres” → “100m”, “110 Metres Hurdles” → “110mH”)\nWe then join athlete_bests_clean to iaaf_table using a nearest match on mark, grouped by gender and event. This assigns an IAAF points value to each season-best record.\n-The join uses closest(mark &lt;= mark) to find the nearest valid score\n-Missing points are replaced with 0 to avoid downstream errors\n-The final dataset is stored as athlete_bests_points\nThe cleaned athlete bests dataset from the Import section was merged with the IAAF points table (iaaf-2005.json) to attach standardized scoring. Event names were harmonized between sources (e.g., \"100 Metres\" → \"100m\", \"110 Metres Hurdles\" → \"110mH\", \"Marathon\" → \"Road Marathon\").\nThe join was performed on gender and event using the nearest mark in the IAAF table, ensuring each record received the closest possible standardized points value. Merge to one row per athlete–event–date.\n\nathlete_bests &lt;- readRDS(\"data/athlete_bests.rds\")\nraw_json &lt;- read_json(\"data/track and field data/iaaf-2025.json\", simplifyVector = FALSE)\n\n# Convert list of lists to a flat tibble\niaaf_table &lt;- tibble::tibble(\n  gender = sapply(raw_json, `[[`, \"gender\"),\n  event = sapply(raw_json, `[[`, \"event\"),\n  mark = sapply(raw_json, `[[`, \"mark\"),\n  points = sapply(raw_json, `[[`, \"points\")\n)\nathlete_bests_clean &lt;- athlete_bests |&gt; \n  mutate(\n    gender = tolower(gender),\n    event = case_when(\n      event == \"100 Metres\" ~ \"100m\",\n      event == \"200 Metres\" ~ \"200m\",\n      event == \"400 Metres\" ~ \"400m\",\n      event == \"800 Metres\" ~ \"800m\",\n      event == \"1500 Metres\" ~ \"1500m\",\n      event == \"5000 Metres\" ~ \"5000m\",\n      event == \"10,000 Metres\" ~ \"10000m\",\n      event == \"Marathon\" ~ \"Road Marathon\",\n      event == \"Triple Jump\" ~ \"TJ\",\n      event == \"Long Jump\" ~ \"LJ\",\n      event == \"High Jump\" ~ \"HJ\",\n      event == \"Shot Put\" ~ \"SP\",\n      event == \"Discus Throw\" ~ \"DT\",\n      event == \"Hammer Throw\" ~ \"HT\",\n      event == \"Javelin Throw\" ~ \"JT\",\n      event == \"Decathlon\" ~ \"Dec.\",\n      event == \"Heptathlon\" ~ \"Hept.\",\n      event == \"Pole Vault\" ~ \"PV\",\n      event == \"10 Kilometres Race Walk\" ~ \"10,000mW\",\n      event == \"50 Kilometres Race Walk\" ~ \"50,000mW\",\n      event == \"20 Kilometres Race Walk\" ~ \"20,000mW\",\n      event == \"100 Metres Hurdles\" ~ \"100mH\",\n      event == \"110 Metres Hurdles\" ~ \"110mH\",\n      event == \"400 Metres Hurdles\" ~ \"400mH\",\n      event == \"3000 Metres Steeplechase\" ~ \"3000m SC\",\n      TRUE ~ event\n    )\n  )\n\n# join iaaf_table with athlete_bests and get full dataset with result points\nround_decimals &lt;- function(x, digits = 2) {\n  round(x * 10^digits) / 10^digits}\n\nathlete_bests_points &lt;- \n  athlete_bests_clean |&gt;\n    left_join(iaaf_table, join_by(gender, event, closest(mark &lt;= mark))) |&gt; \n  replace_na(list(points = 0))",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#why-this-pipeline-works",
-    "href": "03-tidy.html#why-this-pipeline-works",
-    "title": "3  Tidy",
-    "section": "3.2 Why This Pipeline Works",
-    "text": "3.2 Why This Pipeline Works\n-Sequential cleaning ensures each dataset is tidy before merging\n-Joining Olympic and career data first preserves athlete-event-year structure\n-Standardizing event names before scoring avoids mismatches\n-One season-best per athlete-event-year maintains longitudinal integrity\n-Numeric mark construction respects measurement scale:\nTrack: time in seconds\nField: distance or height\n-Nearest match rule minimizes interpolation error when assigning IAAF scores",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#relevant-unit-tests",
-    "href": "03-tidy.html#relevant-unit-tests",
-    "title": "3  Tidy",
-    "section": "3.3 Relevant Unit Tests",
-    "text": "3.3 Relevant Unit Tests\n\nTest 1: Check that the join produces no duplicate athlete-event-year records.\nTest 2: Verify that every record has a valid non-missing IAAF points value after the join.\nTest 3: Confirm that all age_years values are positive and fall within a reasonable range (e.g., 10 to 60).\nTest 4: Check that the number of unique athlete IDs matches across the original and linked datasets. To ensure data integrity:\n\nNo duplicate athlete-event-year records after the join\nAll records have valid IAAF points (non-missing, non-zero)\nAge values are reasonable, e.g., between 10 and 60 years\nAthlete ID consistency across original and merged datasets",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#notes-on-join-behaviour",
-    "href": "03-tidy.html#notes-on-join-behaviour",
-    "title": "3  Tidy",
-    "section": "3.5 Notes on join Behaviour",
-    "text": "3.5 Notes on join Behaviour\nYour join uses closest on a condition with mark on both sides. That requires a recent dplyr and depends on how the IAAF reference orders marks. If you ever observe mismatched points at event boundaries, consider switching to an explicit directional rule that treats track and field differently, where track uses the largest IAAF mark that is less than or equal to the observed time and field uses the smallest IAAF mark that is greater than or equal to the observed distance or height.\nThe closest() join on mark requires a recent version of dplyr. If mismatches occur near event boundaries, consider refining the logic:\nTrack events: Use the largest IAAF mark ≤ observed time\nField events: Use the smallest IAAF mark ≥ observed distance\nThis directional rule ensures accurate scoring near performance thresholds.",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
-    "objectID": "04-transform.html",
-    "href": "04-transform.html",
-    "title": "4  Transform",
-    "section": "",
-    "text": "4.1 Link career progression to Olympic metadata\nFirst we join the career progression dataset with Olympic athlete metadata (only keeping records with a known birth date), ensures unique athlete-event combinations, and keeps key identifying variables.\nIt then calculates:\nIt also removes the “h” suffix from performance to standardize hand-timed results.\nShow code\nathlete_bests &lt;-\n  Career_progression %&gt;%  inner_join(\n    Olympics_data %&gt;%  filter(!is.na(birth_date)) %&gt;%\n      distinct(birth_date, athlete_links, event, event_type, .keep_all = T) %&gt;%\n      select(name, birth_date, athlete_links, event, nationality, event_type, \n             event_category, gender, games_year),\n    by = c(\"athlete_link\" = \"athlete_links\", \"event\")\n  ) %&gt;%  \n  mutate(age_years = year(date) - year(birth_date), \n         age_days = as.double(\n           difftime(\n             date, birth_date,units = \"days\"\n           )\n         ),\n         performance = str_remove_all(performance, \"h\")",
-    "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
-    ]
-  },
-  {
-    "objectID": "05-visualize.html",
-    "href": "05-visualize.html",
-    "title": "5  Visualize",
-    "section": "",
-    "text": "5.1 Prepare data and fit FACE\nShow code\n# predict on full dataset(population)\n# Filter out missing points athletes and rename for clarity\nfd_data &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years)) |&gt; \n  mutate(id = paste(athlete_link, event)) |&gt; \n  select(athlete_id = id,\n         performance_age = age_years,\n         iaaf_score = points)\n\nid &lt;- fd_data$athlete_id\nuid &lt;- unique(id)\nface_input &lt;- data.frame(\n  y = fd_data$iaaf_score,\n  argvals = fd_data$performance_age,\n  subj = id)\n#Fit sparse FPCA\nfit_face &lt;- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))\n#create a data double\ndata.h &lt;- face_input\ntnew &lt;- fit_face$argvals.new\n#prepare data for prediction\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nSample &lt;- c(5, 8, 12, 20)  # Customize based on your data\n\n\nfor(i in 1:4){\n  print(uid[Sample[i]])\n  sel &lt;- which(id == uid[Sample[i]])\n  dati &lt;- fd_data[sel, ] |&gt; \n  mutate(y = iaaf_score,\n       argvals = performance_age,\n        subj = athlete_id) |&gt; \n  select(y,argvals, subj)\n\nif (nrow(dati) == 0) {\n  message(\"Skipping subject \", uid[Sample[i]], \" — no data.\")\n  next}\n\n# Create the prediction dataframe\ndati_pred &lt;- data.frame(\n  y       = rep(NA, nrow(dati) + k),\n  argvals = c(rep(NA, nrow(dati)), seq),\n  subj    = rep(dati$subj[1], nrow(dati) + k)\n)\n\n\ndati_pred[1:nrow(dati), ] &lt;- dati\n\nyhat &lt;- predict(fit_face, dati_pred)\n\n\nOrd  &lt;- (nrow(dati) + 1):(nrow(dati) + k)",
-    "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
-    ]
-  },
-  {
-    "objectID": "06-model.html",
-    "href": "06-model.html",
-    "title": "6  Model",
-    "section": "",
-    "text": "6.1 Introduction\nAthletic performance evolves with age, and understanding this progression — often represented as an aging curve — is of considerable interest in sports analytics. Aging curves plot an athlete’s performance level as a function of age, offering valuable insight for coaches, roster management,analysts, and player development strategies.\nTraditional approaches to modeling aging curves, such as multiple regression with spline interpolation, provide limited flexibility and often fail to capture the full complexity of career trajectories. Functional Data Analysis (FDA) provides a more powerful and flexible framework for modeling aging curves by treating each athlete’s career trajectory as a continuous function over time. This approach allows for richer statistical analyses, including hypothesis testing, dimensionality reduction, and clustering. methodology is based on Functional Data Analysis in R and inspired by the paper Functional Data Analysis of Aging Curves in Sports by Alexander Wakim and Jimmy Jin (2014).\nThe methodology presented here is based on Functional Data Analysis with R by Crainiceanu, Goldsmith, Leroux, and Cui (2021) and is inspired by the paper Functional Data Analysis of Aging Curves in Sports by Wakim and Jin (2014). In this section, we begin with FDA fundamentals, then introduce Functional Principal Component Analysis (FPCA) to summarize variation across curves, address sparse and irregular data via sparse FPCA, and conclude with clustering of functional data.",
-    "crumbs": [
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
-    ]
-  },
-  {
-    "objectID": "06-model.html#clustering-on-fpca-predictive-function",
-    "href": "06-model.html#clustering-on-fpca-predictive-function",
-    "title": "6  Model",
-    "section": "6.5 Clustering on FPCA predictive function",
-    "text": "6.5 Clustering on FPCA predictive function\nClustering of FPCA groups athletes with similar aging curve shapes into distinct categories. In this project, the clustering is based on the percent change of the IAAF-points of their aging curves, which reflects the relative progression of performance over time rather than absolute performance levels. After applying sparse FPCA, each percent change curve is summarized by a small set of principal component scores, reducing the infinite-dimensional curve to a low-dimensional representation. These score vectors are then clustered using k-means, with the number of clusters set to three. This method partitions the population into distinct aging patterns, such as early peak, late peak, or sustained performance, enabling clearer comparisons between athletes with similar career trajectories. After clustering the entire population’s performance trajectories, we can assign new athlete to an existing cluster. This allows us to immediately place the athlete within a known progression pattern and monitor their trajectory over time.\nHere is code for clustering the whole population based on the athletes’ percent change of IAAF-points.\n\n\nShow code\n#cluster the whole population based on percent change\n# set up\nid &lt;- fd_data$athlete_id\nuid &lt;- unique(id)\n#set the grid where to predict\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nn &lt;- length(uid)\n# Set the predicted percent change in IAAF points matrix: one fewer column since we lose first value\nPercentChange_mat &lt;- matrix(NA, nrow = n, ncol = k - 1)\n\n# loop over each athlete, predict every curve\nfor(i in 1:n){\n  sel &lt;- which(id == uid[i])\n  dati &lt;- fd_data[sel, ] |&gt;\n    mutate(y = iaaf_score,\n              argvals = performance_age,\n              subj = athlete_id) |&gt; \n    select(y, argvals,subj)\n \n#if (nrow(dati) == 0) next\n  \ndati_pred &lt;- data.frame(y = rep(NA, nrow(dati) + k),\n                          argvals = c(rep(NA, nrow(dati)), seq),\n                          subj = rep(dati$subj[1], nrow(dati) + k)\n  )\n  \n  dati_pred[1:nrow(dati), ] &lt;- dati\n  yhat &lt;- predict(fit_face, dati_pred)\n#Extract just the predictions on the grid  \n  Ord &lt;- (nrow(dati) + 1):(nrow(dati) + k)\n  raw &lt;- yhat$y.pred[Ord]\n\n# Check if prediction is valid\nif (all(is.na(raw)) || any(raw[-1] == 0, na.rm = TRUE)) next\n\n# Compute percent change: (current - previous)/previous * 100\npc &lt;- c(NA, diff(raw) / head(raw, -1)) * 100\n\n# Save to matrix, dropping the initial NA\nPercentChange_mat[i, ] &lt;- pc[-1]\n}\n\n# conduct clustering of predicted functions from fpca sparse(k-means clustering)\nset.seed(20240805)\ncl_kmeans &lt;- kmeans(PercentChange_mat, centers = 3, nstart = 25)\ncl_ind &lt;- cl_kmeans$cluster\ncl_cen &lt;- cl_kmeans$centers\n\n# plot the predicted aging curves together with the estimated clustering as well as centers of the clusters\npar(mar = c(4, 4, 1, 1))\ncolset &lt;- c(\"#E69A8DFF\", \"#F6D55C\", \"#2A9D8F\", \"#5F4B8BFF\")\nplot(NULL, xlim = range(seq), ylim = c(-20, 20),\n     xlab = \"Performance Age (years)\", ylab = \"Percent Change in IAAF Score\", bty = \"n\")\n\nfor(i in 1:n){\n  lines(seq[-1], PercentChange_mat[i,], col = colset[cl_ind[i]])\n}\n\nfor(j in 1:3){\n  lines(seq[-1], cl_cen[j,], col = \"black\", lwd = 3)\n}\nlegend(\"topright\", legend = paste(\"Cluster\", 1:3),\n       col = colset, lty = 1, lwd = 2, bty = \"n\")\n\n\nAnd here is the plot of clustering the whole population based on the percent change of IAAf-points of\nHere is an example of an aging curve for a sample athlete. This athlete can be assigned to one of the existing clusters, which allows us to predict and monitor the athlete’s performance trajectory over time.(shiny app screenshot)\nI also cluster the entire population by event type to compare patterns across different disciplines. The population is divided into seven event types: Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, and Road Races. For most event types, the resulting clusters are similar to those of the overall population, while a few categories such as Middle Distance and Road Marathon(???double check) show noticeable differences.\n\n\nShow code\nevent_type = case_match(\n       event,\n      c(\"100m\", \"200m\", \"400 Metres\", \"400m\", \"400mH\", \"100mH\", \"110mH\") ~ \"Sprints\",\n      c(\"800m\", \"1500m\", \"3000m SC\") ~ \"Middle Distance\",\n      c(\"5000m\", \"10000m\") ~ \"Long Distance\",\n      c(\"Hept.\", \"Dec.\") ~ \"Combined Events\",\n      c(\"HJ\", \"LJ\", \"TJ\", \"PV\") ~ \"Jumps\",\n      c(\"SP\", \"DT\", \"HT\", \"JT\") ~ \"Throws\",\n      c(\"10,000mW\", \"20,000mW\", \"50,000mW\", \"Road Marathon\") ~ \"Road Races\")\n\n\nHere are a few examples of the clustering by event type(be specific): Show plot screenshot of cluster by event-type",
-    "crumbs": [
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
-    ]
-  },
-  {
-    "objectID": "06-model.html#cluster-mean-curves",
-    "href": "06-model.html#cluster-mean-curves",
-    "title": "6  Model",
-    "section": "6.8 Cluster mean curves",
-    "text": "6.8 Cluster mean curves",
-    "crumbs": [
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html",
-    "href": "07-communicate.html",
-    "title": "7  Communicate",
-    "section": "",
-    "text": "7.1 Delivery Format\nThe findings from this analysis will be delivered through an interactive Shiny dashboard, which integrates:",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#overview",
-    "href": "07-communicate.html#overview",
-    "title": "7  Communicate",
-    "section": "7.2 Overview",
-    "text": "7.2 Overview\nThe final insights will be provided to key stakeholders, including coaches, performance analysts, sports scientists, and sports development directors. The Shiny dashboard will serve as a centralized platform for exploring aging curves, identifying cluster patterns, and comparing event-specific performance trends.\nBecause aging curves evolve over time and are tied to an athlete’s age, the dashboard will be updated annually to maintain accuracy and relevance. This will allow stakeholders to track changes in trajectories, compare against historical benchmarks, and adjust training or selection strategies accordingly.\nBy providing accessible, data-driven insights, the dashboard will support evidence-based decision-making in training program design, athlete selection, and long-term talent development planning.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#interpretation-exampleupdate-labels-after-seeing-shapes",
-    "href": "07-communicate.html#interpretation-exampleupdate-labels-after-seeing-shapes",
-    "title": "7  Communicate",
-    "section": "7.2 Interpretation (example—update labels after seeing shapes)",
-    "text": "7.2 Interpretation (example—update labels after seeing shapes)\n\nCluster 1 — Early risers: Rapid early gains, earlier plateau.\n\nCluster 2 — Steady performers: Consistent year-over-year gains, smoother peak.\n\nCluster 3 — Late bloomers: Slower early growth, pronounced improvement later.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#mapping-a-new-athlete-illustrative",
-    "href": "07-communicate.html#mapping-a-new-athlete-illustrative",
-    "title": "7  Communicate",
-    "section": "7.3 Mapping a new athlete (illustrative)",
-    "text": "7.3 Mapping a new athlete (illustrative)\n```{r} #| label: communicate-predict # Use same grid and PCA basis to map a new/partial curve (demo with sample_df) new_curve &lt;- sample_df %&gt;% select(performance_age, iaaf_score)",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "appendix.html",
-    "href": "appendix.html",
-    "title": "8  Appendix",
-    "section": "",
-    "text": "The Shiny dashboard visualizes:\n\nPredicted aging curves\nCluster assignments\nEvent-type-based comparisons\n\nTo navigate:\n\nUse dropdown to select athlete/event\nHover for confidence bands\nClusters are color-coded",
-    "crumbs": [
-      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Appendix</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#step-1-clean-olympics_data.csv",
-    "href": "03-tidy.html#step-1-clean-olympics_data.csv",
-    "title": "3  Tidy",
-    "section": "",
-    "text": "3.1.1 Step 2:Clean Career_Progression.csv\nThe career progression dataset is imported and cleaned to provide yearly performance records.\nKey steps include: -Removed duplicate rows -Parsed dates: Converts data string to Data objects. -Compute retired and training_age by athlete/event.\n(Flag retirement: retired flag true if their last recorded year ≤ 2022, many athletes as retired if last competition was before or in 2022.)",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#step-2clean-career_progression.csv",
-    "href": "03-tidy.html#step-2clean-career_progression.csv",
-    "title": "3  Tidy",
-    "section": "3.2 Step 2:Clean Career_Progression.csv",
-    "text": "3.2 Step 2:Clean Career_Progression.csv\nThe career progression dataset is imported and cleaned to provide yearly performance records.\nKey steps include: -Removed duplicate rows -Parsed dates: Converts data string to Data objects. -Compute retired and training_age by athlete/event.\n(Flag retirement: retired flag true if their last recorded year ≤ 2022, many athletes as retired if last competition was before or in 2022.)",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#step-4-tidy-world-class-standardswac-standards",
-    "href": "03-tidy.html#step-4-tidy-world-class-standardswac-standards",
-    "title": "3  Tidy",
-    "section": "3.4 Step 4: Tidy world-class standards(wac-standards)",
-    "text": "3.4 Step 4: Tidy world-class standards(wac-standards)\nWhat we do: -Put into long/“tidy” format (gender as a variable). -Harmonize event names to match IAAF vocabulary. -Convert time-like marks to seconds (HH:MM:SS / MM:SS / SS). -Adjust women’s hurdles label to 100mH.\nAfter load the Career Progression data, we compute:\n-Join with Olymics data: Merge career progress data with olympic metadata using athlete_link and event.\n-Calculate age at performance(In years and days):\n\nage_years: Year of performance minus year of birth\nage_days: Exact age in days using difftime(date, birth_date)\n\n-Clean performance times: Removed “h” (hand-timed) from results.\n-Convert marks:\n\nFor Track events: Convert time strings to seconds\nFor Field events: Parses numeric distances\nhandles edge cases where parsing fails.\n\n-Identify best performance:\n\nTrack: lowest time\nField: highest mark\n\n-Calculate percent off peak: Measures deviation from best performance\n-Flag Olympic year: Marks years that were Olympic year.\n-Remove duplicates: Keeps only the best performance per athlete-event-year\nThis produces a clean performance table containing both performance records and athlete metadata named athlete_bests.\n\n3.4.1 Clean and Standardize Events:\nTo ensure compatibility, we create a copy of athlete_bests named athlete_bests_clean with: -Lowercase gender: Standardizes gender format -Rename events: Maps verbose event names to IAAF-compatible short forms(e.g., “100 Meters” -&gt; “100m”)\nWe then join athlete_bests_clean to iaaf_table, match athlete performances to IAAF scoring table using gender, event, and cluset mark less than or equal to athlete’s mark. And we fill missing points, replaces NA with 0 for unmatched entries.",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#step-3-flatten-iaaf-points-referenceiaaf-2005.json",
-    "href": "03-tidy.html#step-3-flatten-iaaf-points-referenceiaaf-2005.json",
-    "title": "3  Tidy",
-    "section": "3.3 Step 3: Flatten IAAF points reference(iaaf-2005.json)",
-    "text": "3.3 Step 3: Flatten IAAF points reference(iaaf-2005.json)\nWe then:\n-Read JSON: Loads IAAF scoring data. -Flatten JSON: Converts nested list into a tidy table with gender, event, mark, and points.",
+    "text": "Read the raw CSV of Olympic track & field results.\nclean_names() to lowercase and snake_case all column names.\nSplit date spans (e.g., \"01 Aug 2012 – 12 Aug 2012\") into start and end dates.\nSplit event strings into gender (\"Men\"/\"Women\") and event name, keeping remaining tokens intact.\nRemove wheelchair events.\nCorrect one known birthdate anomaly (Aminata CAMARA).\nNormalize gender labels to \"Men\"/\"Women\".\nConvert birth_date and end to Date objects (%Y-%m-%d).\nCalculate age at Games end date.\nRecode games as an ordered factor with readable labels (e.g., \"Tokyo '20\").\nClassify each event into event_type categories (Sprints, Middle Distance, Throws, etc.).\nAssign event_category as \"Track\" or \"Field\".\nNormalize legacy event labels (e.g., \"Javelin Throw (old)\" → \"Javelin Throw\").\nExtract games_year from the Games end date.\nRename nat to nationality.",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
     ]
@@ -310,11 +140,11 @@
     ]
   },
   {
-    "objectID": "03-tidy.html#flatten-iaaf-points-referenceiaaf-2005.json",
-    "href": "03-tidy.html#flatten-iaaf-points-referenceiaaf-2005.json",
+    "objectID": "03-tidy.html#flatten-the-iaaf-reference-table-iaaf-2005.json",
+    "href": "03-tidy.html#flatten-the-iaaf-reference-table-iaaf-2005.json",
     "title": "3  Tidy",
-    "section": "3.3 Flatten IAAF points reference(iaaf-2005.json)",
-    "text": "3.3 Flatten IAAF points reference(iaaf-2005.json)\nWe then:\n-Read JSON: Loads IAAF scoring data. -Flatten JSON: Converts nested list into a tidy table with gender, event, mark, and points.\n\n\nShow code\nraw_json &lt;- read_json(\"../data/track and field data/iaaf-2025.json\", simplifyVector = FALSE)\n\n# Convert list of lists to a flat tibble\niaaf_table &lt;- tibble::tibble(\n  gender = sapply(raw_json, `[[`, \"gender\"),\n  event = sapply(raw_json, `[[`, \"event\"),\n  mark = sapply(raw_json, `[[`, \"mark\"),\n  points = sapply(raw_json, `[[`, \"points\")\n)",
+    "section": "3.3 Flatten the IAAF Reference Table (iaaf-2005.json)",
+    "text": "3.3 Flatten the IAAF Reference Table (iaaf-2005.json)\n\nReading the JSON file containing IAAF scoring data.\nFlattening the nested structure into a tidy table with columns: gender, event, mark, and points.\nThis creates the reference table iaaf_table.\n\n\n\nShow code\nraw_json &lt;- read_json(\"../data/track and field data/iaaf-2025.json\", simplifyVector = FALSE)\n\n# Convert list of lists to a flat tibble\niaaf_table &lt;- tibble::tibble(\n  gender = sapply(raw_json, `[[`, \"gender\"),\n  event = sapply(raw_json, `[[`, \"event\"),\n  mark = sapply(raw_json, `[[`, \"mark\"),\n  points = sapply(raw_json, `[[`, \"points\")\n)",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
     ]
@@ -330,326 +160,6 @@
     ]
   },
   {
-    "objectID": "04-transform.html#classify-events-compute-performance_age-and-convert-performance-to-a-numeric-mark",
-    "href": "04-transform.html#classify-events-compute-performance_age-and-convert-performance-to-a-numeric-mark",
-    "title": "4  Transform",
-    "section": "4.2 Classify events, compute performance_age, and convert performance to a numeric ‘mark’",
-    "text": "4.2 Classify events, compute performance_age, and convert performance to a numeric ‘mark’\n\n\nShow code\n# Classify events\nevent_type = case_match(\n      event,\n      c(\"100 Metres\", \"200 Metres\", \"400 Metres\", \"400 Metres Hurdles\", \"100 Metres Hurdles\", \"110 Metres Hurdles\") ~ \"Sprints\",\n      c(\"800 Metres\", \"1500 Metres\", \"3000 Metres Steeplechase\") ~ \"Middle Distance\",\n      c(\"5000 Metres\", \"10,000 Metres\") ~ \"Long Distance\",\n      c(\"Heptathlon\", \"Decathlon\") ~ \"Combined Events\",\n      c(\"High Jump\", \"Long Jump\", \"Triple Jump\", \"Pole Vault\") ~ \"Jumps\",\n      c(\"Shot Put\", \"Discus Throw\", \"Hammer Throw\", \"Javelin Throw\", \"Javelin Throw (old)\") ~ \"Throws\",\n      c(\"10 Kilometres Race Walk\", \"20 Kilometres Race Walk\", \"50 Kilometres Race Walk\", \"Marathon\") ~ \"Road Races\",\n      .default = \"Other\"\n    ),\n         event_category = if_else(str_detect(event, \"Metres|Walk|Wheelchair\") |event %in% c(\"Marathon\"), \"Track\", \"Field\")\n\n\nThe following code computes performance_age, and convert performance to a numeric ‘mark’\n\n\nShow code\nmutate(age_years = year(date) - year(birth_date), \n         age_days = as.double(\n           difftime(\n             date, birth_date,units = \"days\"\n           )\n         ),\n         performance = str_remove_all(performance, \"h\") # I will count hand timed results as legitimate\n         ) %&gt;%\n    mutate(mark = if_else(\n      event_category == \"Track\",\n      as.numeric(\n        difftime(\n          lubridate::parse_date_time2(performance, orders = c(\"%H:%M:%S\", \"%M:%S:00\", \"%M:%OS\", \"%OS\"), exact = T),\n          lubridate::parse_date_time2(\"0\", orders =\"S\"),\n          units = \"secs\"\n        )\n      ), parse_number(performance)))",
-    "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
-    ]
-  },
-  {
-    "objectID": "04-transform.html#normalize-event-labels-to-iaaf-codes-for-scoring-join",
-    "href": "04-transform.html#normalize-event-labels-to-iaaf-codes-for-scoring-join",
-    "title": "4  Transform",
-    "section": "4.3 Normalize event labels to IAAF codes (for scoring join)",
-    "text": "4.3 Normalize event labels to IAAF codes (for scoring join)\nHarmonize event names to the short codes used in the IAAF scoring reference and standardize gender to lowercase for matching.\n\n\nShow code\nathlete_bests_clean &lt;- athlete_bests |&gt; \n  mutate(\n    gender = tolower(gender),\n    event = case_when(\n      event == \"100 Metres\" ~ \"100m\",\n      event == \"200 Metres\" ~ \"200m\",\n      event == \"400 Metres\" ~ \"400m\",\n      event == \"800 Metres\" ~ \"800m\",\n      event == \"1500 Metres\" ~ \"1500m\",\n      event == \"5000 Metres\" ~ \"5000m\",\n      event == \"10,000 Metres\" ~ \"10000m\",\n      event == \"Marathon\" ~ \"Road Marathon\",\n      event == \"Triple Jump\" ~ \"TJ\",\n      event == \"Long Jump\" ~ \"LJ\",\n      event == \"High Jump\" ~ \"HJ\",\n      event == \"Shot Put\" ~ \"SP\",\n      event == \"Discus Throw\" ~ \"DT\",\n      event == \"Hammer Throw\" ~ \"HT\",\n      event == \"Javelin Throw\" ~ \"JT\",\n      event == \"Decathlon\" ~ \"Dec.\",\n      event == \"Heptathlon\" ~ \"Hept.\",\n      event == \"Pole Vault\" ~ \"PV\",\n      event == \"10 Kilometres Race Walk\" ~ \"10,000mW\",\n      event == \"50 Kilometres Race Walk\" ~ \"50,000mW\",\n      event == \"20 Kilometres Race Walk\" ~ \"20,000mW\",\n      event == \"100 Metres Hurdles\" ~ \"100mH\",\n      event == \"110 Metres Hurdles\" ~ \"110mH\",\n      event == \"400 Metres Hurdles\" ~ \"400mH\",\n      event == \"3000 Metres Steeplechase\" ~ \"3000m SC\",\n      TRUE ~ event\n    )\n  )",
-    "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
-    ]
-  },
-  {
-    "objectID": "04-transform.html#map-athlete-performance-marks-to-iaaf-points-rollingclosest-join-and-join-athlete_bests_clean-with-iaaf-table-to-get-full-dataset",
-    "href": "04-transform.html#map-athlete-performance-marks-to-iaaf-points-rollingclosest-join-and-join-athlete_bests_clean-with-iaaf-table-to-get-full-dataset",
-    "title": "4  Transform",
-    "section": "4.4 Map athlete performance marks to IAAF points (rolling/closest join) and join athlete_bests_clean with iaaf-table to get full dataset",
-    "text": "4.4 Map athlete performance marks to IAAF points (rolling/closest join) and join athlete_bests_clean with iaaf-table to get full dataset\nFor each record, find the IAAF row with the closest mark ≤ the observed mark within the same gender and event; set missing scores to 0.\n\n\nShow code\n# join iaaf_table with athlete_bests_clean and get full dataset with result points\nround_decimals &lt;- function(x, digits = 2) {\n  round(x * 10^digits) / 10^digits}\n\n\nathlete_bests_points &lt;- \n  athlete_bests_clean |&gt;\n    left_join(iaaf_table, join_by(gender, event, closest(mark &lt;= mark))) |&gt; \n  replace_na(list(points = 0))",
-    "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
-    ]
-  },
-  {
-    "objectID": "04-transform.html#world-class-standardwac---points-and-mean-reference-by-gender",
-    "href": "04-transform.html#world-class-standardwac---points-and-mean-reference-by-gender",
-    "title": "4  Transform",
-    "section": "4.5 World class standard(WAC) -> points and mean reference by gender",
-    "text": "4.5 World class standard(WAC) -&gt; points and mean reference by gender\nWe harmonize WAC event labels, convert times to seconds, roll-join to IAAF points, set combined-events anchors, and compute a simple men/women mean reference useful as horizontal guide lines in plots.\n\n\nShow code\nwac_points &lt;- wac_standards_tidy %&gt;%\n  left_join(\n    iaaf_table_tidy,\n    dplyr::join_by(gender, Event == event, closest(mark &lt;= mark))\n  ) %&gt;%\n  tidyr::replace_na(list(points = 0)) %&gt;%\n  mutate(points = dplyr::case_when(\n    Event == \"Hept.\" & gender == \"women\" ~ 1174,\n    Event == \"Dec.\"  & gender == \"men\"   ~ 1212,\n    TRUE ~ points\n  ))\n\nmean_points_by_gender &lt;- wac_points %&gt;%\n  group_by(gender) %&gt;%\n  summarise(mean_points = mean(points, na.rm = TRUE), .groups = \"drop\") %&gt;%\n  tibble::deframe()",
-    "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
-    ]
-  },
-  {
-    "objectID": "04-transform.html#model-preparation",
-    "href": "04-transform.html#model-preparation",
-    "title": "4  Transform",
-    "section": "4.6 Model-preparation",
-    "text": "4.6 Model-preparation\nThis step prepares the FPCA input at the athlete–event level. It filters to records with non-missing IAAF points and age, builds a unique identifier by concatenating athlete_link and event, and selects the three fields required by face.sparse: athlete_id, performance_age (age in years at performance), and iaaf_score (IAAF points). It also creates helper vectors (id and uid) for indexing subjects during modeling.\n\n\nShow code\n# predict on full dataset(population)\n# Filter out missing points athletes and rename for clarity\nfd_data &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years)) |&gt; \n  mutate(id = paste(athlete_link, event)) |&gt; \n  select(athlete_id = id,\n         performance_age = age_years,\n         iaaf_score = points)\n\nid &lt;- fd_data$athlete_id\nuid &lt;- unique(id)",
-    "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
-    ]
-  },
-  {
-    "objectID": "05-visualize.html#sample-athletes-aging-curvespredicted-ci-population-mean-wac-refs",
-    "href": "05-visualize.html#sample-athletes-aging-curvespredicted-ci-population-mean-wac-refs",
-    "title": "5  Visualize",
-    "section": "5.2 Sample athlete’s aging curves(predicted + CI + population mean + WAC refs)",
-    "text": "5.2 Sample athlete’s aging curves(predicted + CI + population mean + WAC refs)\n\n\nShow code\nSample &lt;- which(uid == \"https://worldathletics.org/athletes/norway/svein-inge-valvik-014215542 DT\")\n\nfit_face &lt;- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))\n#create a data double\ndata.h &lt;- face_input\ntnew &lt;- fit_face$argvals.new\n#prepare data for prediction\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nfor(i in Sample){\n  sel &lt;- which(id == uid[i])\n  #dati &lt;- fd_data_top10[sel,] \n  \n\ndati &lt;- fd_data_top10[sel, ] |&gt; \n  dplyr::transmute(y = iaaf_score,\n         argvals = performance_age,\n         subj = athlete_id)\n\n# Create the prediction dataframe\ndati_pred &lt;- data.frame(\n  y       = rep(NA, nrow(dati) + k),\n  argvals = c(rep(NA, nrow(dati)), seq),\n  subj    = rep(dati$subj[1], nrow(dati) + k)\n)\n\ndati_pred[1:nrow(dati), ] &lt;- dati\n\nyhat &lt;- predict(fit_face, dati_pred)\n\n\nOrd  &lt;- (nrow(dati) + 1):(nrow(dati) + k)\n\n#Plot\nplot(dati$argvals, dati$y,\n     xlab = \"Performance Age (years)\",\n     ylab = \"IAAF score\",\n     pch = 19, col = \"blue\",\n     xlim = range(seq),\n     ylim = range(c(dati$y, yhat$y.pred[Ord]), na.rm = TRUE),\n     bty = \"n\")\n\nlines(seq, yhat$y.pred[Ord], col = \"red\",  lwd = 2)\nlines(seq, yhat$y.pred[Ord] + 1.96 * yhat$se.pred[Ord], col = \"red\", lty = 2)\nlines(seq, yhat$y.pred[Ord] - 1.96 * yhat$se.pred[Ord], col = \"red\", lty = 2)\nlines(seq, fit_face$mu.new, col = \"black\", lwd = 2)\n\n}\n\n#extract mean, covariance, variance, correlation function, and eigenfunctions\n#Smooth marginal mean\nm &lt;- fit_face$mu.new\n#Smooth covariance\nCov &lt;- fit_face$Chat.new\n#Pointwise covariance\nCov_diag &lt;- diag(Cov)\n#Smooth correlation \nCor &lt;- fit_face$Cor.new\n#Pointwise prediction intervals\nm_p_2sd &lt;- m + 2 * sqrt(Cov_diag)\nm_m_2sd &lt;- m - 2 * sqrt(Cov_diag)\n#Smooth eigenfunctions \neigenf &lt;- fit_face$eigenfunctions\n#Smooth eigenvalues \neigenv &lt;- fit_face$eigenvalues\n\n#first 3 eigenfunctions\npar(mar = c(4.5, 4.5, 0, 2))\ncol_me &lt;- c(\"cornflowerblue\", \"aquamarine3\", \"coral1\")\n\nplot(1, type = \"n\", xlab = \"Performance Age (years)\", ylab = \"\",\n     xlim = range(tnew), ylim = range(eigenf), bty = \"n\")\n\nfor(i in 1:3){\n  lines(tnew, eigenf[,i], col = col_me[i], lwd = 3)\n}\n\nlegend(\"topright\", c(\"PC1\", \"PC2\", \"PC3\"), \n       col = col_me, lty = 1, bty = \"n\", lwd = 3)",
-    "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
-    ]
-  },
-  {
-    "objectID": "05-visualize.html#face-components-eigenfunctionspc1-pc3-and-line-legend",
-    "href": "05-visualize.html#face-components-eigenfunctionspc1-pc3-and-line-legend",
-    "title": "5  Visualize",
-    "section": "5.3 FACE components: eigenfunctions(PC1-PC3) and line legend",
-    "text": "5.3 FACE components: eigenfunctions(PC1-PC3) and line legend\n\n\nShow code\n#extract mean, covariance, variance, correlation function, and eigenfunctions\n#Smooth marginal mean\nm &lt;- fit_face$mu.new\n#Smooth covariance\nCov &lt;- fit_face$Chat.new\n#Pointwise covariance\nCov_diag &lt;- diag(Cov)\n#Smooth correlation \nCor &lt;- fit_face$Cor.new\n#Pointwise prediction intervals\nm_p_2sd &lt;- m + 2 * sqrt(Cov_diag)\nm_m_2sd &lt;- m - 2 * sqrt(Cov_diag)\n#Smooth eigenfunctions \neigenf &lt;- fit_face$eigenfunctions\n#Smooth eigenvalues \neigenv &lt;- fit_face$eigenvalues\n\n#first 3 eigenfunctions\npar(mar = c(4.5, 4.5, 0, 2))\ncol_me &lt;- c(\"cornflowerblue\", \"aquamarine3\", \"coral1\")\n#plot PC's\nplot(1, type = \"n\", xlab = \"Performance Age (years)\", ylab = \"\",\n     xlim = range(tnew), ylim = range(eigenf), bty = \"n\")\n\nfor(i in 1:3){\n  lines(tnew, eigenf[,i], col = col_me[i], lwd = 3)\n}\n\nlegend(\"topright\", c(\"PC1\", \"PC2\", \"PC3\"), \n       col = col_me, lty = 1, bty = \"n\", lwd = 3)\n\npar(mfrow = c(1, 1))\nplot(1, type = \"n\", axes = FALSE, xlab = \"\", ylab = \"\")  # empty plot\nlegend(\"center\", \n       legend = c(\"Predicted Aging Curve\", \"95% CI\", \"Population Mean Aging Curve\", \n                  \"World Class Standard Mean (Men)\", \"World Class Standard Mean (Women)\"),\n       col = c(\"red\", \"red\", \"black\", \"blue\", \"red\"),\n       lty = c(1, 2, 1, 3, 3),\n       lwd = 2, bty = \"n\")",
-    "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
-    ]
-  },
-  {
-    "objectID": "05-visualize.html#cluster-population-aging-curves-based-on-iaaf-points-percent-change",
-    "href": "05-visualize.html#cluster-population-aging-curves-based-on-iaaf-points-percent-change",
-    "title": "5  Visualize",
-    "section": "5.4 Cluster population aging curves based on IAAF-points’ percent change",
-    "text": "5.4 Cluster population aging curves based on IAAF-points’ percent change\n\n\nShow code\n#cluster the whole population based on percent change\n# set up\nid &lt;- fd_data$athlete_id\nuid &lt;- unique(id)\n#set the grid where to predict\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nn &lt;- length(uid)\n# Set the predicted percent change in IAAF points matrix: one fewer column since we lose first value\nPercentChange_mat &lt;- matrix(NA, nrow = n, ncol = k - 1)\n\n# loop over each athlete, predict every curve\nfor(i in 1:n){\n  sel &lt;- which(id == uid[i])\n  dati &lt;- fd_data[sel, ] |&gt;\n    mutate(y = iaaf_score,\n              argvals = performance_age,\n              subj = athlete_id) |&gt; \n    select(y, argvals,subj)\n \n#if (nrow(dati) == 0) next\n  \ndati_pred &lt;- data.frame(y = rep(NA, nrow(dati) + k),\n                          argvals = c(rep(NA, nrow(dati)), seq),\n                          subj = rep(dati$subj[1], nrow(dati) + k)\n  )\n  \n  dati_pred[1:nrow(dati), ] &lt;- dati\n  yhat &lt;- predict(fit_face, dati_pred)\n#Extract just the predictions on the grid  \n  Ord &lt;- (nrow(dati) + 1):(nrow(dati) + k)\n  raw &lt;- yhat$y.pred[Ord]\n\n# Check if prediction is valid\nif (all(is.na(raw)) || any(raw[-1] == 0, na.rm = TRUE)) next\n\n# Compute percent change: (current - previous)/previous * 100\npc &lt;- c(NA, diff(raw) / head(raw, -1)) * 100\n\n# Save to matrix, dropping the initial NA\nPercentChange_mat[i, ] &lt;- pc[-1]\n}\n\n# conduct clustering of predicted functions from fpca sparse(k-means clustering)\nset.seed(20240805)\ncl_kmeans &lt;- kmeans(PercentChange_mat, centers = 3, nstart = 25)\ncl_ind &lt;- cl_kmeans$cluster\ncl_cen &lt;- cl_kmeans$centers\n\n# plot the predicted aging curves together with the estimated clustering as well as centers of the clusters\npar(mar = c(4, 4, 1, 1))\ncolset &lt;- c(\"#E69A8DFF\", \"#F6D55C\", \"#2A9D8F\", \"#5F4B8BFF\")\nplot(NULL, xlim = range(seq), ylim = c(-20, 20),\n     xlab = \"Performance Age (years)\", ylab = \"Percent Change in IAAF Score\", bty = \"n\")\n\nfor(i in 1:n){\n  lines(seq[-1], PercentChange_mat[i,], col = colset[cl_ind[i]])\n}\n\nfor(j in 1:3){\n  lines(seq[-1], cl_cen[j,], col = \"black\", lwd = 3)\n}\nlegend(\"topright\", legend = paste(\"Cluster\", 1:3),\n       col = colset, lty = 1, lwd = 2, bty = \"n\")",
-    "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
-    ]
-  },
-  {
-    "objectID": "05-visualize.html#cluster-percent-change-by-event-type",
-    "href": "05-visualize.html#cluster-percent-change-by-event-type",
-    "title": "5  Visualize",
-    "section": "5.5 Cluster percent-change by event type",
-    "text": "5.5 Cluster percent-change by event type\n\n\nShow code\n# CLuster by event type based on iaaf-point percent change \n# Filter and structure the dataset\nfd_data_by_event &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years)) |&gt; \n  mutate(\n    athlete_id = paste(athlete_link, event),\n    performance_age = age_years,\n    iaaf_score = points,\n    event_type = case_match(\n       event,\n      c(\"100m\", \"200m\", \"400 Metres\", \"400m\", \"400mH\", \"100mH\", \"110mH\") ~ \"Sprints\",\n      c(\"800m\", \"1500m\", \"3000m SC\") ~ \"Middle Distance\",\n      c(\"5000m\", \"10000m\") ~ \"Long Distance\",\n      c(\"Hept.\", \"Dec.\") ~ \"Combined Events\",\n      c(\"HJ\", \"LJ\", \"TJ\", \"PV\") ~ \"Jumps\",\n      c(\"SP\", \"DT\", \"HT\", \"JT\") ~ \"Throws\",\n      c(\"10,000mW\", \"20,000mW\", \"50,000mW\", \"Road Marathon\") ~ \"Road Races\")\n  ) |&gt; \n  select(athlete_id, performance_age, iaaf_score, event_type)\n#choose events\nevent_types &lt;- unique(fd_data_by_event$event_type)\ncluster_results &lt;- list()",
-    "crumbs": [
-      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#how-to-read-the-visualsfor-stakeholders",
-    "href": "07-communicate.html#how-to-read-the-visualsfor-stakeholders",
-    "title": "7  Communicate",
-    "section": "7.3 How to read the visuals(for stakeholders)",
-    "text": "7.3 How to read the visuals(for stakeholders)\n-Stakeholders: Coaches, Performance analysts, Sports scientists\n-Aging curve panels (Section 05): blue dots are observed IAAF scores vs performance age; the red line is the model’s predicted trajectory for that athlete; dashed red lines are the 95% interval; the black line is the population mean; dashed horizontal lines are WAC mean references for men/women.\n-Percent-change clusters (Section 05): Each thin line represents an athlete’s predicted percent-change curve, while thick black lines show the cluster centers, representing the typical trajectory for each group.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#clusters-interpretation-exampleupdate-labels-after-seeing-shapes",
-    "href": "07-communicate.html#clusters-interpretation-exampleupdate-labels-after-seeing-shapes",
-    "title": "7  Communicate",
-    "section": "7.3 Clusters interpretation (example—update labels after seeing shapes)",
-    "text": "7.3 Clusters interpretation (example—update labels after seeing shapes)\n\nCluster 1 — Early risers: Rapid early gains, earlier plateau.\nCluster 2 — Steady performers: Consistent year-over-year gains, smoother peak.\nCluster 3 — Late bloomers: Slower early growth, pronounced improvement later.\n\nBy event type: See different cluster patterns across different event types. Most of the event types’ clustering pattern are the same as the population(overall) clustering pattern. However, a few such as “Middle Distance, Road Marathon……” differs much from population level clustering.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#example-predict-an-athletes-aging-curve-and-see-his-cluster-screenshot-from-shiny-app-and-interpret-the-plot",
-    "href": "07-communicate.html#example-predict-an-athletes-aging-curve-and-see-his-cluster-screenshot-from-shiny-app-and-interpret-the-plot",
-    "title": "7  Communicate",
-    "section": "7.4 Example: predict an athlete’s aging curve, and see his cluster (screenshot from shiny app, and interpret the plot)",
-    "text": "7.4 Example: predict an athlete’s aging curve, and see his cluster (screenshot from shiny app, and interpret the plot)",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#what-this-means-plain-english",
-    "href": "07-communicate.html#what-this-means-plain-english",
-    "title": "7  Communicate",
-    "section": "7.5 What this means (plain English)",
-    "text": "7.5 What this means (plain English)\n-Performance evolves with age: on average, athletes follow the population mean curve, but individuals deviate in systematic ways captured by the PCs.\n-Cluster shapes are actionable: early improvers vs. late bloomers vs. steady decliners suggest different training emphasis and competition scheduling.\n-WAC context matters: the share of records at/above the WAC mean (men/women) anchors how “world-class” the panel is at different ages/events.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#caveats-guardrails",
-    "href": "07-communicate.html#caveats-guardrails",
-    "title": "7  Communicate",
-    "section": "7.5 Caveats & guardrails",
-    "text": "7.5 Caveats & guardrails\nData sparsity: Predictions depend on smoothing methods. Athletes with very limited career data will have wider uncertainty bands around their estimated curves.\nJoin granularity: Scoring uses a “closest less-than-or-equal-to” rule for matching performances to reference tables. For athletes whose results are close to table knots, small shifts can occur in assigned point values.\nCausality: Aging curves describe associations between performance and age. They do not imply causal effects of age, training, or other factors on performance changes.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#next-steps",
-    "href": "07-communicate.html#next-steps",
-    "title": "7  Communicate",
-    "section": "7.7 Next steps",
-    "text": "7.7 Next steps\nEvent-type stratification: Fit separate FACE models for each event type (for example, sprints, middle distance, throws) and compare their mean aging curves to determine whether different disciplines follow distinct performance trajectories.\nUncertainty visualization: Incorporate visualizations of individual confidence intervals within the Shiny dashboard’s comparison view so that coaches can weigh the reliability of predicted trajectories.\nTrajectory monitoring: Implement year-over-year tracking of within-athlete shifts in curve shape (for example, an early peak evolving into a stable phase) and generate alerts when an athlete moves to a different cluster.\nRobust clustering: Evaluate robust clustering methods such as trimmed k-means to improve stability in the presence of outliers, and refine the number of clusters using within-cluster sum of squares (SSE) methods as described in the reference paper.\nSelection bias adjustment: Address potential right-tail selection bias, as higher-performing athletes tend to remain in competition longer, which may skew the observed distribution of aging curves.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "06-model.html#functional-data-analysis-fda",
-    "href": "06-model.html#functional-data-analysis-fda",
-    "title": "6  Model",
-    "section": "6.2 Functional Data Analysis (FDA)",
-    "text": "6.2 Functional Data Analysis (FDA)\nFunctional Data Analysis (FDA) models an athlete’s performance over age as a smooth, continuous function called an aging curve. In practice, we only observe discrete values at certain ages, so we fit a smooth curve to these points. Formally, for athlete \\(i\\) at age \\(t_{ij}\\) we write: \\[ y_{ij} = f_i(t_{ij}) + \\epsilon_{ij}\\]\nwhere \\(y_{ij}\\) is the observed performance, \\(f_i(t)\\) is the smooth aging curve, and \\(\\epsilon_{ij}\\) is the measurement error.\nWe approximate \\(f_i(t)\\) using B-spline basis functions:\n\\[f_i(t) \\approx \\sum_{k=1}^K \\beta_{ik} B_k(t)\\]\nHere \\(B_k(t)\\) are spline basis functions and \\(\\beta_{ik}\\) are coefficients that determine the curve’s shape. B-splines are piecewise polynomials joined at knots, allowing flexibility to capture complex patterns in performance trajectories.\nTo avoid overfitting, a roughness penalty is added:\n\\[\n\\hat{\\beta}_i = \\arg\\min_{\\beta_i} \\sum_j \\left( y_{ij} - \\sum_{k=1}^K \\beta_{ik} B_k(t_{ij}) \\right)^2 + \\lambda \\int \\left( f''_i(t) \\right)^2 dt\n\\]\nThe penalty term \\(\\lambda \\int (f''_i(t))^2 dt\\) discourages excessive curvature, and \\(\\lambda\\) is selected via generalized cross-validation (GCV).\nOnce fitted, we can compute the mean aging curve:\n\\[\n\\hat{\\mu}(t) = \\frac{1}{N} \\sum_{i=1}^N f_i(t)\n\\]\nand the variance function:\n\\[\n\\widehat{\\text{Var}}(f(t)) = \\frac{1}{N-1} \\sum_{i=1}^N \\left( f_i(t) - \\hat{\\mu}(t) \\right)^2\n\\]\nRepresenting curves via their spline coefficients allows us to use multivariate tools like Functional Principal Component Analysis (FPCA) to summarize patterns of variation and generate scores for visualization, comparison, and clustering.",
-    "crumbs": [
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
-    ]
-  },
-  {
-    "objectID": "06-model.html#sparse-and-irregular-fpca",
-    "href": "06-model.html#sparse-and-irregular-fpca",
-    "title": "6  Model",
-    "section": "6.4 Sparse and Irregular FPCA",
-    "text": "6.4 Sparse and Irregular FPCA\nSports performance data are often sparse (few observations per athlete) and irregular (different measurement ages across athletes). Traditional FDA and FPCA assume regular, dense observations, making them unsuitable for such data. In this project, many athletes have limited recorded performance points, so I use Sparse FPCA, implemented via the face.sparse() method in R. This approach follows the example from Functional Data Analysis with R (Crainiceanu et al., 2021), where sparse and irregular data are smoothed, principal components are extracted, and clustering is performed on the reconstructed curves.\nSparse FPCA can\n\nIdentify eigenfunctions that explain most of the variation in the data\nPredict full aging curves even when data are sparse and irregular\nProvide principal component scores for downstream analysis, such as clustering\n\nIn my project, Sparse FPCA estimates the mean function and covariance structure from incomplete data, recovers the principal component curves, and predicts scores for each athlete. This enables full-curve reconstruction and clustering of aging patterns even when the raw observations are too limited for traditional FDA or FPCA.\nHere is an example of applying sparse FPCA to an athlete named Svein-inge-valvik. We first filter the dataset to remove missing values and format it so that each row contains the athlete’s ID, performance age, and IAAF score. The data is then structured into the input format required by face.sparse() which contains the observed scores y, the corresponding performance ages argvals, and a subject identifier subj.\nThe face.sparse() function is applied to estimate the mean aging curve, covariance function, correlation function, eigenfunctions, and eigenvalues from the sparse and irregular data. This step smooths the observed data, extracts the principal component curves, and allows us to reconstruct the athlete’s entire aging trajectory even when only a few observations are available.\nFor Svein-inge-valvik we use the fitted model to generate predictions of the aging curve over a grid of ages from 11 to 58 years along with 95 percent prediction intervals. The predicted curve is plotted in red with the original observed points in blue and the overall mean curve in black.\nWe also extract the first three eigenfunctions which represent the main modes of variation in the population’s aging curves. These eigenfunctions are key to understanding how athletes’ trajectories differ in shape such as an early peak or gradual improvement and are later used for clustering analysis.\nAdditionally we compute the world class standards for both men and women in the same event. This allows us to determine the performance age at which Svein-inge-valvik reaches world class performance providing a meaningful benchmark in the context of elite athletics.\nCodes are here:\n\n\nShow code\n# Filter out missing points athletes and rename for clarity\nfd_data &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years)) |&gt; \n  mutate(id = paste(athlete_link, event)) |&gt; \n  select(athlete_id = id,\n         performance_age = age_years,\n         iaaf_score = points)\nfd_data_shiny &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years))\n\n#use face to conduct sparse FDA\ntop_10_ids &lt;- fd_data |&gt;\n  count(athlete_id, sort = TRUE) |&gt;\nslice_head(n = 10) |&gt;\n pull(athlete_id)\n\nfd_data_top10 &lt;- fd_data |&gt;\n  filter(athlete_id %in% top_10_ids)\n\nid &lt;- fd_data_top10$athlete_id\nuid &lt;- unique(id)\nface_input &lt;- data.frame(\n  y = fd_data_top10$iaaf_score,\n  argvals = fd_data_top10$performance_age,\n  subj = id)\n\nSample &lt;- which(uid == \"https://worldathletics.org/athletes/norway/svein-inge-valvik-014215542 DT\")\n\nfit_face &lt;- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))\n#create a data double\ndata.h &lt;- face_input\ntnew &lt;- fit_face$argvals.new\n#prepare data for prediction\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nfor(i in Sample){\n  sel &lt;- which(id == uid[i])\n  #dati &lt;- fd_data_top10[sel,] \n  \n\ndati &lt;- fd_data_top10[sel, ] |&gt; \n  dplyr::transmute(y = iaaf_score,\n         argvals = performance_age,\n         subj = athlete_id)\n\n# Create the prediction dataframe\ndati_pred &lt;- data.frame(\n  y       = rep(NA, nrow(dati) + k),\n  argvals = c(rep(NA, nrow(dati)), seq),\n  subj    = rep(dati$subj[1], nrow(dati) + k)\n)\n\ndati_pred[1:nrow(dati), ] &lt;- dati\n\nyhat &lt;- predict(fit_face, dati_pred)\n\n\nOrd  &lt;- (nrow(dati) + 1):(nrow(dati) + k)\n\n#Plot\nplot(dati$argvals, dati$y,\n     xlab = \"Performance Age (years)\",\n     ylab = \"IAAF score\",\n     pch = 19, col = \"blue\",\n     xlim = range(seq),\n     ylim = range(c(dati$y, yhat$y.pred[Ord]), na.rm = TRUE),\n     bty = \"n\")\n\nlines(seq, yhat$y.pred[Ord], col = \"red\",  lwd = 2)\nlines(seq, yhat$y.pred[Ord] + 1.96 * yhat$se.pred[Ord], col = \"red\", lty = 2)\nlines(seq, yhat$y.pred[Ord] - 1.96 * yhat$se.pred[Ord], col = \"red\", lty = 2)\nlines(seq, fit_face$mu.new, col = \"black\", lwd = 2)\n\n}\n\n#extract mean, covariance, variance, correlation function, and eigenfunctions\n#Smooth marginal mean\nm &lt;- fit_face$mu.new\n#Smooth covariance\nCov &lt;- fit_face$Chat.new\n#Pointwise covariance\nCov_diag &lt;- diag(Cov)\n#Smooth correlation \nCor &lt;- fit_face$Cor.new\n#Pointwise prediction intervals\nm_p_2sd &lt;- m + 2 * sqrt(Cov_diag)\nm_m_2sd &lt;- m - 2 * sqrt(Cov_diag)\n#Smooth eigenfunctions \neigenf &lt;- fit_face$eigenfunctions\n#Smooth eigenvalues \neigenv &lt;- fit_face$eigenvalues\n\n#first 3 eigenfunctions\npar(mar = c(4.5, 4.5, 0, 2))\ncol_me &lt;- c(\"cornflowerblue\", \"aquamarine3\", \"coral1\")\n\nplot(1, type = \"n\", xlab = \"Performance Age (years)\", ylab = \"\",\n     xlim = range(tnew), ylim = range(eigenf), bty = \"n\")\n\nfor(i in 1:3){\n  lines(tnew, eigenf[,i], col = col_me[i], lwd = 3)\n}\n\nlegend(\"topright\", c(\"PC1\", \"PC2\", \"PC3\"), \n       col = col_me, lty = 1, bty = \"n\", lwd = 3)\n\n\nplot of predicted aging curves:",
-    "crumbs": [
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
-    ]
-  },
-  {
-    "objectID": "06-model.html#smoothing-fpca",
-    "href": "06-model.html#smoothing-fpca",
-    "title": "6  Model",
-    "section": "6.6 Smoothing + FPCA",
-    "text": "6.6 Smoothing + FPCA",
-    "crumbs": [
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
-    ]
-  },
-  {
-    "objectID": "06-model.html#clustering-of-fda",
-    "href": "06-model.html#clustering-of-fda",
-    "title": "6  Model",
-    "section": "6.5 Clustering of FDA",
-    "text": "6.5 Clustering of FDA\n“Functional Data Analysis in R” testbook, “Clustering aging curves….”paper.\n-introduce FDA first, fpca, sparse fpca, clustering fpca -introduce our dataset is sparse and irregular, so we have to use sparse FPCA. -eigenfuctions explain most of variation, predict aging curves even when data are sparse and irregular. - use face.sparse from refund package in R to predict, example “from FDA in R” - Then clustering FPCA, cluster the whole population based on the percent change of the aging curves(shape of the aging curve), choose three clusters - so then, we can predict new coming athlete’s aging curves using face.sparse function, and also map he/she to an existing cluster, to see his/her progression trajectory, and we can also see when will he reaches the world class standard.\nWe use Sparse Functional Principal Component Analysis (FPCA) with sparse data using the face.sparse() function. Then:\n\nPredict full aging curves\nCalculate percent change between predicted values\nCluster curves using kmeans() on percent change\nRepeat clustering by event type\n\nfit_face &lt;- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))\nPredict and Cluster:\ncl_kmeans &lt;- kmeans(PercentChange_mat, centers = 3, nstart = 25)\nWe use Sparse FPCA to obtain smooth predicted curves on a common grid, then k-means on FPCA scores.",
-    "crumbs": [
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
-    ]
-  },
-  {
-    "objectID": "06-model.html#functional-principal-component-analysisfpca",
-    "href": "06-model.html#functional-principal-component-analysisfpca",
-    "title": "6  Model",
-    "section": "6.3 Functional Principal Component Analysis(FPCA)",
-    "text": "6.3 Functional Principal Component Analysis(FPCA)\nFunctional Principal Component Analysis (FPCA) summarizes variation across aging curves by decomposing each curve into a mean function plus a weighted sum of functional principal components (FPCs). \\[f_i​(t)=\\mu(t)+\\sum^K_{k = 1}\\xi_{ik}\\psi_k(t)\\]\nHere:\n- \\(\\mu(t)\\) is the mean curve\n- \\(\\psi_k(t)\\) are orthogonal basis functions (FPCs)\n- \\(\\xi_{ik}\\) are the FPC scores for athlete (i) on component (k)\nThe first component \\(\\psi_k(t)\\) explains the largest proportion of variation in the data, the second explains the most variation orthogonal to the first, and so on. The scores \\(\\xi_{ik}\\) indicate how much each athlete’s curve deviates from the mean along each component.\nBy retaining only the leading components that explain most of the variation, FPCA provides a compact low-dimensional representation of each curve. This allows efficient visualization, statistical testing, and clustering while preserving the main features of the original functional data.",
-    "crumbs": [
-      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#what-this-means",
-    "href": "07-communicate.html#what-this-means",
-    "title": "7  Communicate",
-    "section": "7.5 What this means",
-    "text": "7.5 What this means\n-Performance evolves with age: on average, athletes follow the population mean curve, but individuals deviate in systematic ways captured by the PCs.\n-Cluster shapes are actionable: early improvers vs. late bloomers vs. steady decliners suggest different training emphasis and competition scheduling.\n-WAC context matters: the share of records at/above the WAC mean (men/women) anchors how “world-class” the panel is at different ages/events.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#example-predict-an-athletes-aging-curve-and-see-his-cluster-match-which-specific-cluster-screenshot-from-shiny-app-and-interpret-the-plot",
-    "href": "07-communicate.html#example-predict-an-athletes-aging-curve-and-see-his-cluster-match-which-specific-cluster-screenshot-from-shiny-app-and-interpret-the-plot",
-    "title": "7  Communicate",
-    "section": "7.4 Example: predict an athlete’s aging curve, and see his cluster match which specific cluster (screenshot from shiny app, and interpret the plot)",
-    "text": "7.4 Example: predict an athlete’s aging curve, and see his cluster match which specific cluster (screenshot from shiny app, and interpret the plot)\n(shiny app plot for a athlete, and related cluster plot by event-type, and interpret the plot)\n-Performance evolves with age: on average, athletes follow the population mean curve, but individuals deviate in systematic ways captured by the PCs.\n-Cluster shapes are actionable: early improvers vs. late bloomers vs. steady decliners suggest different training emphasis and competition scheduling.\n-WAC context matters: the share of records at/above the WAC mean (men/women) anchors how “world-class” the panel is at different ages/events.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#model-limitations-and-data-considerations",
-    "href": "07-communicate.html#model-limitations-and-data-considerations",
-    "title": "7  Communicate",
-    "section": "7.5 Model Limitations and Data Considerations",
-    "text": "7.5 Model Limitations and Data Considerations\nData sparsity: Predictions depend on smoothing methods. Athletes with very limited career data will have wider uncertainty bands around their estimated curves.\nJoin granularity: Scoring uses a “closest less-than-or-equal-to” rule for matching performances to reference tables. For athletes whose results are close to table knots, small shifts can occur in assigned point values.\nCausality: Aging curves describe associations between performance and age. They do not imply causal effects of age, training, or other factors on performance changes.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#clusters-interpretation-example",
-    "href": "07-communicate.html#clusters-interpretation-example",
-    "title": "7  Communicate",
-    "section": "7.4 Clusters interpretation (example)",
-    "text": "7.4 Clusters interpretation (example)\n\nCluster 1 – Early risers: Rapid performance gains in early years, reaching a plateau sooner\nCluster 2 – Steady performers: Consistent, incremental improvements with a smooth peak\nCluster 3 – Late bloomers: Slower early gains followed by marked improvement later in the career\n\nWhen clustering is performed by event type, most disciplines display patterns similar to the overall population clusters. However, a few disciplines, such as Middle Distance and Road Marathon, show noticeably different clustering patterns.\n(Plot of a sample cluster)",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#application-example",
-    "href": "07-communicate.html#application-example",
-    "title": "7  Communicate",
-    "section": "7.4 Application Example:",
-    "text": "7.4 Application Example:\nA new athlete’s aging curve can be predicted using the face.sparse method and matched to one of the existing clusters. This allows stakeholders to immediately identify the athlete’s most likely performance trajectory and monitor changes over time.\n(screenshot from shiny app, and interpret the plot)\n(shiny app plot for a athlete, and related cluster plot by event-type, and interpret the plot)",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#key-insights-for-stakeholders",
-    "href": "07-communicate.html#key-insights-for-stakeholders",
-    "title": "7  Communicate",
-    "section": "7.5 Key insights for Stakeholders",
-    "text": "7.5 Key insights for Stakeholders\nPerformance evolves with age: Although the population mean curve shows the general trend, each athlete’s performance path is unique. Principal components highlight these differences, revealing whether an athlete peaks early, improves steadily, or peaks later in their career.\nCluster shapes are actionable: Knowing whether an athlete is an early improver, steady performer, or late bloomer can guide training focus and competition scheduling.\nWorld Athlete Championships (WAC) context is informative: Comparing an athlete’s performance to world-class benchmarks (WAC mean) helps put their achievements into perspective across different ages and events.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#limitations-and-considerations",
-    "href": "07-communicate.html#limitations-and-considerations",
-    "title": "7  Communicate",
-    "section": "7.6 Limitations and Considerations",
-    "text": "7.6 Limitations and Considerations\nData sparsity: Predictions depend on smoothing methods. Athletes with very limited career data will have wider uncertainty bands around their estimated curves.\nJoin granularity: Scoring uses a “closest less-than-or-equal-to” rule for matching performances to reference tables. For athletes whose results are close to table knots, small shifts can occur in assigned point values.\nCausality: Aging curves describe associations between performance and age. They do not imply causal effects of age, training, or other factors on performance changes.",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#delivery-format",
-    "href": "07-communicate.html#delivery-format",
-    "title": "7  Communicate",
-    "section": "",
-    "text": "Dynamic aging curve exploration for individual athletes and population-level trends\nTrelliscope panel plots for side-by-side comparison across multiple athletes and events",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "07-communicate.html#clusters-interpretation",
-    "href": "07-communicate.html#clusters-interpretation",
-    "title": "7  Communicate",
-    "section": "7.3 Clusters interpretation",
-    "text": "7.3 Clusters interpretation\nThree primary aging curve patterns are identified through clustering:\n\nEarly risers: Rapid gains early in a career, reaching a plateau sooner\nSteady performers: Consistent year-over-year improvements, leading to a smooth peak\nLate bloomers: Gradual early progress followed by substantial improvement later in the career\n\nWhen clustering is performed by event type, most disciplines show patterns similar to the overall population clusters. However, certain events, such as Middle Distance and Road Marathon(??? double check), display noticeably different cluster structures.\n(Plot of a sample cluster)",
-    "crumbs": [
-      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#flatten-the-iaaf-reference-table-iaaf-2005.json",
-    "href": "03-tidy.html#flatten-the-iaaf-reference-table-iaaf-2005.json",
-    "title": "3  Tidy",
-    "section": "3.3 Flatten the IAAF Reference Table (iaaf-2005.json)",
-    "text": "3.3 Flatten the IAAF Reference Table (iaaf-2005.json)\n\nReading the JSON file containing IAAF scoring data.\nFlattening the nested structure into a tidy table with columns: gender, event, mark, and points.\nThis creates the reference table iaaf_table.\n\n\n\nShow code\nraw_json &lt;- read_json(\"../data/track and field data/iaaf-2025.json\", simplifyVector = FALSE)\n\n# Convert list of lists to a flat tibble\niaaf_table &lt;- tibble::tibble(\n  gender = sapply(raw_json, `[[`, \"gender\"),\n  event = sapply(raw_json, `[[`, \"event\"),\n  mark = sapply(raw_json, `[[`, \"mark\"),\n  points = sapply(raw_json, `[[`, \"points\")\n)",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#summarize",
-    "href": "03-tidy.html#summarize",
-    "title": "3  Tidy",
-    "section": "3.5 Summarize",
-    "text": "3.5 Summarize\nThis unified tidy dataset is the foundation for all subsequent modeling steps. By consolidating performances, event metadata, and standardized scoring into a consistent structure, it enables accurate estimation of aging curves using Functional Principal Component Analysis (FPCA) and facilitates clustering of performance trajectories. The clean structure also ensures that the results are reproducible and that the predictions are directly interpretable across athletes, events, and time.",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
-    "objectID": "03-tidy.html#clean-olympics_data.csv",
-    "href": "03-tidy.html#clean-olympics_data.csv",
-    "title": "3  Tidy",
-    "section": "",
-    "text": "Read the raw CSV of Olympic track & field results.\nclean_names() to lowercase and snake_case all column names.\nSplit date spans (e.g., \"01 Aug 2012 – 12 Aug 2012\") into start and end dates.\nSplit event strings into gender (\"Men\"/\"Women\") and event name, keeping remaining tokens intact.\nRemove wheelchair events.\nCorrect one known birthdate anomaly (Aminata CAMARA).\nNormalize gender labels to \"Men\"/\"Women\".\nConvert birth_date and end to Date objects (%Y-%m-%d).\nCalculate age at Games end date.\nRecode games as an ordered factor with readable labels (e.g., \"Tokyo '20\").\nClassify each event into event_type categories (Sprints, Middle Distance, Throws, etc.).\nAssign event_category as \"Track\" or \"Field\".\nNormalize legacy event labels (e.g., \"Javelin Throw (old)\" → \"Javelin Throw\").\nExtract games_year from the Games end date.\nRename nat to nationality.",
-    "crumbs": [
-      "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
-    ]
-  },
-  {
     "objectID": "03-tidy.html#summary-and-importance",
     "href": "03-tidy.html#summary-and-importance",
     "title": "3  Tidy",
@@ -657,6 +167,26 @@
     "text": "3.5 Summary and Importance\nThis unified tidy dataset forms the foundation for all subsequent modeling. By integrating performance records, event metadata, and standardized scoring into a consistent structure, it supports accurate estimation of aging curves through Functional Principal Component Analysis (FPCA) and enables effective clustering of performance trajectories. The standardized format also ensures reproducibility and makes predictions directly interpretable across athletes, events, and time periods.",
     "crumbs": [
       "<span class='chapter-number'>3</span>  <span class='chapter-title'>Tidy</span>"
+    ]
+  },
+  {
+    "objectID": "04-transform.html",
+    "href": "04-transform.html",
+    "title": "4  Transform",
+    "section": "",
+    "text": "4.1 Link career progression to Olympic metadata\nFirst we join the career progression dataset with Olympic athlete metadata (only keeping records with a known birth date), ensures unique athlete-event combinations, and keeps key identifying variables.\nIt then calculates:\nIt also removes the “h” suffix from performance to standardize hand-timed results.\nShow code\nathlete_bests &lt;-\n  Career_progression %&gt;%  inner_join(\n    Olympics_data %&gt;%  filter(!is.na(birth_date)) %&gt;%\n      distinct(birth_date, athlete_links, event, event_type, .keep_all = T) %&gt;%\n      select(name, birth_date, athlete_links, event, nationality, event_type, \n             event_category, gender, games_year),\n    by = c(\"athlete_link\" = \"athlete_links\", \"event\")\n  ) %&gt;%  \n  mutate(age_years = year(date) - year(birth_date), \n         age_days = as.double(\n           difftime(\n             date, birth_date,units = \"days\"\n           )\n         ),\n         performance = str_remove_all(performance, \"h\")",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
+    ]
+  },
+  {
+    "objectID": "04-transform.html#link-career-progression-to-olympic-metadata",
+    "href": "04-transform.html#link-career-progression-to-olympic-metadata",
+    "title": "4  Transform",
+    "section": "",
+    "text": "age_years: athlete’s age in years at the time of performance\nage_days: exact age in days",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
     ]
   },
   {
@@ -700,6 +230,16 @@
     ]
   },
   {
+    "objectID": "04-transform.html#model-preparation",
+    "href": "04-transform.html#model-preparation",
+    "title": "4  Transform",
+    "section": "4.6 Model-preparation",
+    "text": "4.6 Model-preparation\nThis step prepares the FPCA input at the athlete–event level. It filters to records with non-missing IAAF points and age, builds a unique identifier by concatenating athlete_link and event, and selects the three fields required by face.sparse: athlete_id, performance_age (age in years at performance), and iaaf_score (IAAF points). It also creates helper vectors (id and uid) for indexing subjects during modeling.\n\n\nShow code\n# predict on full dataset(population)\n# Filter out missing points athletes and rename for clarity\nfd_data &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years)) |&gt; \n  mutate(id = paste(athlete_link, event)) |&gt; \n  select(athlete_id = id,\n         performance_age = age_years,\n         iaaf_score = points)\n\nid &lt;- fd_data$athlete_id\nuid &lt;- unique(id)",
+    "crumbs": [
+      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
+    ]
+  },
+  {
     "objectID": "04-transform.html#key-outputs-for-modeling-and-visualization",
     "href": "04-transform.html#key-outputs-for-modeling-and-visualization",
     "title": "4  Transform",
@@ -710,13 +250,193 @@
     ]
   },
   {
-    "objectID": "04-transform.html#link-career-progression-to-olympic-metadata",
-    "href": "04-transform.html#link-career-progression-to-olympic-metadata",
-    "title": "4  Transform",
+    "objectID": "05-visualize.html",
+    "href": "05-visualize.html",
+    "title": "5  Visualize",
     "section": "",
-    "text": "age_years: athlete’s age in years at the time of performance\nage_days: exact age in days",
+    "text": "5.1 Prepare data and fit FACE\nShow code\n# predict on full dataset(population)\n# Filter out missing points athletes and rename for clarity\nfd_data &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years)) |&gt; \n  mutate(id = paste(athlete_link, event)) |&gt; \n  select(athlete_id = id,\n         performance_age = age_years,\n         iaaf_score = points)\n\nid &lt;- fd_data$athlete_id\nuid &lt;- unique(id)\nface_input &lt;- data.frame(\n  y = fd_data$iaaf_score,\n  argvals = fd_data$performance_age,\n  subj = id)\n#Fit sparse FPCA\nfit_face &lt;- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))\n#create a data double\ndata.h &lt;- face_input\ntnew &lt;- fit_face$argvals.new\n#prepare data for prediction\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nSample &lt;- c(5, 8, 12, 20)  # Customize based on your data\n\n\nfor(i in 1:4){\n  print(uid[Sample[i]])\n  sel &lt;- which(id == uid[Sample[i]])\n  dati &lt;- fd_data[sel, ] |&gt; \n  mutate(y = iaaf_score,\n       argvals = performance_age,\n        subj = athlete_id) |&gt; \n  select(y,argvals, subj)\n\nif (nrow(dati) == 0) {\n  message(\"Skipping subject \", uid[Sample[i]], \" — no data.\")\n  next}\n\n# Create the prediction dataframe\ndati_pred &lt;- data.frame(\n  y       = rep(NA, nrow(dati) + k),\n  argvals = c(rep(NA, nrow(dati)), seq),\n  subj    = rep(dati$subj[1], nrow(dati) + k)\n)\n\n\ndati_pred[1:nrow(dati), ] &lt;- dati\n\nyhat &lt;- predict(fit_face, dati_pred)\n\n\nOrd  &lt;- (nrow(dati) + 1):(nrow(dati) + k)",
     "crumbs": [
-      "<span class='chapter-number'>4</span>  <span class='chapter-title'>Transform</span>"
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
+    ]
+  },
+  {
+    "objectID": "05-visualize.html#sample-athletes-aging-curvespredicted-ci-population-mean-wac-refs",
+    "href": "05-visualize.html#sample-athletes-aging-curvespredicted-ci-population-mean-wac-refs",
+    "title": "5  Visualize",
+    "section": "5.2 Sample athlete’s aging curves(predicted + CI + population mean + WAC refs)",
+    "text": "5.2 Sample athlete’s aging curves(predicted + CI + population mean + WAC refs)\n\n\nShow code\nSample &lt;- which(uid == \"https://worldathletics.org/athletes/norway/svein-inge-valvik-014215542 DT\")\n\nfit_face &lt;- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))\n#create a data double\ndata.h &lt;- face_input\ntnew &lt;- fit_face$argvals.new\n#prepare data for prediction\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nfor(i in Sample){\n  sel &lt;- which(id == uid[i])\n  #dati &lt;- fd_data_top10[sel,] \n  \n\ndati &lt;- fd_data_top10[sel, ] |&gt; \n  dplyr::transmute(y = iaaf_score,\n         argvals = performance_age,\n         subj = athlete_id)\n\n# Create the prediction dataframe\ndati_pred &lt;- data.frame(\n  y       = rep(NA, nrow(dati) + k),\n  argvals = c(rep(NA, nrow(dati)), seq),\n  subj    = rep(dati$subj[1], nrow(dati) + k)\n)\n\ndati_pred[1:nrow(dati), ] &lt;- dati\n\nyhat &lt;- predict(fit_face, dati_pred)\n\n\nOrd  &lt;- (nrow(dati) + 1):(nrow(dati) + k)\n\n#Plot\nplot(dati$argvals, dati$y,\n     xlab = \"Performance Age (years)\",\n     ylab = \"IAAF score\",\n     pch = 19, col = \"blue\",\n     xlim = range(seq),\n     ylim = range(c(dati$y, yhat$y.pred[Ord]), na.rm = TRUE),\n     bty = \"n\")\n\nlines(seq, yhat$y.pred[Ord], col = \"red\",  lwd = 2)\nlines(seq, yhat$y.pred[Ord] + 1.96 * yhat$se.pred[Ord], col = \"red\", lty = 2)\nlines(seq, yhat$y.pred[Ord] - 1.96 * yhat$se.pred[Ord], col = \"red\", lty = 2)\nlines(seq, fit_face$mu.new, col = \"black\", lwd = 2)\n\n}\n\n#extract mean, covariance, variance, correlation function, and eigenfunctions\n#Smooth marginal mean\nm &lt;- fit_face$mu.new\n#Smooth covariance\nCov &lt;- fit_face$Chat.new\n#Pointwise covariance\nCov_diag &lt;- diag(Cov)\n#Smooth correlation \nCor &lt;- fit_face$Cor.new\n#Pointwise prediction intervals\nm_p_2sd &lt;- m + 2 * sqrt(Cov_diag)\nm_m_2sd &lt;- m - 2 * sqrt(Cov_diag)\n#Smooth eigenfunctions \neigenf &lt;- fit_face$eigenfunctions\n#Smooth eigenvalues \neigenv &lt;- fit_face$eigenvalues\n\n#first 3 eigenfunctions\npar(mar = c(4.5, 4.5, 0, 2))\ncol_me &lt;- c(\"cornflowerblue\", \"aquamarine3\", \"coral1\")\n\nplot(1, type = \"n\", xlab = \"Performance Age (years)\", ylab = \"\",\n     xlim = range(tnew), ylim = range(eigenf), bty = \"n\")\n\nfor(i in 1:3){\n  lines(tnew, eigenf[,i], col = col_me[i], lwd = 3)\n}\n\nlegend(\"topright\", c(\"PC1\", \"PC2\", \"PC3\"), \n       col = col_me, lty = 1, bty = \"n\", lwd = 3)",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
+    ]
+  },
+  {
+    "objectID": "05-visualize.html#face-components-eigenfunctionspc1-pc3-and-line-legend",
+    "href": "05-visualize.html#face-components-eigenfunctionspc1-pc3-and-line-legend",
+    "title": "5  Visualize",
+    "section": "5.3 FACE components: eigenfunctions(PC1-PC3) and line legend",
+    "text": "5.3 FACE components: eigenfunctions(PC1-PC3) and line legend\n\n\nShow code\n#extract mean, covariance, variance, correlation function, and eigenfunctions\n#Smooth marginal mean\nm &lt;- fit_face$mu.new\n#Smooth covariance\nCov &lt;- fit_face$Chat.new\n#Pointwise covariance\nCov_diag &lt;- diag(Cov)\n#Smooth correlation \nCor &lt;- fit_face$Cor.new\n#Pointwise prediction intervals\nm_p_2sd &lt;- m + 2 * sqrt(Cov_diag)\nm_m_2sd &lt;- m - 2 * sqrt(Cov_diag)\n#Smooth eigenfunctions \neigenf &lt;- fit_face$eigenfunctions\n#Smooth eigenvalues \neigenv &lt;- fit_face$eigenvalues\n\n#first 3 eigenfunctions\npar(mar = c(4.5, 4.5, 0, 2))\ncol_me &lt;- c(\"cornflowerblue\", \"aquamarine3\", \"coral1\")\n#plot PC's\nplot(1, type = \"n\", xlab = \"Performance Age (years)\", ylab = \"\",\n     xlim = range(tnew), ylim = range(eigenf), bty = \"n\")\n\nfor(i in 1:3){\n  lines(tnew, eigenf[,i], col = col_me[i], lwd = 3)\n}\n\nlegend(\"topright\", c(\"PC1\", \"PC2\", \"PC3\"), \n       col = col_me, lty = 1, bty = \"n\", lwd = 3)\n\npar(mfrow = c(1, 1))\nplot(1, type = \"n\", axes = FALSE, xlab = \"\", ylab = \"\")  # empty plot\nlegend(\"center\", \n       legend = c(\"Predicted Aging Curve\", \"95% CI\", \"Population Mean Aging Curve\", \n                  \"World Class Standard Mean (Men)\", \"World Class Standard Mean (Women)\"),\n       col = c(\"red\", \"red\", \"black\", \"blue\", \"red\"),\n       lty = c(1, 2, 1, 3, 3),\n       lwd = 2, bty = \"n\")",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
+    ]
+  },
+  {
+    "objectID": "05-visualize.html#cluster-population-aging-curves-based-on-iaaf-points-percent-change",
+    "href": "05-visualize.html#cluster-population-aging-curves-based-on-iaaf-points-percent-change",
+    "title": "5  Visualize",
+    "section": "5.4 Cluster population aging curves based on IAAF-points’ percent change",
+    "text": "5.4 Cluster population aging curves based on IAAF-points’ percent change\n\n\nShow code\n#cluster the whole population based on percent change\n# set up\nid &lt;- fd_data$athlete_id\nuid &lt;- unique(id)\n#set the grid where to predict\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nn &lt;- length(uid)\n# Set the predicted percent change in IAAF points matrix: one fewer column since we lose first value\nPercentChange_mat &lt;- matrix(NA, nrow = n, ncol = k - 1)\n\n# loop over each athlete, predict every curve\nfor(i in 1:n){\n  sel &lt;- which(id == uid[i])\n  dati &lt;- fd_data[sel, ] |&gt;\n    mutate(y = iaaf_score,\n              argvals = performance_age,\n              subj = athlete_id) |&gt; \n    select(y, argvals,subj)\n \n#if (nrow(dati) == 0) next\n  \ndati_pred &lt;- data.frame(y = rep(NA, nrow(dati) + k),\n                          argvals = c(rep(NA, nrow(dati)), seq),\n                          subj = rep(dati$subj[1], nrow(dati) + k)\n  )\n  \n  dati_pred[1:nrow(dati), ] &lt;- dati\n  yhat &lt;- predict(fit_face, dati_pred)\n#Extract just the predictions on the grid  \n  Ord &lt;- (nrow(dati) + 1):(nrow(dati) + k)\n  raw &lt;- yhat$y.pred[Ord]\n\n# Check if prediction is valid\nif (all(is.na(raw)) || any(raw[-1] == 0, na.rm = TRUE)) next\n\n# Compute percent change: (current - previous)/previous * 100\npc &lt;- c(NA, diff(raw) / head(raw, -1)) * 100\n\n# Save to matrix, dropping the initial NA\nPercentChange_mat[i, ] &lt;- pc[-1]\n}\n\n# conduct clustering of predicted functions from fpca sparse(k-means clustering)\nset.seed(20240805)\ncl_kmeans &lt;- kmeans(PercentChange_mat, centers = 3, nstart = 25)\ncl_ind &lt;- cl_kmeans$cluster\ncl_cen &lt;- cl_kmeans$centers\n\n# plot the predicted aging curves together with the estimated clustering as well as centers of the clusters\npar(mar = c(4, 4, 1, 1))\ncolset &lt;- c(\"#E69A8DFF\", \"#F6D55C\", \"#2A9D8F\", \"#5F4B8BFF\")\nplot(NULL, xlim = range(seq), ylim = c(-20, 20),\n     xlab = \"Performance Age (years)\", ylab = \"Percent Change in IAAF Score\", bty = \"n\")\n\nfor(i in 1:n){\n  lines(seq[-1], PercentChange_mat[i,], col = colset[cl_ind[i]])\n}\n\nfor(j in 1:3){\n  lines(seq[-1], cl_cen[j,], col = \"black\", lwd = 3)\n}\nlegend(\"topright\", legend = paste(\"Cluster\", 1:3),\n       col = colset, lty = 1, lwd = 2, bty = \"n\")",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
+    ]
+  },
+  {
+    "objectID": "05-visualize.html#cluster-percent-change-by-event-type",
+    "href": "05-visualize.html#cluster-percent-change-by-event-type",
+    "title": "5  Visualize",
+    "section": "5.5 Cluster percent-change by event type",
+    "text": "5.5 Cluster percent-change by event type\n\n\nShow code\n# CLuster by event type based on iaaf-point percent change \n# Filter and structure the dataset\nfd_data_by_event &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years)) |&gt; \n  mutate(\n    athlete_id = paste(athlete_link, event),\n    performance_age = age_years,\n    iaaf_score = points,\n    event_type = case_match(\n       event,\n      c(\"100m\", \"200m\", \"400 Metres\", \"400m\", \"400mH\", \"100mH\", \"110mH\") ~ \"Sprints\",\n      c(\"800m\", \"1500m\", \"3000m SC\") ~ \"Middle Distance\",\n      c(\"5000m\", \"10000m\") ~ \"Long Distance\",\n      c(\"Hept.\", \"Dec.\") ~ \"Combined Events\",\n      c(\"HJ\", \"LJ\", \"TJ\", \"PV\") ~ \"Jumps\",\n      c(\"SP\", \"DT\", \"HT\", \"JT\") ~ \"Throws\",\n      c(\"10,000mW\", \"20,000mW\", \"50,000mW\", \"Road Marathon\") ~ \"Road Races\")\n  ) |&gt; \n  select(athlete_id, performance_age, iaaf_score, event_type)\n#choose events\nevent_types &lt;- unique(fd_data_by_event$event_type)\ncluster_results &lt;- list()",
+    "crumbs": [
+      "<span class='chapter-number'>5</span>  <span class='chapter-title'>Visualize</span>"
+    ]
+  },
+  {
+    "objectID": "06-model.html",
+    "href": "06-model.html",
+    "title": "6  Model",
+    "section": "",
+    "text": "6.1 Introduction\nAthletic performance evolves with age, and understanding this progression — often represented as an aging curve — is of considerable interest in sports analytics. Aging curves plot an athlete’s performance level as a function of age, offering valuable insight for coaches, roster management,analysts, and player development strategies.\nTraditional approaches to modeling aging curves, such as multiple regression with spline interpolation, provide limited flexibility and often fail to capture the full complexity of career trajectories. Functional Data Analysis (FDA) provides a more powerful and flexible framework for modeling aging curves by treating each athlete’s career trajectory as a continuous function over time. This approach allows for richer statistical analyses, including hypothesis testing, dimensionality reduction, and clustering. methodology is based on Functional Data Analysis in R and inspired by the paper Functional Data Analysis of Aging Curves in Sports by Alexander Wakim and Jimmy Jin (2014).\nThe methodology presented here is based on Functional Data Analysis with R by Crainiceanu, Goldsmith, Leroux, and Cui (2021) and is inspired by the paper Functional Data Analysis of Aging Curves in Sports by Wakim and Jin (2014). In this section, we begin with FDA fundamentals, then introduce Functional Principal Component Analysis (FPCA) to summarize variation across curves, address sparse and irregular data via sparse FPCA, and conclude with clustering of functional data.",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
+    ]
+  },
+  {
+    "objectID": "06-model.html#functional-data-analysis-fda",
+    "href": "06-model.html#functional-data-analysis-fda",
+    "title": "6  Model",
+    "section": "6.2 Functional Data Analysis (FDA)",
+    "text": "6.2 Functional Data Analysis (FDA)\nFunctional Data Analysis (FDA) models an athlete’s performance over age as a smooth, continuous function called an aging curve. In practice, we only observe discrete values at certain ages, so we fit a smooth curve to these points. Formally, for athlete \\(i\\) at age \\(t_{ij}\\) we write: \\[ y_{ij} = f_i(t_{ij}) + \\epsilon_{ij}\\]\nwhere \\(y_{ij}\\) is the observed performance, \\(f_i(t)\\) is the smooth aging curve, and \\(\\epsilon_{ij}\\) is the measurement error.\nWe approximate \\(f_i(t)\\) using B-spline basis functions:\n\\[f_i(t) \\approx \\sum_{k=1}^K \\beta_{ik} B_k(t)\\]\nHere \\(B_k(t)\\) are spline basis functions and \\(\\beta_{ik}\\) are coefficients that determine the curve’s shape. B-splines are piecewise polynomials joined at knots, allowing flexibility to capture complex patterns in performance trajectories.\nTo avoid overfitting, a roughness penalty is added:\n\\[\n\\hat{\\beta}_i = \\arg\\min_{\\beta_i} \\sum_j \\left( y_{ij} - \\sum_{k=1}^K \\beta_{ik} B_k(t_{ij}) \\right)^2 + \\lambda \\int \\left( f''_i(t) \\right)^2 dt\n\\]\nThe penalty term \\(\\lambda \\int (f''_i(t))^2 dt\\) discourages excessive curvature, and \\(\\lambda\\) is selected via generalized cross-validation (GCV).\nOnce fitted, we can compute the mean aging curve:\n\\[\n\\hat{\\mu}(t) = \\frac{1}{N} \\sum_{i=1}^N f_i(t)\n\\]\nand the variance function:\n\\[\n\\widehat{\\text{Var}}(f(t)) = \\frac{1}{N-1} \\sum_{i=1}^N \\left( f_i(t) - \\hat{\\mu}(t) \\right)^2\n\\]\nRepresenting curves via their spline coefficients allows us to use multivariate tools like Functional Principal Component Analysis (FPCA) to summarize patterns of variation and generate scores for visualization, comparison, and clustering.",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
+    ]
+  },
+  {
+    "objectID": "06-model.html#functional-principal-component-analysisfpca",
+    "href": "06-model.html#functional-principal-component-analysisfpca",
+    "title": "6  Model",
+    "section": "6.3 Functional Principal Component Analysis(FPCA)",
+    "text": "6.3 Functional Principal Component Analysis(FPCA)\nFunctional Principal Component Analysis (FPCA) summarizes variation across aging curves by decomposing each curve into a mean function plus a weighted sum of functional principal components (FPCs). \\[f_i​(t)=\\mu(t)+\\sum^K_{k = 1}\\xi_{ik}\\psi_k(t)\\]\nHere:\n- \\(\\mu(t)\\) is the mean curve\n- \\(\\psi_k(t)\\) are orthogonal basis functions (FPCs)\n- \\(\\xi_{ik}\\) are the FPC scores for athlete (i) on component (k)\nThe first component \\(\\psi_k(t)\\) explains the largest proportion of variation in the data, the second explains the most variation orthogonal to the first, and so on. The scores \\(\\xi_{ik}\\) indicate how much each athlete’s curve deviates from the mean along each component.\nBy retaining only the leading components that explain most of the variation, FPCA provides a compact low-dimensional representation of each curve. This allows efficient visualization, statistical testing, and clustering while preserving the main features of the original functional data.",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
+    ]
+  },
+  {
+    "objectID": "06-model.html#sparse-and-irregular-fpca",
+    "href": "06-model.html#sparse-and-irregular-fpca",
+    "title": "6  Model",
+    "section": "6.4 Sparse and Irregular FPCA",
+    "text": "6.4 Sparse and Irregular FPCA\nSports performance data are often sparse (few observations per athlete) and irregular (different measurement ages across athletes). Traditional FDA and FPCA assume regular, dense observations, making them unsuitable for such data. In this project, many athletes have limited recorded performance points, so I use Sparse FPCA, implemented via the face.sparse() method in R. This approach follows the example from Functional Data Analysis with R (Crainiceanu et al., 2021), where sparse and irregular data are smoothed, principal components are extracted, and clustering is performed on the reconstructed curves.\nSparse FPCA can\n\nIdentify eigenfunctions that explain most of the variation in the data\nPredict full aging curves even when data are sparse and irregular\nProvide principal component scores for downstream analysis, such as clustering\n\nIn my project, Sparse FPCA estimates the mean function and covariance structure from incomplete data, recovers the principal component curves, and predicts scores for each athlete. This enables full-curve reconstruction and clustering of aging patterns even when the raw observations are too limited for traditional FDA or FPCA.\nHere is an example of applying sparse FPCA to an athlete named Svein-inge-valvik. We first filter the dataset to remove missing values and format it so that each row contains the athlete’s ID, performance age, and IAAF score. The data is then structured into the input format required by face.sparse() which contains the observed scores y, the corresponding performance ages argvals, and a subject identifier subj.\nThe face.sparse() function is applied to estimate the mean aging curve, covariance function, correlation function, eigenfunctions, and eigenvalues from the sparse and irregular data. This step smooths the observed data, extracts the principal component curves, and allows us to reconstruct the athlete’s entire aging trajectory even when only a few observations are available.\nFor Svein-inge-valvik we use the fitted model to generate predictions of the aging curve over a grid of ages from 11 to 58 years along with 95 percent prediction intervals. The predicted curve is plotted in red with the original observed points in blue and the overall mean curve in black.\nWe also extract the first three eigenfunctions which represent the main modes of variation in the population’s aging curves. These eigenfunctions are key to understanding how athletes’ trajectories differ in shape such as an early peak or gradual improvement and are later used for clustering analysis.\nAdditionally we compute the world class standards for both men and women in the same event. This allows us to determine the performance age at which Svein-inge-valvik reaches world class performance providing a meaningful benchmark in the context of elite athletics.\nCodes are here:\n\n\nShow code\n# Filter out missing points athletes and rename for clarity\nfd_data &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years)) |&gt; \n  mutate(id = paste(athlete_link, event)) |&gt; \n  select(athlete_id = id,\n         performance_age = age_years,\n         iaaf_score = points)\nfd_data_shiny &lt;- athlete_bests_points |&gt; \n  filter(!is.na(points), !is.na(age_years))\n\n#use face to conduct sparse FDA\ntop_10_ids &lt;- fd_data |&gt;\n  count(athlete_id, sort = TRUE) |&gt;\nslice_head(n = 10) |&gt;\n pull(athlete_id)\n\nfd_data_top10 &lt;- fd_data |&gt;\n  filter(athlete_id %in% top_10_ids)\n\nid &lt;- fd_data_top10$athlete_id\nuid &lt;- unique(id)\nface_input &lt;- data.frame(\n  y = fd_data_top10$iaaf_score,\n  argvals = fd_data_top10$performance_age,\n  subj = id)\n\nSample &lt;- which(uid == \"https://worldathletics.org/athletes/norway/svein-inge-valvik-014215542 DT\")\n\nfit_face &lt;- face.sparse(face_input, argvals.new = seq(11, 58, by = 1))\n#create a data double\ndata.h &lt;- face_input\ntnew &lt;- fit_face$argvals.new\n#prepare data for prediction\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nfor(i in Sample){\n  sel &lt;- which(id == uid[i])\n  #dati &lt;- fd_data_top10[sel,] \n  \n\ndati &lt;- fd_data_top10[sel, ] |&gt; \n  dplyr::transmute(y = iaaf_score,\n         argvals = performance_age,\n         subj = athlete_id)\n\n# Create the prediction dataframe\ndati_pred &lt;- data.frame(\n  y       = rep(NA, nrow(dati) + k),\n  argvals = c(rep(NA, nrow(dati)), seq),\n  subj    = rep(dati$subj[1], nrow(dati) + k)\n)\n\ndati_pred[1:nrow(dati), ] &lt;- dati\n\nyhat &lt;- predict(fit_face, dati_pred)\n\n\nOrd  &lt;- (nrow(dati) + 1):(nrow(dati) + k)\n\n#Plot\nplot(dati$argvals, dati$y,\n     xlab = \"Performance Age (years)\",\n     ylab = \"IAAF score\",\n     pch = 19, col = \"blue\",\n     xlim = range(seq),\n     ylim = range(c(dati$y, yhat$y.pred[Ord]), na.rm = TRUE),\n     bty = \"n\")\n\nlines(seq, yhat$y.pred[Ord], col = \"red\",  lwd = 2)\nlines(seq, yhat$y.pred[Ord] + 1.96 * yhat$se.pred[Ord], col = \"red\", lty = 2)\nlines(seq, yhat$y.pred[Ord] - 1.96 * yhat$se.pred[Ord], col = \"red\", lty = 2)\nlines(seq, fit_face$mu.new, col = \"black\", lwd = 2)\n\n}\n\n#extract mean, covariance, variance, correlation function, and eigenfunctions\n#Smooth marginal mean\nm &lt;- fit_face$mu.new\n#Smooth covariance\nCov &lt;- fit_face$Chat.new\n#Pointwise covariance\nCov_diag &lt;- diag(Cov)\n#Smooth correlation \nCor &lt;- fit_face$Cor.new\n#Pointwise prediction intervals\nm_p_2sd &lt;- m + 2 * sqrt(Cov_diag)\nm_m_2sd &lt;- m - 2 * sqrt(Cov_diag)\n#Smooth eigenfunctions \neigenf &lt;- fit_face$eigenfunctions\n#Smooth eigenvalues \neigenv &lt;- fit_face$eigenvalues\n\n#first 3 eigenfunctions\npar(mar = c(4.5, 4.5, 0, 2))\ncol_me &lt;- c(\"cornflowerblue\", \"aquamarine3\", \"coral1\")\n\nplot(1, type = \"n\", xlab = \"Performance Age (years)\", ylab = \"\",\n     xlim = range(tnew), ylim = range(eigenf), bty = \"n\")\n\nfor(i in 1:3){\n  lines(tnew, eigenf[,i], col = col_me[i], lwd = 3)\n}\n\nlegend(\"topright\", c(\"PC1\", \"PC2\", \"PC3\"), \n       col = col_me, lty = 1, bty = \"n\", lwd = 3)\n\n\nplot of predicted aging curves:",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
+    ]
+  },
+  {
+    "objectID": "06-model.html#clustering-on-fpca-predictive-function",
+    "href": "06-model.html#clustering-on-fpca-predictive-function",
+    "title": "6  Model",
+    "section": "6.5 Clustering on FPCA predictive function",
+    "text": "6.5 Clustering on FPCA predictive function\nClustering of FPCA groups athletes with similar aging curve shapes into distinct categories. In this project, the clustering is based on the percent change of the IAAF-points of their aging curves, which reflects the relative progression of performance over time rather than absolute performance levels. After applying sparse FPCA, each percent change curve is summarized by a small set of principal component scores, reducing the infinite-dimensional curve to a low-dimensional representation. These score vectors are then clustered using k-means, with the number of clusters set to three. This method partitions the population into distinct aging patterns, such as early peak, late peak, or sustained performance, enabling clearer comparisons between athletes with similar career trajectories. After clustering the entire population’s performance trajectories, we can assign new athlete to an existing cluster. This allows us to immediately place the athlete within a known progression pattern and monitor their trajectory over time.\nHere is code for clustering the whole population based on the athletes’ percent change of IAAF-points.\n\n\nShow code\n#cluster the whole population based on percent change\n# set up\nid &lt;- fd_data$athlete_id\nuid &lt;- unique(id)\n#set the grid where to predict\nseq &lt;- seq(11, 58, by = 1)\nk &lt;- length(seq)\nn &lt;- length(uid)\n# Set the predicted percent change in IAAF points matrix: one fewer column since we lose first value\nPercentChange_mat &lt;- matrix(NA, nrow = n, ncol = k - 1)\n\n# loop over each athlete, predict every curve\nfor(i in 1:n){\n  sel &lt;- which(id == uid[i])\n  dati &lt;- fd_data[sel, ] |&gt;\n    mutate(y = iaaf_score,\n              argvals = performance_age,\n              subj = athlete_id) |&gt; \n    select(y, argvals,subj)\n \n#if (nrow(dati) == 0) next\n  \ndati_pred &lt;- data.frame(y = rep(NA, nrow(dati) + k),\n                          argvals = c(rep(NA, nrow(dati)), seq),\n                          subj = rep(dati$subj[1], nrow(dati) + k)\n  )\n  \n  dati_pred[1:nrow(dati), ] &lt;- dati\n  yhat &lt;- predict(fit_face, dati_pred)\n#Extract just the predictions on the grid  \n  Ord &lt;- (nrow(dati) + 1):(nrow(dati) + k)\n  raw &lt;- yhat$y.pred[Ord]\n\n# Check if prediction is valid\nif (all(is.na(raw)) || any(raw[-1] == 0, na.rm = TRUE)) next\n\n# Compute percent change: (current - previous)/previous * 100\npc &lt;- c(NA, diff(raw) / head(raw, -1)) * 100\n\n# Save to matrix, dropping the initial NA\nPercentChange_mat[i, ] &lt;- pc[-1]\n}\n\n# conduct clustering of predicted functions from fpca sparse(k-means clustering)\nset.seed(20240805)\ncl_kmeans &lt;- kmeans(PercentChange_mat, centers = 3, nstart = 25)\ncl_ind &lt;- cl_kmeans$cluster\ncl_cen &lt;- cl_kmeans$centers\n\n# plot the predicted aging curves together with the estimated clustering as well as centers of the clusters\npar(mar = c(4, 4, 1, 1))\ncolset &lt;- c(\"#E69A8DFF\", \"#F6D55C\", \"#2A9D8F\", \"#5F4B8BFF\")\nplot(NULL, xlim = range(seq), ylim = c(-20, 20),\n     xlab = \"Performance Age (years)\", ylab = \"Percent Change in IAAF Score\", bty = \"n\")\n\nfor(i in 1:n){\n  lines(seq[-1], PercentChange_mat[i,], col = colset[cl_ind[i]])\n}\n\nfor(j in 1:3){\n  lines(seq[-1], cl_cen[j,], col = \"black\", lwd = 3)\n}\nlegend(\"topright\", legend = paste(\"Cluster\", 1:3),\n       col = colset, lty = 1, lwd = 2, bty = \"n\")\n\n\nAnd here is the plot of clustering the whole population based on the percent change of IAAf-points of\nHere is an example of an aging curve for a sample athlete. This athlete can be assigned to one of the existing clusters, which allows us to predict and monitor the athlete’s performance trajectory over time.(shiny app screenshot)\nI also cluster the entire population by event type to compare patterns across different disciplines. The population is divided into seven event types: Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, and Road Races. For most event types, the resulting clusters are similar to those of the overall population, while a few categories such as Middle Distance and Road Marathon(???double check) show noticeable differences.\n\n\nShow code\nevent_type = case_match(\n       event,\n      c(\"100m\", \"200m\", \"400 Metres\", \"400m\", \"400mH\", \"100mH\", \"110mH\") ~ \"Sprints\",\n      c(\"800m\", \"1500m\", \"3000m SC\") ~ \"Middle Distance\",\n      c(\"5000m\", \"10000m\") ~ \"Long Distance\",\n      c(\"Hept.\", \"Dec.\") ~ \"Combined Events\",\n      c(\"HJ\", \"LJ\", \"TJ\", \"PV\") ~ \"Jumps\",\n      c(\"SP\", \"DT\", \"HT\", \"JT\") ~ \"Throws\",\n      c(\"10,000mW\", \"20,000mW\", \"50,000mW\", \"Road Marathon\") ~ \"Road Races\")\n\n\nHere are a few examples of the clustering by event type(be specific): Show plot screenshot of cluster by event-type",
+    "crumbs": [
+      "<span class='chapter-number'>6</span>  <span class='chapter-title'>Model</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html",
+    "href": "07-communicate.html",
+    "title": "7  Communicate",
+    "section": "",
+    "text": "7.1 Delivery Format\nThe findings from this analysis will be delivered through an interactive Shiny dashboard, which integrates:",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#delivery-format",
+    "href": "07-communicate.html#delivery-format",
+    "title": "7  Communicate",
+    "section": "",
+    "text": "Dynamic aging curve exploration for individual athletes and population-level trends\nTrelliscope panel plots for side-by-side comparison across multiple athletes and events",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#overview",
+    "href": "07-communicate.html#overview",
+    "title": "7  Communicate",
+    "section": "7.2 Overview",
+    "text": "7.2 Overview\nThe final insights will be provided to key stakeholders, including coaches, performance analysts, sports scientists, and sports development directors. The Shiny dashboard will serve as a centralized platform for exploring aging curves, identifying cluster patterns, and comparing event-specific performance trends.\nBecause aging curves evolve over time and are tied to an athlete’s age, the dashboard will be updated annually to maintain accuracy and relevance. This will allow stakeholders to track changes in trajectories, compare against historical benchmarks, and adjust training or selection strategies accordingly.\nBy providing accessible, data-driven insights, the dashboard will support evidence-based decision-making in training program design, athlete selection, and long-term talent development planning.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#clusters-interpretation",
+    "href": "07-communicate.html#clusters-interpretation",
+    "title": "7  Communicate",
+    "section": "7.3 Clusters interpretation",
+    "text": "7.3 Clusters interpretation\nThree primary aging curve patterns are identified through clustering:\n\nEarly risers: Rapid gains early in a career, reaching a plateau sooner\nSteady performers: Consistent year-over-year improvements, leading to a smooth peak\nLate bloomers: Gradual early progress followed by substantial improvement later in the career\n\nWhen clustering is performed by event type, most disciplines show patterns similar to the overall population clusters. However, certain events, such as Middle Distance and Road Marathon(??? double check), display noticeably different cluster structures.\n(Plot of a sample cluster)",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#application-example",
+    "href": "07-communicate.html#application-example",
+    "title": "7  Communicate",
+    "section": "7.4 Application Example:",
+    "text": "7.4 Application Example:\nA new athlete’s aging curve can be predicted using the face.sparse method and matched to one of the existing clusters. This allows stakeholders to immediately identify the athlete’s most likely performance trajectory and monitor changes over time.\n(screenshot from shiny app, and interpret the plot)\n(shiny app plot for a athlete, and related cluster plot by event-type, and interpret the plot)",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#key-insights-for-stakeholders",
+    "href": "07-communicate.html#key-insights-for-stakeholders",
+    "title": "7  Communicate",
+    "section": "7.5 Key insights for Stakeholders",
+    "text": "7.5 Key insights for Stakeholders\nPerformance evolves with age: Although the population mean curve shows the general trend, each athlete’s performance path is unique. Principal components highlight these differences, revealing whether an athlete peaks early, improves steadily, or peaks later in their career.\nCluster shapes are actionable: Knowing whether an athlete is an early improver, steady performer, or late bloomer can guide training focus and competition scheduling.\nWorld Athlete Championships (WAC) context is informative: Comparing an athlete’s performance to world-class benchmarks (WAC mean) helps put their achievements into perspective across different ages and events.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#limitations-and-considerations",
+    "href": "07-communicate.html#limitations-and-considerations",
+    "title": "7  Communicate",
+    "section": "7.6 Limitations and Considerations",
+    "text": "7.6 Limitations and Considerations\nData sparsity: Predictions depend on smoothing methods. Athletes with very limited career data will have wider uncertainty bands around their estimated curves.\nJoin granularity: Scoring uses a “closest less-than-or-equal-to” rule for matching performances to reference tables. For athletes whose results are close to table knots, small shifts can occur in assigned point values.\nCausality: Aging curves describe associations between performance and age. They do not imply causal effects of age, training, or other factors on performance changes.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "07-communicate.html#next-steps",
+    "href": "07-communicate.html#next-steps",
+    "title": "7  Communicate",
+    "section": "7.7 Next steps",
+    "text": "7.7 Next steps\nEvent-type stratification: Fit separate FACE models for each event type (for example, sprints, middle distance, throws) and compare their mean aging curves to determine whether different disciplines follow distinct performance trajectories.\nUncertainty visualization: Incorporate visualizations of individual confidence intervals within the Shiny dashboard’s comparison view so that coaches can weigh the reliability of predicted trajectories.\nTrajectory monitoring: Implement year-over-year tracking of within-athlete shifts in curve shape (for example, an early peak evolving into a stable phase) and generate alerts when an athlete moves to a different cluster.\nRobust clustering: Evaluate robust clustering methods such as trimmed k-means to improve stability in the presence of outliers, and refine the number of clusters using within-cluster sum of squares (SSE) methods as described in the reference paper.\nSelection bias adjustment: Address potential right-tail selection bias, as higher-performing athletes tend to remain in competition longer, which may skew the observed distribution of aging curves.",
+    "crumbs": [
+      "<span class='chapter-number'>7</span>  <span class='chapter-title'>Communicate</span>"
+    ]
+  },
+  {
+    "objectID": "appendix.html",
+    "href": "appendix.html",
+    "title": "8  Appendix",
+    "section": "",
+    "text": "The Shiny dashboard visualizes:\n\nPredicted aging curves\nCluster assignments\nEvent-type-based comparisons\n\nTo navigate:\n\nUse dropdown to select athlete/event\nHover for confidence bands\nClusters are color-coded",
+    "crumbs": [
+      "<span class='chapter-number'>8</span>  <span class='chapter-title'>Appendix</span>"
     ]
   }
 ]
