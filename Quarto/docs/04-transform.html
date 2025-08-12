@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.4.555">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+
+<title>Stat 468 final project - 4&nbsp; Transform</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="site_libs/quarto-nav/headroom.min.js"></script>
+<script src="site_libs/clipboard/clipboard.min.js"></script>
+<script src="site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="site_libs/quarto-search/fuse.min.js"></script>
+<script src="site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="./">
+<link href="./05-visualize.html" rel="next">
+<link href="./03-tidy.html" rel="prev">
+<script src="site_libs/quarto-html/quarto.js"></script>
+<script src="site_libs/quarto-html/popper.min.js"></script>
+<script src="site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="site_libs/quarto-html/anchor.min.js"></script>
+<link href="site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "sidebar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "start",
+  "type": "textbox",
+  "limit": 50,
+  "keyboard-shortcut": [
+    "f",
+    "/",
+    "s"
+  ],
+  "show-item-context": false,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-text-placeholder": "",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit",
+    "search-label": "Search"
+  }
+}</script>
+
+
+</head>
+
+<body class="nav-sidebar floating">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+  <nav class="quarto-secondary-nav">
+    <div class="container-fluid d-flex">
+      <button type="button" class="quarto-btn-toggle btn" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+        <i class="bi bi-layout-text-sidebar-reverse"></i>
+      </button>
+        <nav class="quarto-page-breadcrumbs" aria-label="breadcrumb"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="./04-transform.html"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transform</span></a></li></ol></nav>
+        <a class="flex-grow-1" role="button" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item" aria-controls="quarto-sidebar" aria-expanded="false" aria-label="Toggle sidebar navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">      
+        </a>
+      <button type="button" class="btn quarto-search-button" aria-label="" onclick="window.quartoOpenSearch();">
+        <i class="bi bi-search"></i>
+      </button>
+    </div>
+  </nav>
+</header>
+<!-- content -->
+<div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article">
+<!-- sidebar -->
+  <nav id="quarto-sidebar" class="sidebar collapse collapse-horizontal quarto-sidebar-collapse-item sidebar-navigation floating overflow-auto">
+    <div class="pt-lg-2 mt-2 text-left sidebar-header">
+    <div class="sidebar-title mb-0 py-0">
+      <a href="./">Stat 468 final project</a> 
+    </div>
+      </div>
+        <div class="mt-2 flex-shrink-0 align-items-center">
+        <div class="sidebar-search">
+        <div id="quarto-search" class="" title="Search"></div>
+        </div>
+        </div>
+    <div class="sidebar-menu-container"> 
+    <ul class="list-unstyled mt-1">
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./index.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text">STAT 468 Final Project — Clustering Athlete Aging Curves</span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./01-question.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">1</span>&nbsp; <span class="chapter-title">Question of Interest &amp; Relevance</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./02-import.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">2</span>&nbsp; <span class="chapter-title">Import</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./03-tidy.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Tidy</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./04-transform.html" class="sidebar-item-text sidebar-link active">
+ <span class="menu-text"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transform</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./05-visualize.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Visualize</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./06-model.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">6</span>&nbsp; <span class="chapter-title">Model</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./07-communicate.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">7</span>&nbsp; <span class="chapter-title">Communicate</span></span></a>
+  </div>
+</li>
+        <li class="sidebar-item">
+  <div class="sidebar-item-container"> 
+  <a href="./appendix.html" class="sidebar-item-text sidebar-link">
+ <span class="menu-text"><span class="chapter-number">8</span>&nbsp; <span class="chapter-title">Appendix</span></span></a>
+  </div>
+</li>
+    </ul>
+    </div>
+</nav>
+<div id="quarto-sidebar-glass" class="quarto-sidebar-collapse-item" data-bs-toggle="collapse" data-bs-target=".quarto-sidebar-collapse-item"></div>
+<!-- margin-sidebar -->
+    <div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+        <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#link-career-progression-to-olympic-metadata" id="toc-link-career-progression-to-olympic-metadata" class="nav-link active" data-scroll-target="#link-career-progression-to-olympic-metadata"><span class="header-section-number">4.1</span> Link career progression to Olympic metadata</a></li>
+  <li><a href="#classify-events-compute-performance_age-and-convert-performance-to-numeric-marks" id="toc-classify-events-compute-performance_age-and-convert-performance-to-numeric-marks" class="nav-link" data-scroll-target="#classify-events-compute-performance_age-and-convert-performance-to-numeric-marks"><span class="header-section-number">4.2</span> Classify events, compute performance_age, and convert performance to numeric marks</a></li>
+  <li><a href="#normalize-event-labels-for-iaaf-scoring" id="toc-normalize-event-labels-for-iaaf-scoring" class="nav-link" data-scroll-target="#normalize-event-labels-for-iaaf-scoring"><span class="header-section-number">4.3</span> Normalize event labels for IAAF scoring</a></li>
+  <li><a href="#map-athlete-performance-marks-to-iaaf-points-and-join-athlete_bests_clean-with-iaaf-table-to-get-full-dataset" id="toc-map-athlete-performance-marks-to-iaaf-points-and-join-athlete_bests_clean-with-iaaf-table-to-get-full-dataset" class="nav-link" data-scroll-target="#map-athlete-performance-marks-to-iaaf-points-and-join-athlete_bests_clean-with-iaaf-table-to-get-full-dataset"><span class="header-section-number">4.4</span> Map athlete performance marks to IAAF points and join <code>athlete_bests_clean</code> with <code>iaaf-table</code> to get full dataset</a></li>
+  <li><a href="#convert-wac-standards-to-points-and-compute-mean-references" id="toc-convert-wac-standards-to-points-and-compute-mean-references" class="nav-link" data-scroll-target="#convert-wac-standards-to-points-and-compute-mean-references"><span class="header-section-number">4.5</span> Convert WAC standards to points and compute mean references</a></li>
+  <li><a href="#model-preparation" id="toc-model-preparation" class="nav-link" data-scroll-target="#model-preparation"><span class="header-section-number">4.6</span> Model-preparation</a></li>
+  <li><a href="#key-outputs-for-modeling-and-visualization" id="toc-key-outputs-for-modeling-and-visualization" class="nav-link" data-scroll-target="#key-outputs-for-modeling-and-visualization"><span class="header-section-number">4.7</span> Key outputs for modeling and Visualization:</a></li>
+  </ul>
+</nav>
+    </div>
+<!-- main -->
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<div class="quarto-title-block"><div><h1 class="title"><span class="chapter-number">4</span>&nbsp; <span class="chapter-title">Transform</span></h1><button type="button" class="btn code-tools-button dropdown-toggle" id="quarto-code-tools-menu" data-bs-toggle="dropdown" aria-expanded="false"><i class="bi"></i> Code</button><ul class="dropdown-menu dropdown-menu-end" aria-labelelledby="quarto-code-tools-menu"><li><a id="quarto-show-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Show All Code</a></li><li><a id="quarto-hide-all-code" class="dropdown-item" href="javascript:void(0)" role="button">Hide All Code</a></li><li><hr class="dropdown-divider"></li><li><a id="quarto-view-source" class="dropdown-item" href="javascript:void(0)" role="button">View Source</a></li></ul></div></div>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<p>After cleaning and standardizing the datasets, the next step was to derive analytical variables required for modeling. This stage enriches the tidy data by linking metadata, creating features, and mapping performances to standardized scoring systems.</p>
+<p><strong>Key tasks:</strong></p>
+<ul>
+<li><p>Link each performance record to Olympic athlete/event metadata</p></li>
+<li><p>Compute athlete age metrics (age at performance in years and days) and training age</p></li>
+<li><p>Classify events by type and category.</p></li>
+<li><p>Convert performances to numeric marks (seconds for track; numeric values for field).</p></li>
+<li><p>Map marks to IAAF points using a rolling/closest join.</p></li>
+<li><p>Convert world-athlete championship (WAC) to points and compute the mean reference by gender.</p></li>
+</ul>
+<section id="link-career-progression-to-olympic-metadata" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="link-career-progression-to-olympic-metadata"><span class="header-section-number">4.1</span> Link career progression to Olympic metadata</h2>
+<p>First we join the career progression dataset with Olympic athlete metadata (only keeping records with a known birth date), ensures unique athlete-event combinations, and keeps key identifying variables.</p>
+<p>It then calculates:</p>
+<ul>
+<li><p>age_years: athlete’s age in years at the time of performance</p></li>
+<li><p>age_days: exact age in days</p></li>
+</ul>
+<p>It also removes the “h” suffix from performance to standardize hand-timed results.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>athlete_bests <span class="ot">&lt;-</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  Career_progression <span class="sc">%&gt;%</span>  <span class="fu">inner_join</span>(</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    Olympics_data <span class="sc">%&gt;%</span>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(birth_date)) <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">distinct</span>(birth_date, athlete_links, event, event_type, <span class="at">.keep_all =</span> T) <span class="sc">%&gt;%</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">select</span>(name, birth_date, athlete_links, event, nationality, event_type, </span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>             event_category, gender, games_year),</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="at">by =</span> <span class="fu">c</span>(<span class="st">"athlete_link"</span> <span class="ot">=</span> <span class="st">"athlete_links"</span>, <span class="st">"event"</span>)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span>  </span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">age_years =</span> <span class="fu">year</span>(date) <span class="sc">-</span> <span class="fu">year</span>(birth_date), </span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>         <span class="at">age_days =</span> <span class="fu">as.double</span>(</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>           <span class="fu">difftime</span>(</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>             date, birth_date,<span class="at">units =</span> <span class="st">"days"</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>           )</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>         ),</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">performance =</span> <span class="fu">str_remove_all</span>(performance, <span class="st">"h"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="classify-events-compute-performance_age-and-convert-performance-to-numeric-marks" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="classify-events-compute-performance_age-and-convert-performance-to-numeric-marks"><span class="header-section-number">4.2</span> Classify events, compute performance_age, and convert performance to numeric marks</h2>
+<p>Events are grouped into broad disciplines (e.g., Sprints, Middle Distance, Jumps) and assigned a Track or Field classification. The athlete’s age at the time of performance is calculated, and the raw performance string is converted into a numeric mark suitable for modeling.</p>
+<p>Specifically, the code:</p>
+<ul>
+<li><p>Assigns <code>event_type</code> (Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, Road Races, or Other) and sets <code>event_category</code> to either Track or Field.</p></li>
+<li><p>Computes <code>age_years</code> and <code>age_days</code>, and removes the “<code>h</code>” hand-timed suffix from performance strings.</p></li>
+<li><p>Generates <code>mark</code>: for Track events, parses the time string and converts it to seconds using <code>lubridate::parse_date_time2</code> and <code>difftime</code>; for Field events, extracts a numeric distance using <code>parse_number</code>.</p></li>
+</ul>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Classify events</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>event_type <span class="ot">=</span> <span class="fu">case_match</span>(</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>      event,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"100 Metres"</span>, <span class="st">"200 Metres"</span>, <span class="st">"400 Metres"</span>, <span class="st">"400 Metres Hurdles"</span>, <span class="st">"100 Metres Hurdles"</span>, <span class="st">"110 Metres Hurdles"</span>) <span class="sc">~</span> <span class="st">"Sprints"</span>,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"800 Metres"</span>, <span class="st">"1500 Metres"</span>, <span class="st">"3000 Metres Steeplechase"</span>) <span class="sc">~</span> <span class="st">"Middle Distance"</span>,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"5000 Metres"</span>, <span class="st">"10,000 Metres"</span>) <span class="sc">~</span> <span class="st">"Long Distance"</span>,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"Heptathlon"</span>, <span class="st">"Decathlon"</span>) <span class="sc">~</span> <span class="st">"Combined Events"</span>,</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"High Jump"</span>, <span class="st">"Long Jump"</span>, <span class="st">"Triple Jump"</span>, <span class="st">"Pole Vault"</span>) <span class="sc">~</span> <span class="st">"Jumps"</span>,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"Shot Put"</span>, <span class="st">"Discus Throw"</span>, <span class="st">"Hammer Throw"</span>, <span class="st">"Javelin Throw"</span>, <span class="st">"Javelin Throw (old)"</span>) <span class="sc">~</span> <span class="st">"Throws"</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>      <span class="fu">c</span>(<span class="st">"10 Kilometres Race Walk"</span>, <span class="st">"20 Kilometres Race Walk"</span>, <span class="st">"50 Kilometres Race Walk"</span>, <span class="st">"Marathon"</span>) <span class="sc">~</span> <span class="st">"Road Races"</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>      <span class="at">.default =</span> <span class="st">"Other"</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    ),</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>         event_category <span class="ot">=</span> <span class="fu">if_else</span>(<span class="fu">str_detect</span>(event, <span class="st">"Metres|Walk|Wheelchair"</span>) <span class="sc">|</span>event <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">"Marathon"</span>), <span class="st">"Track"</span>, <span class="st">"Field"</span>)</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="fu">mutate</span>(<span class="at">age_years =</span> <span class="fu">year</span>(date) <span class="sc">-</span> <span class="fu">year</span>(birth_date), </span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>         <span class="at">age_days =</span> <span class="fu">as.double</span>(</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>           <span class="fu">difftime</span>(</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>             date, birth_date,<span class="at">units =</span> <span class="st">"days"</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>           )</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>         ),</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>         <span class="at">performance =</span> <span class="fu">str_remove_all</span>(performance, <span class="st">"h"</span>) <span class="co"># I will count hand timed results as legitimate</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>         ) <span class="sc">%&gt;%</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="fu">mutate</span>(<span class="at">mark =</span> <span class="fu">if_else</span>(</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>      event_category <span class="sc">==</span> <span class="st">"Track"</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>      <span class="fu">as.numeric</span>(</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>        <span class="fu">difftime</span>(</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>          lubridate<span class="sc">::</span><span class="fu">parse_date_time2</span>(performance, <span class="at">orders =</span> <span class="fu">c</span>(<span class="st">"%H:%M:%S"</span>, <span class="st">"%M:%S:00"</span>, <span class="st">"%M:%OS"</span>, <span class="st">"%OS"</span>), <span class="at">exact =</span> T),</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>          lubridate<span class="sc">::</span><span class="fu">parse_date_time2</span>(<span class="st">"0"</span>, <span class="at">orders =</span><span class="st">"S"</span>),</span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>          <span class="at">units =</span> <span class="st">"secs"</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>        )</span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>      ), <span class="fu">parse_number</span>(performance)))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="normalize-event-labels-for-iaaf-scoring" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="normalize-event-labels-for-iaaf-scoring"><span class="header-section-number">4.3</span> Normalize event labels for IAAF scoring</h2>
+<p>This step standardizes event names and gender labels so they match the IAAF scoring reference, ensuring reliable joins later. It converts gender to lowercase and maps verbose event strings (for example, “100 Metres,” “High Jump,” “10 Kilometres Race Walk”) to the short IAAF codes (for example, 100m, HJ, 10,000mW). Events without a defined mapping are left unchanged. This normalization guarantees consistent keys for scoring and downstream analyses.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb3"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>athlete_bests_clean <span class="ot">&lt;-</span> athlete_bests <span class="sc">|&gt;</span> </span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="at">gender =</span> <span class="fu">tolower</span>(gender),</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">event =</span> <span class="fu">case_when</span>(</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"100 Metres"</span> <span class="sc">~</span> <span class="st">"100m"</span>,</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"200 Metres"</span> <span class="sc">~</span> <span class="st">"200m"</span>,</span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"400 Metres"</span> <span class="sc">~</span> <span class="st">"400m"</span>,</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"800 Metres"</span> <span class="sc">~</span> <span class="st">"800m"</span>,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"1500 Metres"</span> <span class="sc">~</span> <span class="st">"1500m"</span>,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"5000 Metres"</span> <span class="sc">~</span> <span class="st">"5000m"</span>,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"10,000 Metres"</span> <span class="sc">~</span> <span class="st">"10000m"</span>,</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Marathon"</span> <span class="sc">~</span> <span class="st">"Road Marathon"</span>,</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Triple Jump"</span> <span class="sc">~</span> <span class="st">"TJ"</span>,</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Long Jump"</span> <span class="sc">~</span> <span class="st">"LJ"</span>,</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"High Jump"</span> <span class="sc">~</span> <span class="st">"HJ"</span>,</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Shot Put"</span> <span class="sc">~</span> <span class="st">"SP"</span>,</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Discus Throw"</span> <span class="sc">~</span> <span class="st">"DT"</span>,</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Hammer Throw"</span> <span class="sc">~</span> <span class="st">"HT"</span>,</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Javelin Throw"</span> <span class="sc">~</span> <span class="st">"JT"</span>,</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Decathlon"</span> <span class="sc">~</span> <span class="st">"Dec."</span>,</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Heptathlon"</span> <span class="sc">~</span> <span class="st">"Hept."</span>,</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"Pole Vault"</span> <span class="sc">~</span> <span class="st">"PV"</span>,</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"10 Kilometres Race Walk"</span> <span class="sc">~</span> <span class="st">"10,000mW"</span>,</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"50 Kilometres Race Walk"</span> <span class="sc">~</span> <span class="st">"50,000mW"</span>,</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"20 Kilometres Race Walk"</span> <span class="sc">~</span> <span class="st">"20,000mW"</span>,</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"100 Metres Hurdles"</span> <span class="sc">~</span> <span class="st">"100mH"</span>,</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"110 Metres Hurdles"</span> <span class="sc">~</span> <span class="st">"110mH"</span>,</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"400 Metres Hurdles"</span> <span class="sc">~</span> <span class="st">"400mH"</span>,</span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>      event <span class="sc">==</span> <span class="st">"3000 Metres Steeplechase"</span> <span class="sc">~</span> <span class="st">"3000m SC"</span>,</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>      <span class="cn">TRUE</span> <span class="sc">~</span> event</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="map-athlete-performance-marks-to-iaaf-points-and-join-athlete_bests_clean-with-iaaf-table-to-get-full-dataset" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="map-athlete-performance-marks-to-iaaf-points-and-join-athlete_bests_clean-with-iaaf-table-to-get-full-dataset"><span class="header-section-number">4.4</span> Map athlete performance marks to IAAF points and join <code>athlete_bests_clean</code> with <code>iaaf-table</code> to get full dataset</h2>
+<p>This step assigns IAAF point scores to each performance by joining <code>athlete_bests_clean</code> to the IAAF reference table on gender and event, using a rolling “closest mark ≤ observed mark” rule. If no matching score is found, the point value is set to zero. The result, <code>athlete_bests_points</code>, is the modeling-ready table with season-best records expressed on a common IAAF points scale.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb4"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># join iaaf_table with athlete_bests_clean and get full dataset with result points</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>round_decimals <span class="ot">&lt;-</span> <span class="cf">function</span>(x, <span class="at">digits =</span> <span class="dv">2</span>) {</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">round</span>(x <span class="sc">*</span> <span class="dv">10</span><span class="sc">^</span>digits) <span class="sc">/</span> <span class="dv">10</span><span class="sc">^</span>digits}</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>athlete_bests_points <span class="ot">&lt;-</span> </span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>  athlete_bests_clean <span class="sc">|&gt;</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="fu">left_join</span>(iaaf_table, <span class="fu">join_by</span>(gender, event, <span class="fu">closest</span>(mark <span class="sc">&lt;=</span> mark))) <span class="sc">|&gt;</span> </span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>  <span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="at">points =</span> <span class="dv">0</span>))</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="convert-wac-standards-to-points-and-compute-mean-references" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="convert-wac-standards-to-points-and-compute-mean-references"><span class="header-section-number">4.5</span> Convert WAC standards to points and compute mean references</h2>
+<p>This step expresses the world-class standards on the same IAAF points scale used for athlete results. It standardizes WAC event labels and times, joins to the IAAF table using a “closest mark ≤ observed mark” rule, and fills missing scores with zero. For combined events, fixed anchors are applied (Heptathlon women = 1174, Decathlon men = 1212). Finally, it computes the mean WAC points by gender to provide simple reference lines for later visualizations.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>wac_points <span class="ot">&lt;-</span> wac_standards_tidy <span class="sc">%&gt;%</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">left_join</span>(</span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a>    iaaf_table_tidy,</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a>    dplyr<span class="sc">::</span><span class="fu">join_by</span>(gender, Event <span class="sc">==</span> event, <span class="fu">closest</span>(mark <span class="sc">&lt;=</span> mark))</span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>  ) <span class="sc">%&gt;%</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a>  tidyr<span class="sc">::</span><span class="fu">replace_na</span>(<span class="fu">list</span>(<span class="at">points =</span> <span class="dv">0</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">points =</span> dplyr<span class="sc">::</span><span class="fu">case_when</span>(</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    Event <span class="sc">==</span> <span class="st">"Hept."</span> <span class="sc">&amp;</span> gender <span class="sc">==</span> <span class="st">"women"</span> <span class="sc">~</span> <span class="dv">1174</span>,</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    Event <span class="sc">==</span> <span class="st">"Dec."</span>  <span class="sc">&amp;</span> gender <span class="sc">==</span> <span class="st">"men"</span>   <span class="sc">~</span> <span class="dv">1212</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a>    <span class="cn">TRUE</span> <span class="sc">~</span> points</span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>  ))</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>mean_points_by_gender <span class="ot">&lt;-</span> wac_points <span class="sc">%&gt;%</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(gender) <span class="sc">%&gt;%</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarise</span>(<span class="at">mean_points =</span> <span class="fu">mean</span>(points, <span class="at">na.rm =</span> <span class="cn">TRUE</span>), <span class="at">.groups =</span> <span class="st">"drop"</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>  tibble<span class="sc">::</span><span class="fu">deframe</span>()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="model-preparation" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="model-preparation"><span class="header-section-number">4.6</span> Model-preparation</h2>
+<p>This step prepares the FPCA input at the athlete–event level. It filters to records with non-missing IAAF points and age, builds a unique identifier by concatenating <code>athlete_link</code> and <code>event</code>, and selects the three fields required by face.sparse: athlete_id, performance_age (age in years at performance), and iaaf_score (IAAF points). It also creates helper vectors (id and uid) for indexing subjects during modeling.</p>
+<div class="cell">
+<details class="code-fold">
+<summary>Show code</summary>
+<div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># predict on full dataset(population)</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Filter out missing points athletes and rename for clarity</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>fd_data <span class="ot">&lt;-</span> athlete_bests_points <span class="sc">|&gt;</span> </span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(<span class="sc">!</span><span class="fu">is.na</span>(points), <span class="sc">!</span><span class="fu">is.na</span>(age_years)) <span class="sc">|&gt;</span> </span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">id =</span> <span class="fu">paste</span>(athlete_link, event)) <span class="sc">|&gt;</span> </span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(<span class="at">athlete_id =</span> id,</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>         <span class="at">performance_age =</span> age_years,</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>         <span class="at">iaaf_score =</span> points)</span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>id <span class="ot">&lt;-</span> fd_data<span class="sc">$</span>athlete_id</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>uid <span class="ot">&lt;-</span> <span class="fu">unique</span>(id)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+</section>
+<section id="key-outputs-for-modeling-and-visualization" class="level2" data-number="4.7">
+<h2 data-number="4.7" class="anchored" data-anchor-id="key-outputs-for-modeling-and-visualization"><span class="header-section-number">4.7</span> Key outputs for modeling and Visualization:</h2>
+<ul>
+<li><p><code>athlete_bests_points</code>: season-best results with IAAF points</p></li>
+<li><p><code>wac_points</code> and <code>mean_points_by_gender</code>: world-class reference levels for comparison in plots</p></li>
+</ul>
+
+
+<!-- -->
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  const viewSource = window.document.getElementById('quarto-view-source') ||
+                     window.document.getElementById('quarto-code-tools-source');
+  if (viewSource) {
+    const sourceUrl = viewSource.getAttribute("data-quarto-source-url");
+    viewSource.addEventListener("click", function(e) {
+      if (sourceUrl) {
+        // rstudio viewer pane
+        if (/\bcapabilities=\b/.test(window.location)) {
+          window.open(sourceUrl);
+        } else {
+          window.location.href = sourceUrl;
+        }
+      } else {
+        const modal = new bootstrap.Modal(document.getElementById('quarto-embedded-source-code-modal'));
+        modal.show();
+      }
+      return false;
+    });
+  }
+  function toggleCodeHandler(show) {
+    return function(e) {
+      const detailsSrc = window.document.querySelectorAll(".cell > details > .sourceCode");
+      for (let i=0; i<detailsSrc.length; i++) {
+        const details = detailsSrc[i].parentElement;
+        if (show) {
+          details.open = true;
+        } else {
+          details.removeAttribute("open");
+        }
+      }
+      const cellCodeDivs = window.document.querySelectorAll(".cell > .sourceCode");
+      const fromCls = show ? "hidden" : "unhidden";
+      const toCls = show ? "unhidden" : "hidden";
+      for (let i=0; i<cellCodeDivs.length; i++) {
+        const codeDiv = cellCodeDivs[i];
+        if (codeDiv.classList.contains(fromCls)) {
+          codeDiv.classList.remove(fromCls);
+          codeDiv.classList.add(toCls);
+        } 
+      }
+      return false;
+    }
+  }
+  const hideAllCode = window.document.getElementById("quarto-hide-all-code");
+  if (hideAllCode) {
+    hideAllCode.addEventListener("click", toggleCodeHandler(false));
+  }
+  const showAllCode = window.document.getElementById("quarto-show-all-code");
+  if (showAllCode) {
+    showAllCode.addEventListener("click", toggleCodeHandler(true));
+  }
+    var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+    var mailtoRegex = new RegExp(/^mailto:/);
+      var filterRegex = new RegExp('/' + window.location.host + '/');
+    var isInternal = (href) => {
+        return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+    }
+    // Inspect non-navigation links and adorn them if external
+ 	var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool)');
+    for (var i=0; i<links.length; i++) {
+      const link = links[i];
+      if (!isInternal(link.href)) {
+        // undo the damage that might have been done by quarto-nav.js in the case of
+        // links that we want to consider external
+        if (link.dataset.originalHref !== undefined) {
+          link.href = link.dataset.originalHref;
+        }
+      }
+    }
+  function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+    const config = {
+      allowHTML: true,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start',
+    };
+    if (contentFn) {
+      config.content = contentFn;
+    }
+    if (onTriggerFn) {
+      config.onTrigger = onTriggerFn;
+    }
+    if (onUntriggerFn) {
+      config.onUntrigger = onUntriggerFn;
+    }
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      if (note) {
+        return note.innerHTML;
+      } else {
+        return "";
+      }
+    });
+  }
+  const xrefs = window.document.querySelectorAll('a.quarto-xref');
+  const processXRef = (id, note) => {
+    // Strip column container classes
+    const stripColumnClz = (el) => {
+      el.classList.remove("page-full", "page-columns");
+      if (el.children) {
+        for (const child of el.children) {
+          stripColumnClz(child);
+        }
+      }
+    }
+    stripColumnClz(note)
+    if (id === null || id.startsWith('sec-')) {
+      // Special case sections, only their first couple elements
+      const container = document.createElement("div");
+      if (note.children && note.children.length > 2) {
+        container.appendChild(note.children[0].cloneNode(true));
+        for (let i = 1; i < note.children.length; i++) {
+          const child = note.children[i];
+          if (child.tagName === "P" && child.innerText === "") {
+            continue;
+          } else {
+            container.appendChild(child.cloneNode(true));
+            break;
+          }
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(container);
+        }
+        return container.innerHTML
+      } else {
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        return note.innerHTML;
+      }
+    } else {
+      // Remove any anchor links if they are present
+      const anchorLink = note.querySelector('a.anchorjs-link');
+      if (anchorLink) {
+        anchorLink.remove();
+      }
+      if (window.Quarto?.typesetMath) {
+        window.Quarto.typesetMath(note);
+      }
+      // TODO in 1.5, we should make sure this works without a callout special case
+      if (note.classList.contains("callout")) {
+        return note.outerHTML;
+      } else {
+        return note.innerHTML;
+      }
+    }
+  }
+  for (var i=0; i<xrefs.length; i++) {
+    const xref = xrefs[i];
+    tippyHover(xref, undefined, function(instance) {
+      instance.disable();
+      let url = xref.getAttribute('href');
+      let hash = undefined; 
+      if (url.startsWith('#')) {
+        hash = url;
+      } else {
+        try { hash = new URL(url).hash; } catch {}
+      }
+      if (hash) {
+        const id = hash.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note !== null) {
+          try {
+            const html = processXRef(id, note.cloneNode(true));
+            instance.setContent(html);
+          } finally {
+            instance.enable();
+            instance.show();
+          }
+        } else {
+          // See if we can fetch this
+          fetch(url.split('#')[0])
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.getElementById(id);
+            if (note !== null) {
+              const html = processXRef(id, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      } else {
+        // See if we can fetch a full url (with no hash to target)
+        // This is a special case and we should probably do some content thinning / targeting
+        fetch(url)
+        .then(res => res.text())
+        .then(html => {
+          const parser = new DOMParser();
+          const htmlDoc = parser.parseFromString(html, "text/html");
+          const note = htmlDoc.querySelector('main.content');
+          if (note !== null) {
+            // This should only happen for chapter cross references
+            // (since there is no id in the URL)
+            // remove the first header
+            if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+              note.children[0].remove();
+            }
+            const html = processXRef(null, note);
+            instance.setContent(html);
+          } 
+        }).finally(() => {
+          instance.enable();
+          instance.show();
+        });
+      }
+    }, function(instance) {
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            div.style.left = 0;
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+        // Handle positioning of the toggle
+    window.addEventListener(
+      "resize",
+      throttle(() => {
+        elRect = undefined;
+        if (selectedAnnoteEl) {
+          selectCodeLines(selectedAnnoteEl);
+        }
+      }, 10)
+    );
+    function throttle(fn, ms) {
+    let throttle = false;
+    let timer;
+      return (...args) => {
+        if(!throttle) { // first call gets through
+            fn.apply(this, args);
+            throttle = true;
+        } else { // all the others get throttled
+            if(timer) clearTimeout(timer); // cancel #2
+            timer = setTimeout(() => {
+              fn.apply(this, args);
+              timer = throttle = false;
+            }, ms);
+        }
+      };
+    }
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+<nav class="page-navigation">
+  <div class="nav-page nav-page-previous">
+      <a href="./03-tidy.html" class="pagination-link" aria-label="Tidy">
+        <i class="bi bi-arrow-left-short"></i> <span class="nav-page-text"><span class="chapter-number">3</span>&nbsp; <span class="chapter-title">Tidy</span></span>
+      </a>          
+  </div>
+  <div class="nav-page nav-page-next">
+      <a href="./05-visualize.html" class="pagination-link" aria-label="Visualize">
+        <span class="nav-page-text"><span class="chapter-number">5</span>&nbsp; <span class="chapter-title">Visualize</span></span> <i class="bi bi-arrow-right-short"></i>
+      </a>
+  </div>
+</nav><div class="modal fade" id="quarto-embedded-source-code-modal" tabindex="-1" aria-labelledby="quarto-embedded-source-code-modal-label" aria-hidden="true"><div class="modal-dialog modal-dialog-scrollable"><div class="modal-content"><div class="modal-header"><h5 class="modal-title" id="quarto-embedded-source-code-modal-label">Source Code</h5><button class="btn-close" data-bs-dismiss="modal"></button></div><div class="modal-body"><div class="">
+<div class="sourceCode" id="cb7" data-shortcodes="false"><pre class="sourceCode markdown code-with-copy"><code class="sourceCode markdown"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="an">title:</span><span class="co"> "Transform"</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">---</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a>After cleaning and standardizing the datasets, the next step was to derive analytical variables required for modeling. This stage enriches the tidy data by linking metadata, creating features, and mapping performances to standardized scoring systems.</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>**Key tasks:**</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Link each performance record to Olympic athlete/event metadata</span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Compute athlete age metrics (age at performance in years and days) and training age</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Classify events by type and category.</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Convert performances to numeric marks (seconds for track; numeric values for field).</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Map marks to IAAF points using a rolling/closest join.</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Convert world-athlete championship (WAC) to points and compute the mean reference by gender.</span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a><span class="fu">## Link career progression to Olympic metadata</span></span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a>First we join the career progression dataset with Olympic athlete metadata (only keeping records with a known birth date), ensures unique athlete-event combinations, and keeps key identifying variables.</span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>It then calculates:</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>age_years: athlete’s age in years at the time of performance</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>age_days: exact age in days</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>It also removes the "h" suffix from performance to standardize hand-timed results.</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, echo=TRUE}</span></span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a><span class="in">athlete_bests &lt;-</span></span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a><span class="in">  Career_progression %&gt;%  inner_join(</span></span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a><span class="in">    Olympics_data %&gt;%  filter(!is.na(birth_date)) %&gt;%</span></span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a><span class="in">      distinct(birth_date, athlete_links, event, event_type, .keep_all = T) %&gt;%</span></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a><span class="in">      select(name, birth_date, athlete_links, event, nationality, event_type, </span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a><span class="in">             event_category, gender, games_year),</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a><span class="in">    by = c("athlete_link" = "athlete_links", "event")</span></span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a><span class="in">  ) %&gt;%  </span></span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(age_years = year(date) - year(birth_date), </span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a><span class="in">         age_days = as.double(</span></span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a><span class="in">           difftime(</span></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a><span class="in">             date, birth_date,units = "days"</span></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a><span class="in">           )</span></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a><span class="in">         ),</span></span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a><span class="in">         performance = str_remove_all(performance, "h")</span></span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a><span class="fu">## Classify events, compute performance_age, and convert performance to numeric marks</span></span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>Events are grouped into broad disciplines (e.g., Sprints, Middle Distance, Jumps) and assigned a Track or Field classification. The athlete’s age at the time of performance is calculated, and the raw performance string is converted into a numeric mark suitable for modeling.</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>Specifically, the code:</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Assigns <span class="in">`event_type`</span> (Sprints, Middle Distance, Long Distance, Combined Events, Jumps, Throws, Road Races, or Other) and sets <span class="in">`event_category`</span> to either Track or Field.</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Computes <span class="in">`age_years`</span> and <span class="in">`age_days`</span>, and removes the "<span class="in">`h`</span>" hand-timed suffix from performance strings.</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span>Generates <span class="in">`mark`</span>: for Track events, parses the time string and converts it to seconds using <span class="in">`lubridate::parse_date_time2`</span> and <span class="in">`difftime`</span>; for Field events, extracts a numeric distance using <span class="in">`parse_number`</span>.</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a><span class="in">```{r, echo=TRUE}</span></span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a><span class="in"># Classify events</span></span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a><span class="in">event_type = case_match(</span></span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a><span class="in">      event,</span></span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a><span class="in">      c("100 Metres", "200 Metres", "400 Metres", "400 Metres Hurdles", "100 Metres Hurdles", "110 Metres Hurdles") ~ "Sprints",</span></span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a><span class="in">      c("800 Metres", "1500 Metres", "3000 Metres Steeplechase") ~ "Middle Distance",</span></span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a><span class="in">      c("5000 Metres", "10,000 Metres") ~ "Long Distance",</span></span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a><span class="in">      c("Heptathlon", "Decathlon") ~ "Combined Events",</span></span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a><span class="in">      c("High Jump", "Long Jump", "Triple Jump", "Pole Vault") ~ "Jumps",</span></span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a><span class="in">      c("Shot Put", "Discus Throw", "Hammer Throw", "Javelin Throw", "Javelin Throw (old)") ~ "Throws",</span></span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a><span class="in">      c("10 Kilometres Race Walk", "20 Kilometres Race Walk", "50 Kilometres Race Walk", "Marathon") ~ "Road Races",</span></span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a><span class="in">      .default = "Other"</span></span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a><span class="in">    ),</span></span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a><span class="in">         event_category = if_else(str_detect(event, "Metres|Walk|Wheelchair") |event %in% c("Marathon"), "Track", "Field")</span></span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a><span class="in">mutate(age_years = year(date) - year(birth_date), </span></span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a><span class="in">         age_days = as.double(</span></span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a><span class="in">           difftime(</span></span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a><span class="in">             date, birth_date,units = "days"</span></span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a><span class="in">           )</span></span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a><span class="in">         ),</span></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a><span class="in">         performance = str_remove_all(performance, "h") # I will count hand timed results as legitimate</span></span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a><span class="in">         ) %&gt;%</span></span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a><span class="in">    mutate(mark = if_else(</span></span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a><span class="in">      event_category == "Track",</span></span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a><span class="in">      as.numeric(</span></span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a><span class="in">        difftime(</span></span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a><span class="in">          lubridate::parse_date_time2(performance, orders = c("%H:%M:%S", "%M:%S:00", "%M:%OS", "%OS"), exact = T),</span></span>
+<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a><span class="in">          lubridate::parse_date_time2("0", orders ="S"),</span></span>
+<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a><span class="in">          units = "secs"</span></span>
+<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a><span class="in">        )</span></span>
+<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a><span class="in">      ), parse_number(performance)))</span></span>
+<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a><span class="fu">## Normalize event labels for IAAF scoring</span></span>
+<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a>This step standardizes event names and gender labels so they match the IAAF scoring reference, ensuring reliable joins later. It converts gender to lowercase and maps verbose event strings (for example, “100 Metres,” “High Jump,” “10 Kilometres Race Walk”) to the short IAAF codes (for example, 100m, HJ, 10,000mW). Events without a defined mapping are left unchanged. This normalization guarantees consistent keys for scoring and downstream analyses.</span>
+<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,echo=TRUE}</span></span>
+<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a><span class="in">athlete_bests_clean &lt;- athlete_bests |&gt; </span></span>
+<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(</span></span>
+<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a><span class="in">    gender = tolower(gender),</span></span>
+<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a><span class="in">    event = case_when(</span></span>
+<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "100 Metres" ~ "100m",</span></span>
+<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "200 Metres" ~ "200m",</span></span>
+<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "400 Metres" ~ "400m",</span></span>
+<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "800 Metres" ~ "800m",</span></span>
+<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "1500 Metres" ~ "1500m",</span></span>
+<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "5000 Metres" ~ "5000m",</span></span>
+<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "10,000 Metres" ~ "10000m",</span></span>
+<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Marathon" ~ "Road Marathon",</span></span>
+<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Triple Jump" ~ "TJ",</span></span>
+<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Long Jump" ~ "LJ",</span></span>
+<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "High Jump" ~ "HJ",</span></span>
+<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Shot Put" ~ "SP",</span></span>
+<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Discus Throw" ~ "DT",</span></span>
+<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Hammer Throw" ~ "HT",</span></span>
+<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Javelin Throw" ~ "JT",</span></span>
+<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Decathlon" ~ "Dec.",</span></span>
+<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Heptathlon" ~ "Hept.",</span></span>
+<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "Pole Vault" ~ "PV",</span></span>
+<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "10 Kilometres Race Walk" ~ "10,000mW",</span></span>
+<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "50 Kilometres Race Walk" ~ "50,000mW",</span></span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "20 Kilometres Race Walk" ~ "20,000mW",</span></span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "100 Metres Hurdles" ~ "100mH",</span></span>
+<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "110 Metres Hurdles" ~ "110mH",</span></span>
+<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "400 Metres Hurdles" ~ "400mH",</span></span>
+<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a><span class="in">      event == "3000 Metres Steeplechase" ~ "3000m SC",</span></span>
+<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a><span class="in">      TRUE ~ event</span></span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a><span class="in">    )</span></span>
+<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a><span class="in">  )</span></span>
+<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a><span class="fu">## Map athlete performance marks to IAAF points and join `athlete_bests_clean` with `iaaf-table` to get full dataset</span></span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a>This step assigns IAAF point scores to each performance by joining <span class="in">`athlete_bests_clean`</span> to the IAAF reference table on gender and event, using a rolling “closest mark ≤ observed mark” rule. If no matching score is found, the point value is set to zero. The result, <span class="in">`athlete_bests_points`</span>, is the modeling-ready table with season-best records expressed on a common IAAF points scale.</span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,echo=TRUE}</span></span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a><span class="in"># join iaaf_table with athlete_bests_clean and get full dataset with result points</span></span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a><span class="in">round_decimals &lt;- function(x, digits = 2) {</span></span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a><span class="in">  round(x * 10^digits) / 10^digits}</span></span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a><span class="in">athlete_bests_points &lt;- </span></span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a><span class="in">  athlete_bests_clean |&gt;</span></span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a><span class="in">    left_join(iaaf_table, join_by(gender, event, closest(mark &lt;= mark))) |&gt; </span></span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a><span class="in">  replace_na(list(points = 0))</span></span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-150"><a href="#cb7-150" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-151"><a href="#cb7-151" aria-hidden="true" tabindex="-1"></a><span class="fu">## Convert WAC standards to points and compute mean references</span></span>
+<span id="cb7-152"><a href="#cb7-152" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-153"><a href="#cb7-153" aria-hidden="true" tabindex="-1"></a>This step expresses the world-class standards on the same IAAF points scale used for athlete results. It standardizes WAC event labels and times, joins to the IAAF table using a “closest mark ≤ observed mark” rule, and fills missing scores with zero. For combined events, fixed anchors are applied (Heptathlon women = 1174, Decathlon men = 1212). Finally, it computes the mean WAC points by gender to provide simple reference lines for later visualizations.</span>
+<span id="cb7-154"><a href="#cb7-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-155"><a href="#cb7-155" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,echo=TRUE}</span></span>
+<span id="cb7-156"><a href="#cb7-156" aria-hidden="true" tabindex="-1"></a><span class="in">wac_points &lt;- wac_standards_tidy %&gt;%</span></span>
+<span id="cb7-157"><a href="#cb7-157" aria-hidden="true" tabindex="-1"></a><span class="in">  left_join(</span></span>
+<span id="cb7-158"><a href="#cb7-158" aria-hidden="true" tabindex="-1"></a><span class="in">    iaaf_table_tidy,</span></span>
+<span id="cb7-159"><a href="#cb7-159" aria-hidden="true" tabindex="-1"></a><span class="in">    dplyr::join_by(gender, Event == event, closest(mark &lt;= mark))</span></span>
+<span id="cb7-160"><a href="#cb7-160" aria-hidden="true" tabindex="-1"></a><span class="in">  ) %&gt;%</span></span>
+<span id="cb7-161"><a href="#cb7-161" aria-hidden="true" tabindex="-1"></a><span class="in">  tidyr::replace_na(list(points = 0)) %&gt;%</span></span>
+<span id="cb7-162"><a href="#cb7-162" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(points = dplyr::case_when(</span></span>
+<span id="cb7-163"><a href="#cb7-163" aria-hidden="true" tabindex="-1"></a><span class="in">    Event == "Hept." &amp; gender == "women" ~ 1174,</span></span>
+<span id="cb7-164"><a href="#cb7-164" aria-hidden="true" tabindex="-1"></a><span class="in">    Event == "Dec."  &amp; gender == "men"   ~ 1212,</span></span>
+<span id="cb7-165"><a href="#cb7-165" aria-hidden="true" tabindex="-1"></a><span class="in">    TRUE ~ points</span></span>
+<span id="cb7-166"><a href="#cb7-166" aria-hidden="true" tabindex="-1"></a><span class="in">  ))</span></span>
+<span id="cb7-167"><a href="#cb7-167" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-168"><a href="#cb7-168" aria-hidden="true" tabindex="-1"></a><span class="in">mean_points_by_gender &lt;- wac_points %&gt;%</span></span>
+<span id="cb7-169"><a href="#cb7-169" aria-hidden="true" tabindex="-1"></a><span class="in">  group_by(gender) %&gt;%</span></span>
+<span id="cb7-170"><a href="#cb7-170" aria-hidden="true" tabindex="-1"></a><span class="in">  summarise(mean_points = mean(points, na.rm = TRUE), .groups = "drop") %&gt;%</span></span>
+<span id="cb7-171"><a href="#cb7-171" aria-hidden="true" tabindex="-1"></a><span class="in">  tibble::deframe()</span></span>
+<span id="cb7-172"><a href="#cb7-172" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-173"><a href="#cb7-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-174"><a href="#cb7-174" aria-hidden="true" tabindex="-1"></a><span class="fu">## Model-preparation</span></span>
+<span id="cb7-175"><a href="#cb7-175" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-176"><a href="#cb7-176" aria-hidden="true" tabindex="-1"></a>This step prepares the FPCA input at the athlete–event level. It filters to records with non-missing IAAF points and age, builds a unique identifier by concatenating <span class="in">`athlete_link`</span> and <span class="in">`event`</span>, and selects the three fields required by face.sparse: athlete_id, performance_age (age in years at performance), and iaaf_score (IAAF points). It also creates helper vectors (id and uid) for indexing subjects during modeling.</span>
+<span id="cb7-177"><a href="#cb7-177" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-178"><a href="#cb7-178" aria-hidden="true" tabindex="-1"></a><span class="in">```{r,echo=TRUE}</span></span>
+<span id="cb7-179"><a href="#cb7-179" aria-hidden="true" tabindex="-1"></a><span class="in"># predict on full dataset(population)</span></span>
+<span id="cb7-180"><a href="#cb7-180" aria-hidden="true" tabindex="-1"></a><span class="in"># Filter out missing points athletes and rename for clarity</span></span>
+<span id="cb7-181"><a href="#cb7-181" aria-hidden="true" tabindex="-1"></a><span class="in">fd_data &lt;- athlete_bests_points |&gt; </span></span>
+<span id="cb7-182"><a href="#cb7-182" aria-hidden="true" tabindex="-1"></a><span class="in">  filter(!is.na(points), !is.na(age_years)) |&gt; </span></span>
+<span id="cb7-183"><a href="#cb7-183" aria-hidden="true" tabindex="-1"></a><span class="in">  mutate(id = paste(athlete_link, event)) |&gt; </span></span>
+<span id="cb7-184"><a href="#cb7-184" aria-hidden="true" tabindex="-1"></a><span class="in">  select(athlete_id = id,</span></span>
+<span id="cb7-185"><a href="#cb7-185" aria-hidden="true" tabindex="-1"></a><span class="in">         performance_age = age_years,</span></span>
+<span id="cb7-186"><a href="#cb7-186" aria-hidden="true" tabindex="-1"></a><span class="in">         iaaf_score = points)</span></span>
+<span id="cb7-187"><a href="#cb7-187" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-188"><a href="#cb7-188" aria-hidden="true" tabindex="-1"></a><span class="in">id &lt;- fd_data$athlete_id</span></span>
+<span id="cb7-189"><a href="#cb7-189" aria-hidden="true" tabindex="-1"></a><span class="in">uid &lt;- unique(id)</span></span>
+<span id="cb7-190"><a href="#cb7-190" aria-hidden="true" tabindex="-1"></a><span class="in">```</span></span>
+<span id="cb7-191"><a href="#cb7-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-192"><a href="#cb7-192" aria-hidden="true" tabindex="-1"></a><span class="fu">## Key outputs for modeling and Visualization:</span></span>
+<span id="cb7-193"><a href="#cb7-193" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-194"><a href="#cb7-194" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`athlete_bests_points`</span>: season-best results with IAAF points</span>
+<span id="cb7-195"><a href="#cb7-195" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-196"><a href="#cb7-196" aria-hidden="true" tabindex="-1"></a><span class="ss">-   </span><span class="in">`wac_points`</span> and <span class="in">`mean_points_by_gender`</span>: world-class reference levels for comparison in plots</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div></div></div></div></div>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
